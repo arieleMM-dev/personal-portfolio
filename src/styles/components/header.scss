@@ -1,0 +1,135 @@
+@use '../variables' as *;
+
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-header;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 4vw, 3rem);
+  opacity: 0;
+  visibility: hidden;
+
+  &.is-visible {
+    visibility: visible;
+  }
+
+  &__brand {
+    font-family: $font-mono;
+    font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+    font-weight: 400;
+    color: var(--dynamic-glow-color, $color-accent);
+    letter-spacing: -0.02em;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+
+  &__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: clamp(0.75rem, 2vw, 1.75rem);
+    list-style: none;
+  }
+
+  &__nav-link {
+    font-family: $font-mono;
+    font-size: clamp(0.65rem, 1vw, 0.8rem);
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.04em;
+    text-transform: capitalize;
+    position: relative;
+    display: inline-block;
+    transition: transform 0.3s ease, color 0.3s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background-color: var(--dynamic-glow-color, $color-accent);
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &:hover {
+      color: #FFF;
+      transform: translateY(-2px);
+
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  &__lang-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: $font-mono;
+    font-size: clamp(0.65rem, 1vw, 0.75rem);
+    color: rgba(255, 255, 255, 0.5);
+    transition: opacity 0.3s ease;
+    padding: 0.25rem;
+    
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  &__lang-text {
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    
+    &.is-active {
+      color: var(--dynamic-glow-color, $color-accent);
+      text-shadow: 0 0 8px var(--dynamic-glow-color, $color-accent);
+      font-weight: 500;
+    }
+  }
+  
+  &__lang-sep {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  // Sticky clone (fixed nav when hero scrolls away)
+  &--sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: $z-header-sticky;
+    justify-content: flex-end;
+    padding: 1rem clamp(1.5rem, 4vw, 3rem);
+    background: rgba(10, 10, 10, 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-12px);
+    pointer-events: none;
+
+    &.is-active {
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .header__brand {
+      display: none;
+    }
+  }
+}

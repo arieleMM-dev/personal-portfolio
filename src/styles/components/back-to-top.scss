@@ -1,0 +1,35 @@
+@use '../variables' as *;
+
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 50;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: rgba(10, 10, 10, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px var(--dynamic-glow-color, $color-accent);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(50px);
+  pointer-events: none;
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 0 20px var(--dynamic-glow-color, $color-accent);
+  }
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    stroke: var(--dynamic-glow-color, $color-accent);
+  }
+}

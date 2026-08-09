@@ -1,0 +1,280 @@
+---
+import '../styles/components/work.scss';
+import { projects } from '../data/work';
+---
+
+<section class="work" id="work">
+  <div class="work__header">
+    <span class="work__label" data-i18n="work.label">Selected Work</span>
+    <h2 class="work__title"><span data-i18n="work.title">Proyectos</span><span class="dynamic-dot"></span></h2>
+  </div>
+
+  <div class="work__grid" id="work-grid">
+    {['jirah', 'portfolio', 'pos', 'helpdesk'].map(id => {
+      const project = (projects as any)[id];
+      const isDeveloping = project?.status === 'En desarrollo';
+      return (
+      <article class={`work__card ${isDeveloping ? 'is-developing' : ''}`} data-project={id}>
+        <div class="work__card-inner">
+          <img src={project?.image || `/assets/${id}/preview.jpg`} alt="" class="work__image" loading="lazy" />
+          <div class="work__overlay">
+            <span class="work__overlay-text" data-i18n="work.viewProject">Ver Proyecto ↗</span>
+          </div>
+          {isDeveloping && (
+            <div class="work__badge">En curso / Coming Soon</div>
+          )}
+        </div>
+        <div class="work__card-info">
+          <h3 class="work__card-title">{project?.title}</h3>
+        </div>
+      </article>
+      );
+    })}
+  </div>
+</section>
+
+<div class="work-modal" id="work-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="work-modal__overlay" data-modal-close></div>
+  <div class="work-modal__content">
+    <button class="work-modal__close" data-modal-close aria-label="Close modal">✕</button>
+    
+    <div class="work-modal__body" id="modal-body">
+      <h3 class="work-modal__title" id="modal-title"></h3>
+      <p class="work-modal__short" id="modal-short"></p>
+      <ul class="work-modal__bullets" id="modal-bullets"></ul>
+      <div class="work-modal__tags" id="modal-tags"></div>
+      <button class="work-modal__gallery-btn" id="modal-gallery-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        Ver Galería de Pantallas
+      </button>
+    </div>
+    
+    <div class="work-modal__gallery" id="modal-gallery" style="display: none;">
+      <button class="work-modal__gallery-back" id="modal-gallery-back">← Volver a Detalles</button>
+      <div class="work-modal__gallery-layout">
+        <div class="work-modal__gallery-visual">
+          <div class="work-modal__gallery-main">
+            <button class="work-modal__gallery-nav prev" id="modal-gallery-prev">‹</button>
+            <img id="modal-gallery-main-img" src="" alt="Main gallery view" />
+            <button class="work-modal__gallery-nav next" id="modal-gallery-next">›</button>
+          </div>
+          <div class="work-modal__gallery-thumbs" id="modal-gallery-thumbs"></div>
+        </div>
+        <div class="work-modal__gallery-context">
+          <p id="modal-gallery-context-desc"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { projects } from '../data/work';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Magic Numbers Extraction
+  const ANIM_DURATION = 0.8;
+  const ANIM_STAGGER = 0.15;
+  const ANIM_X_OFFSET = -300;
+  const ANIM_EASE = "power4.out";
+
+  const TECH_COLORS: Record<string, string> = {
+    'TypeScript': '#3178C6',
+    'JavaScript': '#F7DF1E',
+    'Node.js': '#339933',
+    'Next.js': '#ffffff',
+    'Prisma ORM': '#2D3748',
+    'PostgreSQL': '#336791',
+    'Astro': '#FF5D01',
+    'SCSS': '#CC6699',
+    'GSAP': '#88CE02',
+    'WebGL': '#990000',
+    'Pentaho': '#ffffff',
+    'Power BI': '#F2C811',
+    'SQL Server': '#F29111',
+    'Excel': '#217346',
+    'PWA': '#5A0FC8'
+  };
+
+  function getTagColor(tag: string) {
+    return TECH_COLORS[tag] || '#F3F4F6';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // ScrollTrigger Animation for the cards entering from left
+    const cards = document.querySelectorAll('.work__card');
+    
+    if (cards.length > 0) {
+      gsap.from(cards, {
+        x: ANIM_X_OFFSET,
+        opacity: 0,
+        duration: ANIM_DURATION,
+        stagger: ANIM_STAGGER,
+        ease: ANIM_EASE,
+        scrollTrigger: {
+          trigger: "#work",
+          start: "top 75%",
+        }
+      });
+    }
+
+    // Modal Interaction Logic
+    const modal = document.getElementById('work-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalShort = document.getElementById('modal-short');
+    const modalBullets = document.getElementById('modal-bullets');
+    const modalTags = document.getElementById('modal-tags');
+    const modalGalleryBtn = document.getElementById('modal-gallery-btn');
+    const closeButtons = document.querySelectorAll('[data-modal-close]');
+    const modalContent = document.querySelector('.work-modal__content');
+    
+    const modalBody = document.getElementById('modal-body');
+    const modalGallery = document.getElementById('modal-gallery');
+    const modalGalleryBackBtn = document.getElementById('modal-gallery-back');
+    const galleryMainImg = document.getElementById('modal-gallery-main-img') as HTMLImageElement;
+    const galleryContextDesc = document.getElementById('modal-gallery-context-desc');
+    const galleryThumbs = document.getElementById('modal-gallery-thumbs');
+    const prevBtn = document.getElementById('modal-gallery-prev');
+    const nextBtn = document.getElementById('modal-gallery-next');
+
+    let currentProjectGallery: any[] = [];
+    let currentGalleryIndex = 0;
+
+    function renderGallery() {
+      if (!currentProjectGallery.length) return;
+      const currentItem = currentProjectGallery[currentGalleryIndex];
+      if (galleryMainImg) galleryMainImg.src = currentItem.image;
+      if (galleryContextDesc) galleryContextDesc.textContent = currentItem.description;
+
+      if (galleryThumbs) {
+        galleryThumbs.innerHTML = currentProjectGallery.map((item, index) => `
+          <button class="work-modal__thumb ${index === currentGalleryIndex ? 'is-active' : ''}" data-index="${index}">
+            <img src="${item.image}" alt="Thumbnail ${index + 1}" />
+          </button>
+        `).join('');
+
+        galleryThumbs.querySelectorAll('.work-modal__thumb').forEach(thumb => {
+          thumb.addEventListener('click', (e) => {
+            const btn = e.currentTarget as HTMLElement;
+            currentGalleryIndex = parseInt(btn.getAttribute('data-index') || '0', 10);
+            renderGallery();
+          });
+        });
+      }
+    }
+    
+    if (modalGalleryBtn && modalBody && modalGallery) {
+      modalGalleryBtn.addEventListener('click', () => {
+        if (!currentProjectGallery.length) return;
+        modalBody.style.display = 'none';
+        modalGallery.style.display = 'flex';
+        modalContent?.classList.add('is-gallery-mode');
+        currentGalleryIndex = 0;
+        renderGallery();
+      });
+    }
+
+    if (modalGalleryBackBtn && modalBody && modalGallery) {
+      modalGalleryBackBtn.addEventListener('click', () => {
+        modalGallery.style.display = 'none';
+        modalBody.style.display = 'block';
+        modalContent?.classList.remove('is-gallery-mode');
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentProjectGallery.length > 0) {
+          currentGalleryIndex = (currentGalleryIndex - 1 + currentProjectGallery.length) % currentProjectGallery.length;
+          renderGallery();
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (currentProjectGallery.length > 0) {
+          currentGalleryIndex = (currentGalleryIndex + 1) % currentProjectGallery.length;
+          renderGallery();
+        }
+      });
+    }
+    
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.getAttribute('data-project');
+        if (!id || !(id in projects)) return;
+        
+        const project = projects[id as keyof typeof projects] as any;
+        const lang = document.documentElement.getAttribute('lang') || 'en';
+        const activeLang = lang as 'es' | 'en';
+        
+        currentProjectGallery = project.gallery || [];
+        if (modalGalleryBtn) {
+          modalGalleryBtn.style.display = currentProjectGallery.length > 0 ? 'flex' : 'none';
+        }
+        
+        // Reset to body
+        if (modalBody && modalGallery) {
+          modalBody.style.display = 'block';
+          modalGallery.style.display = 'none';
+          modalContent?.classList.remove('is-gallery-mode');
+        }
+
+        // Inject Content
+        if(modalTitle) modalTitle.textContent = project.title;
+        if(modalShort) modalShort.textContent = project.short[activeLang];
+        
+        if(modalBullets) {
+          modalBullets.innerHTML = project.bullets[activeLang]
+            .map((b: string) => `<li>${b}</li>`)
+            .join('');
+        }
+
+        if(modalTags) {
+          modalTags.innerHTML = project.tags
+            .map((tag: string) => {
+              const color = getTagColor(tag);
+              return `<span class="work-modal__tag" style="color: ${color}; border-color: ${color}33; background: rgba(255,255,255,0.03);">${tag}</span>`;
+            })
+            .join('');
+        }
+
+        // Show Modal
+        if(modal) {
+          modal.setAttribute('aria-hidden', 'false');
+          modal.classList.add('is-active');
+          document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+      });
+    });
+
+    closeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if(modal) {
+          modal.setAttribute('aria-hidden', 'true');
+          modal.classList.remove('is-active');
+          modalContent?.classList.remove('is-gallery-mode');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    // Close on Escape key
+    window.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape' && modal && modal.classList.contains('is-active')) {
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('is-active');
+        modalContent?.classList.remove('is-gallery-mode');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+</script>

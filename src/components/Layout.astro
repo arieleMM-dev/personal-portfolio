@@ -1,0 +1,72 @@
+---
+import '../styles/global.scss';
+import '../styles/components/layout.scss';
+import '../styles/components/preloader.scss';
+import '../styles/components/fluid-bg.scss';
+import '../styles/components/header.scss';
+import '../styles/components/hero.scss';
+import '../styles/components/about-me.scss';
+import '../styles/components/expertise.scss';
+import '../styles/components/work.scss';
+import '../styles/components/experience.scss';
+import '../styles/components/contact.scss';
+import '../styles/components/back-to-top.scss';
+import '../styles/components/scroll-tracker.scss';
+import Preloader from './Preloader.astro';
+import FluidBackground from './FluidBackground.astro';
+import BackToTop from './BackToTop.astro';
+import ScrollTracker from './ScrollTracker.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Portfolio',
+  description = 'Creative Frontend Developer Portfolio',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Preloader />
+    <FluidBackground />
+    <ScrollTracker />
+    <canvas id="orbital-canvas" class="orbital-canvas"></canvas>
+    <div class="layout">
+      <main class="layout__main">
+        <slot />
+      </main>
+    </div>
+    <BackToTop />
+
+    <script>
+      import { initLenis, startLenis } from '../scripts/lenis';
+      import { initPreloader } from '../scripts/preloader/preloaderController';
+      import { initHome } from '../scripts/home/homeAnimations';
+
+      initLenis({ stopped: true });
+
+      initPreloader(() => {
+        startLenis();
+        initHome();
+        window.dispatchEvent(new CustomEvent('preloader:complete'));
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+<div class="preloader" data-preloader aria-hidden="false">
+  <canvas class="preloader__canvas" data-preloader-canvas aria-hidden="true"></canvas>
+
+  <div class="preloader__ui" data-preloader-ui>
+    <div class="preloader__counter" data-preloader-counter>0%</div>
+    <div class="preloader__progress" aria-hidden="true">
+      <div class="preloader__progress-bar" data-preloader-progress-bar></div>
+    </div>
+  </div>
+
+  <button class="preloader__skip" data-preloader-skip aria-label="Saltar intro">
+    Saltar <span>→</span>
+  </button>
+
+  <!-- DOM-based phrase with CSS glow animation -->
+  <div class="preloader__phrase" data-preloader-phrase>
+    <p class="preloader__phrase-text">
+      Donde el mundo ve infinitos problemas, sé el precursor de infinitas soluciones
+    </p>
+  </div>
+
+  <!-- Accesibilidad: frase leída por screen readers -->
+  <p class="preloader__sr-only" aria-live="polite">
+    Donde el mundo ve infinitos problemas, se el precursor de infinitas soluciones
+  </p>
+</div>

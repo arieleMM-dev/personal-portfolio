@@ -1,0 +1,41 @@
+@use '../variables' as *;
+
+.orbital-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 50;
+  transition: filter 0.5s ease, opacity 0.5s ease;
+}
+
+.layout {
+  min-height: 100vh;
+  position: relative;
+
+  &__main {
+    position: relative;
+    z-index: 10;
+    background: transparent;
+
+    >section {
+      position: relative;
+      z-index: 10;
+      background: transparent;
+    }
+  }
+}
+
+.dynamic-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 12px;
+  background-color: var(--dynamic-glow-color);
+  box-shadow: 0 0 12px var(--dynamic-glow-color);
+  opacity: 0;
+  transform: scale(0);
+}

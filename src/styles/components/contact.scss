@@ -1,0 +1,161 @@
+@use '../variables' as *;
+
+.contact {
+  position: relative;
+  z-index: $z-content;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(6rem, 14vh, 10rem) clamp(1.5rem, 4vw, 3rem);
+
+  &__inner {
+    text-align: center;
+    max-width: 800px;
+    opacity: 0;
+    transform: translateY(30px);
+    will-change: transform, opacity;
+  }
+
+  &__label {
+    display: block;
+    font-family: $font-mono;
+    font-size: clamp(0.6rem, 1vw, 0.75rem);
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: $color-accent;
+    margin-bottom: 1.25rem;
+  }
+
+  &__title {
+    font-family: $font-sans;
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: $color-text;
+    margin-bottom: clamp(3rem, 6vh, 4.5rem);
+  }
+
+  // ── CTA Button ──
+  &__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: $color-text;
+    padding: clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem);
+    border-radius: 100px;
+    margin-bottom: clamp(3rem, 6vh, 5rem);
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(10px);
+    
+    &-text {
+      font-family: $font-sans;
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    svg {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      width: clamp(20px, 3vw, 28px);
+      height: clamp(20px, 3vw, 28px);
+    }
+
+    &:hover,
+    &:focus {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--dynamic-glow-color, $color-accent);
+      color: var(--dynamic-glow-color, $color-accent);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      
+      svg {
+        transform: translateX(5px);
+      }
+    }
+  }
+
+  // ── Link Row ──
+  &__links {
+    display: flex;
+    justify-content: center;
+    gap: clamp(2rem, 4vw, 3.5rem);
+    margin-bottom: clamp(4rem, 8vh, 6rem);
+    flex-wrap: wrap;
+  }
+
+  &__link {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    transition: opacity 0.35s ease;
+
+    // Dim siblings on hover
+    .contact__links:hover &:not(:hover) {
+      opacity: 0.3;
+    }
+  }
+
+  &__link-text {
+    font-family: $font-mono;
+    font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $color-text;
+    transition: color 0.3s ease;
+  }
+
+  &__link-line {
+    display: block;
+    width: 0;
+    height: 1px;
+    background: $color-accent;
+    margin-top: 0.4rem;
+    transition: width 0.45s $ease-out-expo;
+  }
+
+  &__link:hover &__link-line {
+    width: 100%;
+  }
+
+  &__link:hover &__link-text,
+  &__link:hover &__icon {
+    color: $color-accent;
+  }
+  
+  &__icon {
+    transition: color 0.3s ease;
+    margin-bottom: 2px;
+  }
+
+  // ── Footer copy ──
+  &__footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding-top: clamp(2rem, 4vh, 3rem);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__copy {
+    font-family: $font-mono;
+    font-size: clamp(0.55rem, 0.8vw, 0.65rem);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    color: $color-text-faint;
+
+    &--muted {
+      color: rgba(255, 255, 255, 0.15);
+    }
+  }
+}

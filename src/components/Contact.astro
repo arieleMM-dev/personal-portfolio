@@ -1,0 +1,45 @@
+---
+import { contactLinks } from '../data/contact';
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="contact" id="contact" data-contact>
+  <div class="contact__inner" data-contact-inner>
+    <span class="contact__label" data-i18n="contact.label">Get in Touch</span>
+    <h2 class="contact__title" data-contact-title>
+      <span data-i18n="contact.title">Let's build<br />the future.</span><span class="dynamic-dot"></span>
+    </h2>
+
+    <a href="mailto:arielmorillo.ct@gmail.com" class="contact__cta" aria-label="Send Email">
+      <span class="contact__cta-text">arielmorillo.ct@gmail.com</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
+
+    <nav class="contact__links" data-contact-links aria-label="Social links">
+      {
+        contactLinks.map((link) => (
+          <a
+            href={link.href}
+            class="contact__link"
+            data-contact-link
+            {...(link.external
+              ? { target: '_blank', rel: 'noopener noreferrer' }
+              : {})}
+          >
+            <span class="contact__link-text">{link.label}</span>
+            <span class="contact__link-line" aria-hidden="true" />
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="contact__footer">
+      <span class="contact__copy">&copy; {currentYear} Ariel Morillo</span>
+      <span class="contact__copy contact__copy--muted">All rights reserved</span>
+    </div>
+  </div>
+</footer>

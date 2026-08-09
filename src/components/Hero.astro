@@ -1,0 +1,24 @@
+---
+import { SITE } from '../data/site';
+
+const { nameHero, subtitle } = SITE;
+const letters = nameHero.split('');
+---
+
+<section class="hero" id="home" data-hero>
+  <div class="hero__content" data-hero-content>
+    <h1 class="hero__title" data-hero-title aria-label={nameHero}>
+      {
+        letters.map((letter) => (
+          <span class="hero__letter" data-hero-letter>
+            {letter === ' ' ? '\u00A0' : letter}
+          </span>
+        ))
+      }
+    </h1>
+    <p class="hero__subtitle" data-hero-subtitle>
+      <span class="hero__subtitle-text" data-hero-subtitle-text data-i18n="hero.subtitle">{subtitle}</span>
+      <span class="hero__dot" data-hero-dot aria-hidden="true">&bull;</span>
+    </p>
+  </div>
+</section>

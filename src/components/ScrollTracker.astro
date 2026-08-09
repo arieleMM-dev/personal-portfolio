@@ -1,0 +1,18 @@
+---
+import { SITE } from '../data/site';
+---
+
+<div class="scroll-tracker" data-scroll-tracker>
+  <!-- Línea de progreso eliminada -->
+  
+  <ul class="scroll-tracker__nodes">
+    {SITE.nav.map((section) => (
+      <li class="scroll-tracker__node-item">
+        <a href={section.href} class="scroll-tracker__link" data-scroll-tracker-link={section.href.replace('#', '')} aria-label={`Scroll to ${section.label}`}>
+          <span class="scroll-tracker__node" aria-hidden="true"></span>
+          <span class="scroll-tracker__label" aria-hidden="true" data-i18n={`nav.${section.label.toLowerCase()}`}>{section.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</div>

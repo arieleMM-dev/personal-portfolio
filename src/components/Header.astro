@@ -1,0 +1,117 @@
+---
+import { SITE } from '../data/site';
+
+const { nav, nameShort } = SITE;
+
+/** Capitalize first letter of each word */
+function capitalize(str: string) {
+  return str.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+---
+
+<header class="header" data-header>
+  <a href="#home" class="header__brand" data-nav-link>{nameShort}</a>
+
+  <div class="header__actions">
+    <nav aria-label="Principal">
+      <ul class="header__nav">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} class="header__nav-link" data-nav-link data-i18n={`nav.${item.label.toLowerCase()}`}>
+                {capitalize(item.label)}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <button class="header__lang-toggle" data-lang-toggle aria-label="Toggle language">
+      <span class="header__lang-text is-active" data-lang="en">EN</span>
+      <span class="header__lang-sep">|</span>
+      <span class="header__lang-text" data-lang="es">ES</span>
+    </button>
+  </div>
+</header>
+
+<header class="header header--sticky" data-header-sticky aria-hidden="true">
+  <div class="header__actions">
+    <nav aria-label="Principal fijo">
+      <ul class="header__nav">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} class="header__nav-link" data-nav-link data-i18n={`nav.${item.label.toLowerCase()}`}>
+                {capitalize(item.label)}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <button class="header__lang-toggle" data-lang-toggle aria-label="Toggle language">
+      <span class="header__lang-text is-active" data-lang="en">EN</span>
+      <span class="header__lang-sep">|</span>
+      <span class="header__lang-text" data-lang="es">ES</span>
+    </button>
+  </div>
+</header>
+
+<script>
+  import { translations } from '../data/translations';
+
+  const LANG_STORAGE_KEY = 'portfolio-lang';
+  const toggles = document.querySelectorAll<HTMLButtonElement>('[data-lang-toggle]');
+  
+  // Set initial state from localStorage or default to 'en'
+  const savedLang = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
+  document.documentElement.setAttribute('lang', savedLang);
+  
+  function updateTranslations(lang: string) {
+    const dict = translations[lang] || translations['en'];
+    document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key && dict[key]) {
+        // Use innerHTML to support span highlighting like in About Me
+        el.innerHTML = dict[key];
+      }
+    });
+    // Also update placeholders
+    document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (key && dict[key]) {
+        el.placeholder = dict[key];
+      }
+    });
+  }
+
+  function updateToggleUI(lang: string) {
+    toggles.forEach(toggle => {
+      const texts = toggle.querySelectorAll<HTMLElement>('[data-lang]');
+      texts.forEach(t => {
+        if (t.getAttribute('data-lang') === lang) {
+          t.classList.add('is-active');
+        } else {
+          t.classList.remove('is-active');
+        }
+      });
+    });
+  }
+  
+  updateToggleUI(savedLang);
+  updateTranslations(savedLang);
+
+  toggles.forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const currentLang = document.documentElement.getAttribute('lang') || 'en';
+      const newLang = currentLang === 'en' ? 'es' : 'en';
+      
+      document.documentElement.setAttribute('lang', newLang);
+      localStorage.setItem(LANG_STORAGE_KEY, newLang);
+      updateToggleUI(newLang);
+      updateTranslations(newLang);
+    });
+  });
+</script>

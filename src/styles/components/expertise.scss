@@ -1,0 +1,192 @@
+@use '../variables' as *;
+
+.expertise {
+  position: relative;
+  z-index: $z-content;
+  min-height: 100vh;
+  padding: clamp(6rem, 14vh, 10rem) clamp(1.5rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  &__header {
+    margin-bottom: clamp(3rem, 6vh, 5rem);
+    text-align: center;
+  }
+
+  &__label {
+    display: block;
+    font-family: $font-mono;
+    font-size: clamp(0.6rem, 1vw, 0.75rem);
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: $color-accent;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-family: $font-sans;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: $color-text;
+  }
+
+  // ── Responsive CSS Grid — Bento Box Pattern ──
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: min-content;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ── Card: Glassmorphism dark card ──
+  &__column {
+    position: relative;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+    overflow: hidden;
+    padding: clamp(2rem, 3.5vw, 3rem);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    // Initial state — hidden for GSAP reveal
+    opacity: 0;
+    transform: translateY(40px);
+    will-change: transform, opacity;
+    transition: border-color 0.4s ease, background-color 0.4s ease;
+
+    // Hover micro-interaction — glassmorphism glow
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    &:hover .expertise__watermark {
+      color: rgba(249, 115, 22, 0.15);
+    }
+
+    &:hover .expertise__col-desc {
+      color: rgba(255, 255, 255, 0.62);
+    }
+
+    &:hover .expertise__col-title {
+      color: rgba(255, 255, 255, 0.95);
+    }
+  }
+
+  // ── Giant Watermark SVG ──
+  &__watermark {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    color: rgba(255, 255, 255, 0.04);
+    transition: color 0.4s ease;
+    will-change: transform;
+
+    svg {
+      width: 60%;
+      max-width: 180px;
+      max-height: 75%;
+      display: block;
+      flex-shrink: 0;
+    }
+  }
+
+  // ── Text content sits above watermark ──
+  &__content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  &__header-block {
+    margin-bottom: clamp(1rem, 2.5vh, 1.5rem);
+  }
+
+  &__index {
+    display: block;
+    font-family: $font-mono;
+    font-size: clamp(0.6rem, 0.9vw, 0.7rem);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: $color-text-faint;
+    margin-bottom: 0.4rem;
+  }
+
+  &__col-title {
+    font-family: $font-sans;
+    font-size: clamp(1.3rem, 2vw, 1.6rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: $color-text;
+    transition: color 0.35s ease;
+  }
+
+  &__col-desc {
+    font-family: $font-mono;
+    font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+    font-weight: 400;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    margin-bottom: clamp(1.5rem, 3vh, 2rem);
+    transition: color 0.35s ease;
+    flex-grow: 1;
+  }
+
+  &__comment-char {
+    color: rgba(255, 255, 255, 0.25);
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  &__techs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+  }
+
+  // ── Pill Tags — Brand-colored with dark bg ──
+  &__tech {
+    font-family: $font-mono;
+    font-size: clamp(0.65rem, 0.9vw, 0.78rem);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    // color and border-color are set via inline styles per tag
+    padding: 0.35em 0.8em;
+    border: 1px solid; // border-color from inline style
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.03);
+    transition:
+      border-color 0.35s ease,
+      color 0.35s ease,
+      background-color 0.35s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.07);
+    }
+  }
+}

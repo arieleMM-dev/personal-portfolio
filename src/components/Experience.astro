@@ -1,0 +1,210 @@
+---
+import '../styles/components/experience.scss';
+---
+
+<section class="experience" id="experience">
+  <div class="experience__header">
+    <span class="experience__label" data-i18n="experience.label">Career Path</span>
+    <h2 class="experience__title"><span data-i18n="experience.title">Experience</span><span class="dynamic-dot"></span></h2>
+  </div>
+
+  <div class="experience__list" id="experience-list">
+    <!-- Items are generated dynamically via JS for i18n -->
+  </div>
+</section>
+
+<script>
+  import { gsap } from 'gsap';
+  import { jobsData } from '../data/experience';
+
+  const ANIM_DURATION = 0.4;
+  const TRACKER_DURATION = 0.5;
+  const ANIM_EASE = 'power2.out';
+  const TRACKER_EASE = 'power3.out';
+  const MOBILE_BREAKPOINT = '(max-width: 767px)';
+  const DESKTOP_BREAKPOINT = '(min-width: 768px)';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const listContainer = document.getElementById('experience-list');
+    if (!listContainer) return;
+
+    let activeId: string | null = null;
+    let isMobile = window.innerWidth < 768;
+
+    function renderList() {
+      const lang = (document.documentElement.getAttribute('lang') || 'en') as 'es'|'en';
+      
+      listContainer.innerHTML = jobsData.map((job) => `
+        <article class="experience__item ${activeId === job.id ? 'is-hovered' : ''}" data-job-id="${job.id}">
+          <div class="experience__tracker" style="height: ${activeId === job.id ? '100%' : '0%'}"></div>
+          <div class="experience__item-header">
+            <h3 class="experience__item-title">${job.title[lang]}</h3>
+            <div class="experience__item-meta">
+              <span class="experience__company">${job.company}</span>
+              <span>|</span>
+              <span class="experience__item-date">${job.year[lang]}</span>
+            </div>
+          </div>
+          <div class="experience__item-body" style="height: ${activeId === job.id ? 'auto' : '0px'};">
+            <div class="experience__item-content">
+              <div class="experience__item-location">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                ${job.location}
+              </div>
+              <ul class="experience__bullets">
+                ${job.bullets[lang].map(b => `<li>${b}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      attachEvents();
+    }
+
+    function animateIn(item: HTMLElement) {
+      item.classList.add('is-hovered');
+      const tracker = item.querySelector('.experience__tracker');
+      const body = item.querySelector('.experience__item-body') as HTMLElement;
+      const content = item.querySelector('.experience__item-content') as HTMLElement;
+
+      gsap.to(tracker, {
+        height: '100%',
+        duration: TRACKER_DURATION,
+        ease: TRACKER_EASE
+      });
+
+      const targetHeight = content.offsetHeight;
+      gsap.to(body, {
+        height: targetHeight,
+        duration: ANIM_DURATION,
+        ease: ANIM_EASE,
+        onComplete: () => {
+          gsap.set(body, { height: 'auto' });
+        }
+      });
+    }
+
+    function animateOut(item: HTMLElement) {
+      item.classList.remove('is-hovered');
+      const tracker = item.querySelector('.experience__tracker');
+      const body = item.querySelector('.experience__item-body') as HTMLElement;
+
+      gsap.to(tracker, {
+        height: '0%',
+        duration: ANIM_DURATION,
+        ease: TRACKER_EASE
+      });
+
+      const currentHeight = body.offsetHeight;
+      gsap.set(body, { height: currentHeight });
+      gsap.to(body, {
+        height: 0,
+        duration: ANIM_DURATION,
+        ease: ANIM_EASE
+      });
+    }
+
+    function attachEvents() {
+      const items = listContainer?.querySelectorAll('.experience__item');
+      
+      let mm = gsap.matchMedia();
+
+      items?.forEach(item => {
+        const id = item.getAttribute('data-job-id');
+
+        mm.add(DESKTOP_BREAKPOINT, () => {
+          isMobile = false;
+          const onEnter = () => animateIn(item as HTMLElement);
+          const onLeave = () => animateOut(item as HTMLElement);
+          
+          item.addEventListener('mouseenter', onEnter);
+          item.addEventListener('mouseleave', onLeave);
+          
+          return () => {
+            item.removeEventListener('mouseenter', onEnter);
+            item.removeEventListener('mouseleave', onLeave);
+          };
+        });
+
+        mm.add(MOBILE_BREAKPOINT, () => {
+          isMobile = true;
+          const onClick = () => {
+            if (activeId === id) {
+              animateOut(item as HTMLElement);
+              activeId = null;
+            } else {
+              if (activeId) {
+                const prevItem = listContainer.querySelector(`[data-job-id="${activeId}"]`);
+                if (prevItem) animateOut(prevItem as HTMLElement);
+              }
+              animateIn(item as HTMLElement);
+              activeId = id;
+            }
+          };
+          
+          item.addEventListener('click', onClick);
+          
+          return () => {
+            item.removeEventListener('click', onClick);
+          };
+        });
+      });
+    }
+
+    // Initial render
+    renderList();
+
+    // Re-render efficiently on language switch
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'lang') {
+          // Store height states to avoid jumps during re-render
+          const items = listContainer?.querySelectorAll('.experience__item');
+          let states = new Map();
+          items?.forEach(item => {
+            const body = item.querySelector('.experience__item-body') as HTMLElement;
+            const tracker = item.querySelector('.experience__tracker') as HTMLElement;
+            const id = item.getAttribute('data-job-id');
+            const isHovered = item.classList.contains('is-hovered');
+            
+            states.set(id, {
+              height: body.style.height,
+              trackerHeight: tracker.style.height,
+              isHovered
+            });
+          });
+          
+          renderList();
+          
+          // Restore visual states
+          const newItems = listContainer?.querySelectorAll('.experience__item');
+          newItems?.forEach(item => {
+            const body = item.querySelector('.experience__item-body') as HTMLElement;
+            const tracker = item.querySelector('.experience__tracker') as HTMLElement;
+            const id = item.getAttribute('data-job-id');
+            
+            if (states.has(id)) {
+              const state = states.get(id);
+              body.style.height = state.height;
+              tracker.style.height = state.trackerHeight;
+              if (state.isHovered) {
+                item.classList.add('is-hovered');
+              } else {
+                item.classList.remove('is-hovered');
+              }
+            }
+          });
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['lang']
+    });
+  });
+</script>

@@ -1,0 +1,75 @@
+@use '../variables' as *;
+
+.scroll-tracker {
+  position: fixed;
+  left: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  pointer-events: none; // Allows clicks to pass through except for links
+  
+  @media (max-width: 768px) {
+    display: none; // Hidden on mobile
+  }
+
+  // Line wrapper and progress removed
+
+  &__nodes {
+    position: relative;
+    z-index: 2;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4rem; // Space between nodes
+  }
+
+  &__node-item {
+    position: relative;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    pointer-events: auto; // Reactivate clicks on links
+    cursor: pointer;
+    color: inherit;
+    padding: 0.5rem 0;
+
+    &.is-active {
+      .scroll-tracker__node {
+        background-color: var(--dynamic-glow-color, $color-accent-warm);
+        box-shadow: 0 0 10px var(--dynamic-glow-color, $color-accent-warm);
+        transform: scale(1.5);
+      }
+      .scroll-tracker__label {
+        opacity: 1;
+        transform: translateX(0);
+        color: var(--dynamic-glow-color, $color-accent-warm);
+        text-shadow: 0 0 8px var(--dynamic-glow-color, $color-accent-warm);
+      }
+    }
+  }
+
+  &__node {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  &__label {
+    font-family: $font-mono;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0;
+    transform: translateX(-10px);
+    pointer-events: none;
+    transition: all 0.4s ease-in-out;
+  }
+}
