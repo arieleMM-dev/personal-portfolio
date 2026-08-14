@@ -8,84 +8,122 @@ function getTagColor(tag: string): string {
 
 <section class="expertise" id="expertise" data-expertise>
   <div class="expertise__header" data-expertise-header>
-    <span class="expertise__label" data-i18n="expertise.label">What I Do</span>
+    <span class="expertise__label text-xl md:text-2xl font-bold tracking-[0.3em] uppercase font-heading" data-i18n="expertise.label">What I Do</span>
     <h2 class="expertise__title" data-expertise-title><span data-i18n="expertise.title">My Expertise</span><span class="dynamic-dot"></span></h2>
   </div>
 
-  <div class="expertise__grid" data-expertise-grid>
+  <div class="expertise__grid grid grid-cols-1 lg:grid-cols-3 gap-8" data-expertise-grid>
     {
       columns.map((col, i) => (
         <article
           class={`expertise__column ${col.className || ''}`}
           data-expertise-col
         >
-          {/* ── Watermark SVG ── */}
-          <div class="expertise__watermark" data-expertise-watermark aria-hidden="true">
-            {/* Backend / Languages: Terminal / Code brackets */}
-            {(i === 0) && (
-              <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <text x="50%" y="50%" dominant-baseline="central" text-anchor="middle"
-                  font-family="'JetBrains Mono', monospace" font-size="140" font-weight="700"
-                  fill="currentColor">
-                  {'< >'}
-                </text>
-              </svg>
-            )}
-            {/* DevOps & Tools: Infinity / Cycle loop */}
-            {(i === 1) && (
-              <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M60,100 C60,70 90,60 100,80 C110,100 140,70 140,100 C140,130 110,140 100,120 C90,100 60,130 60,100 Z"
-                  stroke="currentColor" stroke-width="4" fill="none"/>
-                <circle cx="60" cy="100" r="6" fill="currentColor" opacity="0.5"/>
-                <circle cx="140" cy="100" r="6" fill="currentColor" opacity="0.5"/>
-              </svg>
-            )}
-            {/* Methodologies: Nested hexagons */}
-            {(i === 2) && (
-              <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <polygon
-                  points="100,10 178,50 178,130 100,170 22,130 22,50"
-                  stroke="currentColor" stroke-width="4" fill="none"
-                />
-                <polygon
-                  points="100,35 155,60 155,120 100,145 45,120 45,60"
-                  stroke="currentColor" stroke-width="2.5" fill="none"
-                />
-                <polygon
-                  points="100,58 132,75 132,110 100,127 68,110 68,75"
-                  stroke="currentColor" stroke-width="1.5" fill="none"
-                />
-              </svg>
-            )}
-          </div>
 
-          {/* ── Content (above watermark) ── */}
-          <div class="expertise__content">
-            <div class="expertise__header-block">
+
+          <!-- Content -->
+          <div class="expertise__content flex flex-col h-full w-full">
+            <div class="expertise__header-block text-center mb-4">
               <span class="expertise__index">{col.index}</span>
               <h3 class="expertise__col-title"><span data-i18n={col.titleKey}></span><span class="dynamic-dot"></span></h3>
             </div>
             
-            <p class="expertise__col-desc">
+            <!-- TagCloud Container -->
+            <div 
+              class="expertise__tagcloud w-full flex items-center justify-center h-[300px]" 
+              data-tagcloud={JSON.stringify(col.techs)}
+              data-radius={i === 0 ? '220' : '160'}
+            >
+            </div>
+
+            <p class="expertise__col-desc text-center mt-6">
               <span class="expertise__comment-char">/* </span><span data-i18n={col.descKey}></span><span class="expertise__comment-char"> */</span>
             </p>
-
-            <ul class="expertise__techs">
-              {col.techs.map((tech) => {
-                const color = getTagColor(tech);
-                return (
-                  <li
-                    class="expertise__tech"
-                    style={`color: ${color}; border-color: ${color}33;`}
-                  >
-                    {tech}
-                  </li>
-                );
-              })}
-            </ul>
           </div>
         </article>
       ))
     }
   </div>
 </section>
+
+<!-- Include TagCloud.js -->
+<script src="https://cdn.jsdelivr.net/npm/TagCloud@2.2.0/dist/TagCloud.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const section = document.getElementById('expertise');
+    const containers = document.querySelectorAll('.expertise__tagcloud');
+    
+    // Ensure TagCloud is loaded from CDN
+    if (typeof (window as any).TagCloud === 'undefined') return;
+    
+    const clouds: any[] = [];
+
+    containers.forEach((el, index) => {
+      const techData = el.getAttribute('data-tagcloud');
+      const radiusAttr = el.getAttribute('data-radius');
+      
+      if (techData && radiusAttr) {
+        const texts = JSON.parse(techData);
+        // We make the radius responsive: smaller on mobile
+        const isMobile = window.innerWidth < 768;
+        const radius = isMobile ? Math.min(parseInt(radiusAttr, 10), 110) : parseInt(radiusAttr, 10);
+        
+        const containerId = `tagcloud-container-${index}`;
+        el.id = containerId;
+        
+        // Config: keep: false to pause on hover out
+        const tc = (window as any).TagCloud(`#${containerId}`, texts, {
+          radius: radius,
+          maxSpeed: 'fast',
+          initSpeed: 'normal',
+          direction: 135,
+          keep: false,
+          useContainerInlineStyles: true,
+        });
+
+        clouds.push({ el, tc });
+      }
+    });
+
+    // IntersectionObserver to pause animations when out of viewport
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            clouds.forEach(c => c.tc.resume && c.tc.resume());
+          } else {
+            clouds.forEach(c => c.tc.pause && c.tc.pause());
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      if (section) {
+        observer.observe(section);
+      }
+    }
+  });
+</script>
+
+<style is:global>
+  /* TagCloud styling */
+  .tagcloud {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin: 0 auto;
+  }
+  .tagcloud--item {
+    color: #888888;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  /* Hover or Front State */
+  .tagcloud--item:hover,
+  .tagcloud--item.tagcloud--item-front {
+    color: #ffffff;
+    opacity: 1;
+    text-shadow: 0 0 10px var(--color-accent, #F97316);
+  }
+</style>

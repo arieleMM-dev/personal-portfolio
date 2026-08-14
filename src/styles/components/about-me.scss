@@ -24,24 +24,23 @@
   }
 
   &__title {
-    font-family: $font-sans;
-    font-size: clamp(3rem, 6vw, 5rem);
-    line-height: 1.1;
-    font-weight: 700;
     color: #ffffff;
     margin: 0;
-    text-transform: uppercase;
-    letter-spacing: -0.02em;
   }
 
   &__text {
-    font-family: $font-sans;
-    font-size: clamp(1.1rem, 2vw, 1.35rem);
-    line-height: 1.6;
     color: #ffffff;
     margin: 0;
-    font-weight: 400;
     opacity: 0.6;
+
+    p {
+      display: block;
+      margin-bottom: 2rem;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
 
     span {
       opacity: 1;

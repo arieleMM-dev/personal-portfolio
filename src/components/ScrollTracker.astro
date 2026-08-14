@@ -2,7 +2,7 @@
 import { SITE } from '../data/site';
 ---
 
-<div class="scroll-tracker" data-scroll-tracker>
+<div class="scroll-tracker hidden md:block" data-scroll-tracker>
   <!-- Línea de progreso eliminada -->
   
   <ul class="scroll-tracker__nodes">
@@ -10,7 +10,7 @@ import { SITE } from '../data/site';
       <li class="scroll-tracker__node-item">
         <a href={section.href} class="scroll-tracker__link" data-scroll-tracker-link={section.href.replace('#', '')} aria-label={`Scroll to ${section.label}`}>
           <span class="scroll-tracker__node" aria-hidden="true"></span>
-          <span class="scroll-tracker__label" aria-hidden="true" data-i18n={`nav.${section.label.toLowerCase()}`}>{section.label}</span>
+          <span class="scroll-tracker__label text-lg font-heading" aria-hidden="true" data-i18n={`nav.${section.label.toLowerCase()}`}>{section.label}</span>
         </a>
       </li>
     ))}

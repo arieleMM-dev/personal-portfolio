@@ -9,8 +9,8 @@ function capitalize(str: string) {
 }
 ---
 
-<header class="header" data-header>
-  <a href="#home" class="header__brand" data-nav-link>{nameShort}</a>
+<header class="header px-4 sm:px-8 md:px-16 lg:px-24" data-header>
+  <a href="#home" class="header__brand text-3xl font-bold uppercase tracking-widest font-heading" data-nav-link>{nameShort}</a>
 
   <div class="header__actions">
     <nav aria-label="Principal">
@@ -18,7 +18,7 @@ function capitalize(str: string) {
         {
           nav.map((item) => (
             <li>
-              <a href={item.href} class="header__nav-link" data-nav-link data-i18n={`nav.${item.label.toLowerCase()}`}>
+              <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-i18n={`nav.${item.label.toLowerCase()}`}>
                 {capitalize(item.label)}
               </a>
             </li>
@@ -35,14 +35,14 @@ function capitalize(str: string) {
   </div>
 </header>
 
-<header class="header header--sticky" data-header-sticky aria-hidden="true">
+<header class="header header--sticky px-4 sm:px-8 md:px-16 lg:px-24" data-header-sticky aria-hidden="true">
   <div class="header__actions">
     <nav aria-label="Principal fijo">
       <ul class="header__nav">
         {
           nav.map((item) => (
             <li>
-              <a href={item.href} class="header__nav-link" data-nav-link data-i18n={`nav.${item.label.toLowerCase()}`}>
+              <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-i18n={`nav.${item.label.toLowerCase()}`}>
                 {capitalize(item.label)}
               </a>
             </li>

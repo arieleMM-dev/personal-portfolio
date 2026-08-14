@@ -2,7 +2,6 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollTo } from '../lenis';
 import { FluidBackground } from '../webgl/fluidBackground';
-import { initOrbitalDance } from './orbitalDance';
 import { initScrollTracker } from './scrollTracker';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -47,7 +46,6 @@ export function initHome() {
   const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
 
   let fluid: FluidBackground | null = null;
-  const orbital = initOrbitalDance();
   let mouseHandler: { destroy: () => void } | null = null;
 
   const colorEngine = initGlobalColorEngine((r, g, b) => {
@@ -229,12 +227,36 @@ export function initHome() {
 
   initScrollTracker();
 
+  const cursorTrail = document.getElementById('cursor-trail');
+  let cursorCleanup: (() => void) | undefined;
+  if (cursorTrail) {
+    gsap.set(cursorTrail, { opacity: 1 });
+    const trails = cursorTrail.querySelectorAll('.pointer-trail');
+    
+    if (trails.length) {
+      const onMouseMove = (e: MouseEvent) => {
+        gsap.to(trails, {
+          x: e.clientX,
+          y: e.clientY,
+          stagger: -0.05,
+          ease: 'power2.out',
+          duration: 0.3,
+          overwrite: 'auto'
+        });
+      };
+      window.addEventListener('mousemove', onMouseMove);
+      cursorCleanup = () => {
+        window.removeEventListener('mousemove', onMouseMove);
+      };
+    }
+  }
+
   return () => {
     ctx.revert(); // Cleans up all GSAP timelines and ScrollTriggers created in this context
     fluid?.destroy();
     mouseHandler?.destroy();
     colorEngine.destroy();
-    if (orbital) orbital.destroy();
+    if (cursorCleanup) cursorCleanup();
   };
 }
 

@@ -4,7 +4,7 @@
   position: relative;
   z-index: $z-content;
   min-height: 100vh;
-  padding: clamp(6rem, 14vh, 10rem) clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(6rem, 14vh, 10rem) 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -16,11 +16,6 @@
 
   &__label {
     display: block;
-    font-family: $font-mono;
-    font-size: clamp(0.6rem, 1vw, 0.75rem);
-    font-weight: 400;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
     color: $color-accent;
     margin-bottom: 1rem;
   }

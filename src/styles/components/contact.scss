@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(6rem, 14vh, 10rem) clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(6rem, 14vh, 10rem) 0;
 
   &__inner {
     text-align: center;
@@ -19,13 +19,7 @@
 
   &__label {
     display: block;
-    font-family: $font-mono;
-    font-size: clamp(0.6rem, 1vw, 0.75rem);
-    font-weight: 400;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
     color: $color-accent;
-    margin-bottom: 1.25rem;
   }
 
   &__title {
@@ -35,7 +29,6 @@
     line-height: 1.05;
     letter-spacing: -0.03em;
     color: $color-text;
-    margin-bottom: clamp(3rem, 6vh, 4.5rem);
   }
 
   // ── CTA Button ──
@@ -49,7 +42,6 @@
     color: $color-text;
     padding: clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem);
     border-radius: 100px;
-    margin-bottom: clamp(3rem, 6vh, 5rem);
     text-decoration: none;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     backdrop-filter: blur(10px);
@@ -86,6 +78,7 @@
     display: flex;
     justify-content: center;
     gap: clamp(2rem, 4vw, 3.5rem);
+    margin-top: clamp(4rem, 8vh, 6rem);
     margin-bottom: clamp(4rem, 8vh, 6rem);
     flex-wrap: wrap;
   }

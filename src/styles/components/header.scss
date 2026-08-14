@@ -9,7 +9,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.25rem, 3vw, 2rem) 0;
   opacity: 0;
   visibility: hidden;
 
@@ -18,11 +18,7 @@
   }
 
   &__brand {
-    font-family: $font-mono;
-    font-size: clamp(0.8rem, 1.2vw, 0.95rem);
-    font-weight: 400;
     color: var(--dynamic-glow-color, $color-accent);
-    letter-spacing: -0.02em;
     transition: opacity 0.3s ease;
 
     &:hover {
@@ -32,15 +28,22 @@
 
   &__nav {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    justify-content: flex-start;
+    @media (min-width: 1024px) {
+      justify-content: flex-end;
+    }
     gap: clamp(0.75rem, 2vw, 1.75rem);
     list-style: none;
   }
 
   &__nav-link {
-    font-family: $font-mono;
-    font-size: clamp(0.65rem, 1vw, 0.8rem);
     color: rgba(255, 255, 255, 0.7);
     letter-spacing: 0.04em;
     text-transform: capitalize;
@@ -114,7 +117,7 @@
     right: 0;
     z-index: $z-header-sticky;
     justify-content: flex-end;
-    padding: 1rem clamp(1.5rem, 4vw, 3rem);
+    padding: 1rem 0;
     background: rgba(10, 10, 10, 0.82);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
