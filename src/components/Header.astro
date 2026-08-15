@@ -12,51 +12,47 @@ function capitalize(str: string) {
 <header class="header px-4 sm:px-8 md:px-16 lg:px-24" data-header>
   <a href="#home" class="header__brand text-3xl font-bold uppercase tracking-widest font-heading" data-nav-link>{nameShort}</a>
 
-  <div class="header__actions">
-    <nav aria-label="Principal">
-      <ul class="header__nav">
-        {
-          nav.map((item) => (
-            <li>
-              <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-i18n={`nav.${item.label.toLowerCase()}`}>
-                {capitalize(item.label)}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
+  <nav aria-label="Principal" class="header__nav-wrapper">
+    <ul class="header__nav">
+      {
+        nav.map((item) => (
+          <li>
+            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link>
+              <span class="nav-text" data-i18n={`nav.${item.label.toLowerCase()}`}>{capitalize(item.label)}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
 
-    <button class="header__lang-toggle" data-lang-toggle aria-label="Toggle language">
-      <span class="header__lang-text is-active" data-lang="en">EN</span>
-      <span class="header__lang-sep">|</span>
-      <span class="header__lang-text" data-lang="es">ES</span>
-    </button>
-  </div>
+  <button class="header__lang-toggle" data-lang-toggle aria-label="Toggle language">
+    <span class="header__lang-text is-active" data-lang="en">EN</span>
+    <span class="header__lang-sep">|</span>
+    <span class="header__lang-text" data-lang="es">ES</span>
+  </button>
 </header>
 
 <header class="header header--sticky px-4 sm:px-8 md:px-16 lg:px-24" data-header-sticky aria-hidden="true">
-  <div class="header__actions">
-    <nav aria-label="Principal fijo">
-      <ul class="header__nav">
-        {
-          nav.map((item) => (
-            <li>
-              <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-i18n={`nav.${item.label.toLowerCase()}`}>
-                {capitalize(item.label)}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
+  <nav aria-label="Principal fijo" class="header__nav-wrapper">
+    <ul class="header__nav">
+      {
+        nav.map((item) => (
+          <li>
+            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link>
+              <span class="nav-text" data-i18n={`nav.${item.label.toLowerCase()}`}>{capitalize(item.label)}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
 
-    <button class="header__lang-toggle" data-lang-toggle aria-label="Toggle language">
-      <span class="header__lang-text is-active" data-lang="en">EN</span>
-      <span class="header__lang-sep">|</span>
-      <span class="header__lang-text" data-lang="es">ES</span>
-    </button>
-  </div>
+  <button class="header__lang-toggle" data-lang-toggle aria-label="Toggle language">
+    <span class="header__lang-text is-active" data-lang="en">EN</span>
+    <span class="header__lang-sep">|</span>
+    <span class="header__lang-text" data-lang="es">ES</span>
+  </button>
 </header>
 
 <script>

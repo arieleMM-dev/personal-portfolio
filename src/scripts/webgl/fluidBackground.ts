@@ -91,7 +91,7 @@ const FRAG = /* glsl */ `
     vec2 distortedUV = uv + distortion;
 
     vec2 p = distortedUV * 2.5;
-    float t = uTime * 0.12;
+    float t = uTime * 0.144;
 
     // ── Mouse influence: deform noise field near cursor ──
     vec2 mouseUV = uMouse;

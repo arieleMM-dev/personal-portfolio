@@ -381,7 +381,7 @@ function initExpertiseAnimation() {
       trigger: section,
       start: 'top top',
       // Generous scroll space for 5 cards
-      end: () => `+=${window.innerHeight * 1.8}`,
+      end: () => `+=${window.innerHeight * 1.44}`,
       pin: true,
       scrub: 1,
       anticipatePin: 1,
