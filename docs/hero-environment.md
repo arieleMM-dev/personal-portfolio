@@ -23,6 +23,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 - `src/scripts/webgl/heroScene.ts`: carga de normales, cámara, postprocesado,
   tamaños, bucle y ciclo de vida.
+- `src/scripts/webgl/hero/cameraRig.ts`: encuadre y respuesta amortiguada al ratón.
 - `src/scripts/webgl/hero/environment.ts`: Water, luz, cielo, horizonte abierto
   y entorno PMREM para las superficies de cristal.
 - `src/scripts/webgl/hero/microservices.ts`: cuatro placas, circuitos luminosos
@@ -56,10 +57,21 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 ## Movimiento, rendimiento y limpieza
 
-La cámara panea y cambia la inclinación con `mousemove` y damping independiente
-del frame rate. Su altura base es 0.85, con desplazamiento lateral de ±1.9 y
-vertical de ±0.45 unidades, sin atravesar el agua. Mira ligeramente hacia arriba.
-El grupo está en Z=-2, escala 1.28 en escritorio y ajuste por aspecto en móvil;
+La cámara combina desplazamiento e inclinación con `mousemove`: ratón arriba,
+pitch -1° y ojo Y=1.45; ratón abajo, pitch +11° y ojo Y=0.65. El horizonte
+pasa aproximadamente del 48% al 75% de altura en escritorio. Se conserva la
+distancia al objeto para evitar un efecto de zoom. No se usa `lookAt` para
+recentrar las placas: el cambio de encuadre debe ser visible, igual que en las
+referencias. La posición central se recupera suavemente al salir del Hero.
+
+Un muelle críticamente amortiguado (ω=3.2) tarda alrededor de 1.5s en completar
+el 95% del recorrido, con velocidad continua y sin rebotes ante una entrada
+constante. Su solución es independiente del frame rate. El movimiento lateral
+combina ±1.6 unidades y ±4.5° de yaw, limitado según el aspecto en retrato.
+La cámara permanece siempre por encima del agua.
+
+El grupo está en Z=-2, escala 0.94 en escritorio (antes 1.28: un 27% más compacto
+en los tres ejes) y ajuste por aspecto en móvil;
 rota a 0.045 rad/s y flota con seno. Se limita el DPR
 y el total de píxeles; la reflexión usa 512px en móvil y 1024px en escritorio.
 
@@ -88,12 +100,16 @@ altura mínima de 44px y foco visible. La navegación fija sincroniza `inert` y
 
 ```sh
 npx tsc --noEmit -p tsconfig.json
+node --experimental-strip-types --test tests/hero-camera.test.mjs
 npm run build
 ```
 
 Astro build transpila TypeScript, pero no sustituye la comprobación de tipos.
 El `tsc` anterior valida los módulos TypeScript; no hace una auditoría completa
 de las plantillas `.astro`.
+Las pruebas de cámara comprueban el recorrido vertical, amortiguación a
+30/60/144 FPS, movimiento reducido y encuadre en las cuatro esquinas del ratón
+con cinco relaciones de aspecto y una vuelta completa de las placas.
 
 ## Referencias
 

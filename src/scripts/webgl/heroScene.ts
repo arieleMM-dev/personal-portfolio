@@ -6,6 +6,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createHeroEnvironment } from './hero/environment';
 import { createMicroservices } from './hero/microservices';
 import { createDataParticles } from './hero/particles';
+import { createHeroCameraRig, getHeroCrystalScale } from './hero/cameraRig';
 
 export interface HeroSceneController {
   destroy(): void;
@@ -43,6 +44,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   scene.fog = new THREE.FogExp2(0x040d20, 0.028);
   const focusZ = -2;
   const camera = new THREE.PerspectiveCamera(43, 1, 0.1, 650);
+  const cameraRig = createHeroCameraRig(camera);
   const environment = createHeroEnvironment(scene, renderer, normals, focusZ);
   const services = createMicroservices();
   services.position.set(0, 3.65, focusZ);
@@ -66,7 +68,6 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
 
   const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
   const pointer = new THREE.Vector2();
-  const easedPointer = new THREE.Vector2();
   let elapsed = 0;
   let lastTimestamp: number | null = null;
   let rafId = 0;
@@ -79,14 +80,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   function updateScene(delta: number): void {
     const reduced = motionPreference.matches;
     if (!reduced) elapsed += delta;
-    if (reduced) easedPointer.set(0, 0);
-    else easedPointer.lerp(pointer, 1 - Math.exp(-3.5 * delta));
-    // Eye stays 0.4–1.3 units above the ocean, looking slightly upward.
-    // Wider camera travel supplies real perspective instead of moving the DOM.
-    camera.position.set(easedPointer.x * 1.9, 0.85 - easedPointer.y * 0.45, mobile ? 22 : 18);
-    camera.lookAt(-easedPointer.x * 0.3, 1.25 - easedPointer.y * 0.18, focusZ);
-    // lookAt overwrites rotation, so roll must be applied afterwards.
-    camera.rotateZ(-easedPointer.x * 0.014);
+    cameraRig.update(delta, pointer, reduced, mobile);
     services.rotation.y = -0.26 + elapsed * 0.045;
     services.position.y = 3.65 + Math.sin(elapsed * 0.52) * 0.12;
     environment.update(elapsed);
@@ -133,8 +127,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     camera.fov = mobile ? 55 : 43;
     camera.updateProjectionMatrix();
     // Keep the full diagonal visible even on narrow portrait screens.
-    const portraitScale = Math.min(1.12, camera.aspect * 2.35);
-    services.scale.setScalar(mobile ? portraitScale : 1.28);
+    services.scale.setScalar(getHeroCrystalScale(camera.aspect, mobile));
     particles.setPixelRatio(dpr);
     environment.resize(mobile ? 512 : 1024);
     needsFrame = true;
@@ -142,8 +135,13 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   }
 
   function onMouseMove(event: MouseEvent): void {
-    if (motionPreference.matches) return;
+    if (motionPreference.matches || !visible) return;
     const bounds = canvas.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right ||
+        event.clientY < bounds.top || event.clientY > bounds.bottom) {
+      resetPointer();
+      return;
+    }
     pointer.set(
       THREE.MathUtils.clamp((event.clientX - bounds.left) / bounds.width * 2 - 1, -1, 1),
       THREE.MathUtils.clamp((event.clientY - bounds.top) / bounds.height * 2 - 1, -1, 1),
