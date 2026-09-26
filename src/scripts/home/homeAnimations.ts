@@ -3,6 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollTo } from '../lenis';
 import type { HeroSceneController } from '../webgl/heroScene';
 import { initScrollTracker } from './scrollTracker';
+import { initHeroScrollCue } from './heroScrollCue';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -39,12 +40,11 @@ export function initHome() {
   const headerSticky = document.querySelector<HTMLElement>('[data-header-sticky]');
   const heroTitle = document.querySelector<HTMLElement>('[data-hero-title]');
   const heroSubtitle = document.querySelector<HTMLElement>('[data-hero-subtitle]');
-  const heroContent = document.querySelector<HTMLElement>('[data-hero-content]');
   const heroDot = document.querySelector<HTMLElement>('[data-hero-dot]');
   const letters = document.querySelectorAll<HTMLElement>('[data-hero-letter]');
   const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
 
-  let mouseHandler: { destroy: () => void } | null = null;
+  const destroyScrollCue = initHeroScrollCue();
 
   let heroScene: HeroSceneController | null = null;
   let disposed = false;
@@ -140,20 +140,29 @@ export function initHome() {
         start: `bottom top+=${CONFIG.stickyHeader.offset}`,
         end: 'bottom top',
         onEnter: () => {
+          headerSticky.inert = false;
+          headerSticky.setAttribute('aria-hidden', 'false');
           gsap.to(headerSticky, {
             autoAlpha: 1,
             y: 0,
             duration: CONFIG.stickyHeader.enterDuration,
             ease: 'power2.out',
+            overwrite: true,
           });
           headerSticky.classList.add('is-active');
         },
         onLeaveBack: () => {
+          if (headerSticky.contains(document.activeElement)) {
+            header?.querySelector<HTMLElement>('[data-nav-link]')?.focus({ preventScroll: true });
+          }
+          headerSticky.inert = true;
+          headerSticky.setAttribute('aria-hidden', 'true');
           gsap.to(headerSticky, {
             autoAlpha: 0,
             y: -12,
             duration: CONFIG.stickyHeader.leaveDuration,
             ease: 'power2.in',
+            overwrite: true,
             onComplete: () => headerSticky.classList.remove('is-active'),
           });
         },
@@ -189,9 +198,6 @@ export function initHome() {
         scrollTo(target, { duration: 2 });
       });
     });
-
-    // ── Subtle DOM parallax; the Three.js camera handles scene depth ────
-    mouseHandler = initMouseParallax(heroContent);
 
     // ── About: Text Reveal ──────────────────────────────────────────────
     initAboutAnimation();
@@ -238,51 +244,9 @@ export function initHome() {
     disposed = true;
     ctx.revert(); // Cleans up all GSAP timelines and ScrollTriggers created in this context
     heroScene?.destroy();
-    mouseHandler?.destroy();
+    destroyScrollCue();
     colorEngine.destroy();
     if (cursorCleanup) cursorCleanup();
-  };
-}
-
-/**
- * Subtle mouse-reactive parallax for the DOM title.
- */
-function initMouseParallax(heroContent: HTMLElement | null) {
-  if (!heroContent) return null;
-
-  // Normalised mouse coords: -1 to 1 from center
-  const mouse = { x: 0, y: 0 };
-  const lerped = { x: 0, y: 0 };
-  let rafId = 0;
-
-  const onMove = (e: MouseEvent) => {
-    mouse.x = (e.clientX / window.innerWidth - 0.5) * 2;
-    mouse.y = (e.clientY / window.innerHeight - 0.5) * 2;
-  };
-
-  const tick = () => {
-    // Smooth lerp toward target
-    lerped.x += (mouse.x - lerped.x) * 0.06;
-    lerped.y += (mouse.y - lerped.y) * 0.06;
-
-    if (heroContent) {
-      gsap.set(heroContent, {
-        x: lerped.x * -8,
-        y: lerped.y * -8,
-      });
-    }
-
-    rafId = requestAnimationFrame(tick);
-  };
-
-  window.addEventListener('mousemove', onMove);
-  rafId = requestAnimationFrame(tick);
-
-  return {
-    destroy() {
-      window.removeEventListener('mousemove', onMove);
-      cancelAnimationFrame(rafId);
-    },
   };
 }
 

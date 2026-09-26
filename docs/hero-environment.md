@@ -1,4 +1,4 @@
-# Fondo del Hero: canal de agua azul
+# Fondo del Hero: océano azul abierto
 
 La implementación utiliza Astro con scripts de cliente TypeScript. El nombre,
 subtítulo, traducciones y navegación continúan en el DOM. El canvas está dentro
@@ -23,19 +23,21 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 - `src/scripts/webgl/heroScene.ts`: carga de normales, cámara, postprocesado,
   tamaños, bucle y ciclo de vida.
-- `src/scripts/webgl/hero/environment.ts`: Water, montañas, luz, cielo, niebla
+- `src/scripts/webgl/hero/environment.ts`: Water, luz, cielo, horizonte abierto
   y entorno PMREM para las superficies de cristal.
-- `src/scripts/webgl/hero/microservices.ts`: tres placas, circuitos luminosos
+- `src/scripts/webgl/hero/microservices.ts`: cuatro placas, circuitos luminosos
   y PointLight central cian.
 - `src/scripts/webgl/hero/particles.ts`: Points animados en GPU sobre el agua.
+- `src/scripts/home/heroScrollCue.ts`: aviso bilingüe con fade-out por scroll
+  nativo a partir de 4px y limpieza de listeners; reaparece al volver al inicio.
 - `public/assets/hero/waternormals.jpg`: textura local; no se solicita a un CDN
   durante la visita.
 
 ## Cómo se construye la imagen
 
 1. El cielo tiene un gradiente azul nocturno y una aureola detrás del objeto.
-   `FogExp2` mezcla las montañas lejanas con ese horizonte. Dos cordilleras por
-   lado se generan con geometría deformada y ruido de varias escalas.
+   `FogExp2(0x040d20, 0.028)` desvanece el océano de 1200 × 1200 unidades.
+   No hay montañas ni geometrías laterales; el cielo comparte el color de niebla.
 2. Las placas usan `MeshPhysicalMaterial`, transmisión 0.94, rugosidad 0.07,
    IOR 1.46 y grosor óptico 0.6. La transparencia se obtiene mediante transmisión
    física; `opacity` permanece en 1 para conservar reflejos y evitar problemas
@@ -55,7 +57,10 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 ## Movimiento, rendimiento y limpieza
 
 La cámara panea y cambia la inclinación con `mousemove` y damping independiente
-del frame rate. Las placas rotan lentamente y flotan con seno. Se limita el DPR
+del frame rate. Su altura base es 0.85, con desplazamiento lateral de ±1.9 y
+vertical de ±0.45 unidades, sin atravesar el agua. Mira ligeramente hacia arriba.
+El grupo está en Z=-2, escala 1.28 en escritorio y ajuste por aspecto en móvil;
+rota a 0.045 rad/s y flota con seno. Se limita el DPR
 y el total de píxeles; la reflexión usa 512px en móvil y 1024px en escritorio.
 
 Se pausa al salir del Hero o al ocultar la pestaña. Con movimiento reducido se
@@ -65,6 +70,19 @@ composer. `destroy()` cancela RAF, desconecta observers/listeners y libera
 geometrías, materiales, textura normal, PMREM, reflexión y pases de postprocesado.
 El módulo se importa dinámicamente sin bloquear la entrada de los textos; si
 WebGL o la textura fallan, se conserva el fondo CSS y la UI sigue disponible.
+
+## Interfaz
+
+El título usa `clamp(2rem, 4.2vw, 4.5rem)` y queda en la zona inferior, sin
+parallax DOM, para despejar las placas. Una viñeta oscurece suavemente la zona
+del texto sobre los reflejos. El aviso está en `bottom: 5%`; respeta movimiento
+reducido. La marca, viñeta y etiqueta lateral usan un color estático
+`rgba(213, 224, 255, 0.85)`, independiente del ciclo de color global.
+
+La navegación se alinea a la derecha junto al idioma; en móvil ocupa una fila
+propia (rejilla de tres columnas en pantallas pequeñas). Los controles tienen
+altura mínima de 44px y foco visible. La navegación fija sincroniza `inert` y
+`aria-hidden` con su visibilidad.
 
 ## Verificación
 
@@ -82,6 +100,6 @@ de las plantillas `.astro`.
 - https://threejs.org/docs/pages/Water.html
 - https://threejs.org/docs/pages/UnrealBloomPass.html
 - https://threejs.org/docs/pages/MeshPhysicalMaterial.html
-- La imagen proporcionada dirige composición y luz. Las montañas, materiales y
-  cámara se reconstruyen proceduralmente: no son los assets originales de la
+- La imagen proporcionada dirige luz y materiales. El océano abierto sustituye
+  las montañas según la última iteración. No son los assets originales de la
   referencia ni una garantía de equivalencia píxel a píxel.

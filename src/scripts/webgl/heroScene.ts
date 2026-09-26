@@ -40,19 +40,25 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   renderer.transmissionResolutionScale = 0.65;
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x071b3d, 0.021);
-  const camera = new THREE.PerspectiveCamera(43, 1, 0.1, 180);
-  const environment = createHeroEnvironment(scene, renderer, normals);
+  scene.fog = new THREE.FogExp2(0x040d20, 0.028);
+  const focusZ = -2;
+  const camera = new THREE.PerspectiveCamera(43, 1, 0.1, 650);
+  const environment = createHeroEnvironment(scene, renderer, normals, focusZ);
   const services = createMicroservices();
-  services.position.set(0, 4.25, -7);
+  services.position.set(0, 3.65, focusZ);
   scene.add(services);
   const particles = createDataParticles();
   scene.add(particles.points);
 
   // Half-float HDR retains emissive radiance above 1 until bloom and OutputPass.
-  const composer = new EffectComposer(renderer);
+  // Multisample the HDR scene so the thin glass outlines remain stable in motion.
+  const sceneTarget = new THREE.WebGLRenderTarget(1, 1, {
+    type: THREE.HalfFloatType,
+    samples: Math.min(4, renderer.capabilities.maxSamples),
+  });
+  const composer = new EffectComposer(renderer, sceneTarget);
   const renderPass = new RenderPass(scene, camera);
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.95, 0.80, 0.85);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.72, 0.65, 1.0);
   const output = new OutputPass();
   composer.addPass(renderPass);
   composer.addPass(bloom);
@@ -75,12 +81,14 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     if (!reduced) elapsed += delta;
     if (reduced) easedPointer.set(0, 0);
     else easedPointer.lerp(pointer, 1 - Math.exp(-3.5 * delta));
-    camera.position.set(easedPointer.x * 0.62, 2.7 - easedPointer.y * 0.26, mobile ? 21 : 18);
-    camera.lookAt(easedPointer.x * 0.18, 1.45 - easedPointer.y * 0.10, -7);
+    // Eye stays 0.4–1.3 units above the ocean, looking slightly upward.
+    // Wider camera travel supplies real perspective instead of moving the DOM.
+    camera.position.set(easedPointer.x * 1.9, 0.85 - easedPointer.y * 0.45, mobile ? 22 : 18);
+    camera.lookAt(-easedPointer.x * 0.3, 1.25 - easedPointer.y * 0.18, focusZ);
     // lookAt overwrites rotation, so roll must be applied afterwards.
-    camera.rotateZ(-easedPointer.x * 0.009);
-    services.rotation.y = -0.26 + elapsed * 0.028;
-    services.position.y = 4.25 + Math.sin(elapsed * 0.52) * 0.10;
+    camera.rotateZ(-easedPointer.x * 0.014);
+    services.rotation.y = -0.26 + elapsed * 0.045;
+    services.position.y = 3.65 + Math.sin(elapsed * 0.52) * 0.12;
     environment.update(elapsed);
     particles.update(elapsed);
   }
@@ -122,9 +130,11 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     composer.setPixelRatio(dpr);
     composer.setSize(width, height);
     camera.aspect = width / height;
-    camera.fov = mobile ? 51 : 43;
+    camera.fov = mobile ? 55 : 43;
     camera.updateProjectionMatrix();
-    services.scale.setScalar(mobile ? 0.76 : 1);
+    // Keep the full diagonal visible even on narrow portrait screens.
+    const portraitScale = Math.min(1.12, camera.aspect * 2.35);
+    services.scale.setScalar(mobile ? portraitScale : 1.28);
     particles.setPixelRatio(dpr);
     environment.resize(mobile ? 512 : 1024);
     needsFrame = true;

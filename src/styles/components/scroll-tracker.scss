@@ -41,15 +41,14 @@
 
     &.is-active {
       .scroll-tracker__node {
-        background-color: var(--dynamic-glow-color, $color-accent-warm);
-        box-shadow: 0 0 10px var(--dynamic-glow-color, $color-accent-warm);
+        background-color: rgba(213, 224, 255, 0.85);
+        box-shadow: 0 0 10px rgba(213, 224, 255, 0.15);
         transform: scale(1.5);
       }
       .scroll-tracker__label {
         opacity: 1;
         transform: translateX(0);
-        color: var(--dynamic-glow-color, $color-accent-warm);
-        text-shadow: 0 0 8px var(--dynamic-glow-color, $color-accent-warm);
+        color: rgba(213, 224, 255, 0.85);
       }
     }
   }

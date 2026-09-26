@@ -11,7 +11,7 @@ const letters = nameHero.split('');
     <div class="hero__vignette"></div>
   </div>
   <div class="hero__content" data-hero-content>
-    <h1 class="hero__title text-5xl md:text-7xl lg:text-[9vw] font-black leading-none font-heading uppercase" data-hero-title aria-label={nameHero}>
+    <h1 class="hero__title font-black leading-none font-heading uppercase" data-hero-title aria-label={nameHero}>
       {
         letters.map((letter) => (
           <span class="hero__letter" data-hero-letter>
@@ -25,4 +25,10 @@ const letters = nameHero.split('');
       <span class="hero__dot" data-hero-dot aria-hidden="true">&bull;</span>
     </p>
   </div>
+  <p class="hero__scroll-cue" data-hero-scroll-cue>
+    <svg width="12" height="18" viewBox="0 0 12 18" fill="none" aria-hidden="true">
+      <path d="M6 1v14m-4-4 4 4 4-4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <span><span lang="en">Scroll to explore</span><span aria-hidden="true"> | </span><span lang="es">Desliza para explorar</span></span>
+  </p>
 </section>

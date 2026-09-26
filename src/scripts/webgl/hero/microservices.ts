@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
-/** Three optical-glass blades with luminous internal circuitry. */
+/** Four optical-glass blades with luminous internal circuitry. */
 export function createMicroservices(): THREE.Group {
   const stack = new THREE.Group();
-  stack.name = 'microservices-three-glass-blades';
+  stack.name = 'microservices-four-glass-blades';
   const geometry = new THREE.BoxGeometry(6.8, 0.34, 3.8);
   const glass = new THREE.MeshPhysicalMaterial({
     color: 0x77dcff,
@@ -19,23 +19,27 @@ export function createMicroservices(): THREE.Group {
     clearcoatRoughness: 0.05,
     envMapIntensity: 1.15,
     emissive: 0x007ad9,
-    emissiveIntensity: 0.9,
+    emissiveIntensity: 0.7,
   });
   const edgeGeometry = new THREE.EdgesGeometry(geometry);
   const edgeMaterial = new THREE.LineBasicMaterial({ color: new THREE.Color(0x19bfff).multiplyScalar(2.8) });
   const circuitMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x00baff).multiplyScalar(2.8) });
-  const coreMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x00bcff).multiplyScalar(3.0) });
+  const coreMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x00bcff).multiplyScalar(2.3) });
   const coreGeometry = new THREE.BoxGeometry(6.42, 0.018, 3.42);
   const railGeometry = new THREE.BoxGeometry(6.45, 0.025, 0.035);
   const chipGeometry = new THREE.BoxGeometry(0.55, 0.014, 0.42);
   const traceGeometry = new THREE.BoxGeometry(0.025, 0.012, 1.8);
 
-  for (let layer = 0; layer < 3; layer++) {
+  for (let layer = 0; layer < 4; layer++) {
     const blade = new THREE.Group();
-    blade.position.y = (layer - 1) * 1.24;
-    blade.rotation.y = (layer - 1) * 0.025;
+    blade.name = `glass-blade-${layer + 1}`;
+    blade.position.y = (layer - 1.5) * 1.12;
+    blade.rotation.y = (layer - 1.5) * 0.025;
     blade.add(new THREE.Mesh(geometry, glass));
-    blade.add(new THREE.LineSegments(edgeGeometry, edgeMaterial));
+    const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+    // Lift the outline off the glass to avoid coplanar flicker while rotating.
+    edges.scale.setScalar(1.003);
+    blade.add(edges);
     // A real luminous surface for Water's mirrored camera to reflect.
     blade.add(new THREE.Mesh(coreGeometry, coreMaterial));
     for (const z of [-1.88, 1.88]) {
@@ -53,7 +57,7 @@ export function createMicroservices(): THREE.Group {
     }
     stack.add(blade);
   }
-  const coreLight = new THREE.PointLight(0x00c8ff, 145, 34, 2);
+  const coreLight = new THREE.PointLight(0x00c8ff, 30, 34, 2);
   stack.add(coreLight);
   return stack;
 }

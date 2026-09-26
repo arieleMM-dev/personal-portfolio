@@ -5,12 +5,12 @@
   z-index: $z-content;
   isolation: isolate;
   overflow: hidden;
-  min-height: 100vh;
+  min-height: max(38rem, 100svh);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: clamp(6rem, 18vh, 10rem) 0 clamp(4rem, 10vh, 6rem) 0;
+  justify-content: flex-end;
+  padding: 0 1.25rem clamp(8rem, 20svh, 14rem);
   text-align: center;
 
   // The entire environment stays behind the existing UI stacking context.
@@ -42,19 +42,21 @@
     z-index: 0;
     pointer-events: none;
     background:
+      radial-gradient(ellipse at 50% 76%, rgba(2, 5, 16, 0.52), transparent 48%),
       radial-gradient(ellipse at 50% 42%, transparent 30%, rgba(2, 5, 16, 0.14) 70%, rgba(2, 5, 16, 0.40) 100%),
       linear-gradient(180deg, rgba(2, 5, 16, 0.16), transparent 30%, transparent 80%, #0a0a0a);
   }
 
   &__content {
-    will-change: transform;
     position: relative;
     z-index: 10;
+    text-shadow: 0 2px 24px rgba(1, 5, 16, 0.8);
   }
 
   @media (max-width: 767px) {
     &__vignette {
       background:
+        radial-gradient(ellipse at 50% 76%, rgba(2, 5, 16, 0.6), transparent 48%),
         radial-gradient(ellipse at 50% 42%, transparent 25%, rgba(2, 5, 16, 0.35) 100%),
         linear-gradient(180deg, rgba(2, 5, 16, 0.18), transparent 40%, transparent 80%, #0a0a0a);
     }
@@ -64,8 +66,10 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0.02em;
-    max-width: 14ch;
+    gap: 0.035em;
+    font-size: clamp(2rem, 4.2vw, 4.5rem);
+    line-height: 1.05;
+    color: #eef3ff;
   }
 
   &__letter {
@@ -76,7 +80,7 @@
 
   // ── Subtitle: Monospaced, wide tracking ──
   &__subtitle {
-    margin-top: clamp(1.25rem, 3vh, 2rem);
+    margin-top: clamp(0.75rem, 2vh, 1.25rem);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -86,20 +90,52 @@
   }
 
   &__subtitle-text {
-    color: $color-text-muted;
+    color: rgba(213, 224, 255, 0.85);
+    font-size: clamp(0.625rem, 0.9vw, 0.875rem);
+    letter-spacing: 0.24em;
   }
 
-  // ── Orange Accent Dot ──
+  // Quiet, static accent: the moving light belongs to the WebGL layer.
   &__dot {
     font-size: clamp(1rem, 2vw, 1.4rem);
-    color: var(--dynamic-glow-color, $color-accent-warm);
+    color: rgba(213, 224, 255, 0.85);
     opacity: 0;
     transform: scale(0);
     will-change: transform, opacity;
-    // Luminous glow layers
-    text-shadow:
-      0 0 6px var(--dynamic-glow-color, $color-accent-warm),
-      0 0 18px var(--dynamic-glow-color, $color-accent-warm),
-      0 0 40px var(--dynamic-glow-color, $color-accent-warm);
+    text-shadow: 0 0 12px rgba(137, 186, 255, 0.3);
+  }
+
+  &__scroll-cue {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: max-content;
+    max-width: calc(100% - 2.5rem);
+    color: rgba(213, 224, 255, 0.85);
+    font-family: $font-mono;
+    font-size: clamp(0.5625rem, 0.7vw, 0.6875rem);
+    letter-spacing: 0.025em;
+    line-height: 1.6;
+    text-shadow: 0 1px 12px #020510;
+    pointer-events: none;
+    transform: translateX(-50%);
+    transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s;
+
+    svg { flex-shrink: 0; }
+
+    &.is-hidden,
+    body.is-loading & {
+      opacity: 0;
+      visibility: hidden;
+      transform: translate(-50%, 8px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
   }
 }
