@@ -3,7 +3,6 @@ import '../styles/global.css';
 import '../styles/global.scss';
 import '../styles/components/layout.scss';
 import '../styles/components/preloader.scss';
-import '../styles/components/fluid-bg.scss';
 import '../styles/components/header.scss';
 import '../styles/components/hero.scss';
 import '../styles/components/about-me.scss';
@@ -14,7 +13,6 @@ import '../styles/components/contact.scss';
 import '../styles/components/back-to-top.scss';
 import '../styles/components/scroll-tracker.scss';
 import Preloader from './Preloader.astro';
-import FluidBackground from './FluidBackground.astro';
 import BackToTop from './BackToTop.astro';
 import ScrollTracker from './ScrollTracker.astro';
 
@@ -46,7 +44,6 @@ const {
   </head>
   <body>
     <Preloader />
-    <FluidBackground />
     <ScrollTracker />
     <div id="cursor-trail" class="fixed top-0 left-0 pointer-events-none z-[9999] opacity-0">
       <div class="pointer-trail absolute top-0 left-0 w-2 h-2 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--dynamic-glow-color, #F97316); background-color: var(--dynamic-glow-color, #F97316);"></div>
@@ -65,12 +62,19 @@ const {
       import { initPreloader } from '../scripts/preloader/preloaderController';
       import { initHome } from '../scripts/home/homeAnimations';
 
+      let cleanupHome: (() => void) | undefined;
+
       initLenis({ stopped: true });
 
       initPreloader(() => {
         startLenis();
-        initHome();
+        cleanupHome = initHome();
         window.dispatchEvent(new CustomEvent('preloader:complete'));
+      });
+
+      // A BFCache entry must remain resumable when the visitor presses Back.
+      window.addEventListener('pagehide', (event) => {
+        if (!event.persisted) cleanupHome?.();
       });
     </script>
   </body>

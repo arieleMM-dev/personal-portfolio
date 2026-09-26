@@ -6,6 +6,10 @@ const letters = nameHero.split('');
 ---
 
 <section class="hero" id="home" data-hero>
+  <div class="hero__environment" aria-hidden="true">
+    <canvas class="hero__scene" data-hero-scene></canvas>
+    <div class="hero__vignette"></div>
+  </div>
   <div class="hero__content" data-hero-content>
     <h1 class="hero__title text-5xl md:text-7xl lg:text-[9vw] font-black leading-none font-heading uppercase" data-hero-title aria-label={nameHero}>
       {

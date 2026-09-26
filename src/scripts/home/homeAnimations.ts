@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scrollTo } from '../lenis';
-import { FluidBackground } from '../webgl/fluidBackground';
+import type { HeroSceneController } from '../webgl/heroScene';
 import { initScrollTracker } from './scrollTracker';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -34,8 +34,7 @@ const CONFIG = {
 };
 
 export function initHome() {
-  const fluidCanvas = document.querySelector<HTMLCanvasElement>('[data-fluid-canvas]');
-  const fluidWrap = document.querySelector<HTMLElement>('[data-fluid-bg]');
+  const heroCanvas = document.querySelector<HTMLCanvasElement>('[data-hero-scene]');
   const header = document.querySelector<HTMLElement>('[data-header]');
   const headerSticky = document.querySelector<HTMLElement>('[data-header-sticky]');
   const heroTitle = document.querySelector<HTMLElement>('[data-hero-title]');
@@ -45,41 +44,25 @@ export function initHome() {
   const letters = document.querySelectorAll<HTMLElement>('[data-hero-letter]');
   const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
 
-  let fluid: FluidBackground | null = null;
   let mouseHandler: { destroy: () => void } | null = null;
 
-  const colorEngine = initGlobalColorEngine((r, g, b) => {
-    if (fluid) {
-      fluid.setColor(r, g, b);
-    }
-  });
-
-  if (fluidCanvas && fluidWrap) {
-    fluid = new FluidBackground(fluidCanvas);
-    fluid.init();
-    fluidWrap.classList.add('is-active');
-    fluid.start();
+  let heroScene: HeroSceneController | null = null;
+  let disposed = false;
+  if (heroCanvas) {
+    void import('../webgl/heroScene')
+      .then((module) => disposed ? null : module.initHeroScene(heroCanvas))
+      .then((controller) => {
+        if (disposed) controller?.destroy();
+        else heroScene = controller;
+      })
+      .catch((error: unknown) => {
+        console.warn('Hero background could not load; the page remains available.', error);
+      });
   }
+  const colorEngine = initGlobalColorEngine();
 
   // ── GSAP Context for Memory Leak Prevention ──────────────────────────
   const ctx = gsap.context(() => {
-    // ── Fluid BG Scroll Fade — submerge into darkness ───────────────────
-    const heroSection = document.querySelector<HTMLElement>('[data-hero]');
-    if (fluid && heroSection) {
-      ScrollTrigger.create({
-        trigger: heroSection,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: true,
-        onUpdate: (self) => {
-          // progress: 0 = top of Hero visible, 1 = Hero fully scrolled out
-          fluid!.setFade(1.0 - self.progress);
-        },
-      });
-    }
-
-    // ── Orbital Canvas Depth of Field (Removed to maintain Z-Index and sharpness) ──
-
     // ── Hero Intro Timeline ──────────────────────────────────────────────
     const introTl = gsap.timeline({ delay: CONFIG.hero.introDelay });
 
@@ -207,8 +190,8 @@ export function initHome() {
       });
     });
 
-    // ── Mouse Parallax (Hero + Fluid BG) ────────────────────────────────
-    mouseHandler = initMouseParallax(heroContent, fluidWrap);
+    // ── Subtle DOM parallax; the Three.js camera handles scene depth ────
+    mouseHandler = initMouseParallax(heroContent);
 
     // ── About: Text Reveal ──────────────────────────────────────────────
     initAboutAnimation();
@@ -252,8 +235,9 @@ export function initHome() {
   }
 
   return () => {
+    disposed = true;
     ctx.revert(); // Cleans up all GSAP timelines and ScrollTriggers created in this context
-    fluid?.destroy();
+    heroScene?.destroy();
     mouseHandler?.destroy();
     colorEngine.destroy();
     if (cursorCleanup) cursorCleanup();
@@ -261,14 +245,10 @@ export function initHome() {
 }
 
 /**
- * Subtle mouse-reactive parallax: hero content shifts ±8px,
- * fluid background wrapper shifts ±15px for depth layering.
+ * Subtle mouse-reactive parallax for the DOM title.
  */
-function initMouseParallax(
-  heroContent: HTMLElement | null,
-  fluidWrap: HTMLElement | null,
-) {
-  if (!heroContent && !fluidWrap) return null;
+function initMouseParallax(heroContent: HTMLElement | null) {
+  if (!heroContent) return null;
 
   // Normalised mouse coords: -1 to 1 from center
   const mouse = { x: 0, y: 0 };
@@ -289,13 +269,6 @@ function initMouseParallax(
       gsap.set(heroContent, {
         x: lerped.x * -8,
         y: lerped.y * -8,
-      });
-    }
-
-    if (fluidWrap) {
-      gsap.set(fluidWrap, {
-        x: lerped.x * 15,
-        y: lerped.y * 15,
       });
     }
 
@@ -497,17 +470,14 @@ function initDynamicDots() {
 }
 
 /**
- * Global Color Engine — smooth transitions between 6 vibrant colors
- * over a 12s cycle, updating a CSS variable and a WebGL callback.
+ * Global Color Engine — transitions inside the Hero's cyan/purple spectrum.
  */
-function initGlobalColorEngine(onUpdate: (r: number, g: number, b: number) => void) {
+function initGlobalColorEngine() {
   const colors = [
-    [239, 68, 68],   // Rojo vibrante (#ef4444)
-    [168, 85, 247],  // Morado profundo (#a855f7)
-    [59, 130, 246],  // Azul eléctrico (#3b82f6)
-    [34, 197, 94],   // Verde esmeralda (#22c55e)
-    [249, 115, 22],  // Naranja vibrante (#f97316)
-    [236, 72, 153]   // Rosado intenso (#ec4899)
+    [39, 217, 255],  // Cyan brillante (#27d9ff)
+    [79, 70, 229],   // Índigo eléctrico (#4f46e5)
+    [168, 85, 247],  // Púrpura neón (#a855f7)
+    [34, 211, 238],  // Cyan profundo (#22d3ee)
   ];
   const numColors = colors.length;
   const root = document.documentElement;
@@ -529,8 +499,6 @@ function initGlobalColorEngine(onUpdate: (r: number, g: number, b: number) => vo
     const b = colors[i1][2] + (colors[i2][2] - colors[i1][2]) * f;
 
     root.style.setProperty('--dynamic-glow-color', `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`);
-    onUpdate(r / 255, g / 255, b / 255);
-
     rafId = requestAnimationFrame(tick);
   };
 

@@ -3,6 +3,8 @@
 .hero {
   position: relative;
   z-index: $z-content;
+  isolation: isolate;
+  overflow: hidden;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -11,10 +13,51 @@
   padding: clamp(6rem, 18vh, 10rem) 0 clamp(4rem, 10vh, 6rem) 0;
   text-align: center;
 
+  // The entire environment stays behind the existing UI stacking context.
+  &__environment {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 45%, #123262, #040a1d 65%, #020510);
+  }
+
+  &__scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+  }
+
+  // Preserves title contrast while leaving the reflective floor visible.
+  &__vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 42%, transparent 30%, rgba(2, 5, 16, 0.14) 70%, rgba(2, 5, 16, 0.40) 100%),
+      linear-gradient(180deg, rgba(2, 5, 16, 0.16), transparent 30%, transparent 80%, #0a0a0a);
+  }
+
   &__content {
     will-change: transform;
     position: relative;
     z-index: 10;
+  }
+
+  @media (max-width: 767px) {
+    &__vignette {
+      background:
+        radial-gradient(ellipse at 50% 42%, transparent 25%, rgba(2, 5, 16, 0.35) 100%),
+        linear-gradient(180deg, rgba(2, 5, 16, 0.18), transparent 40%, transparent 80%, #0a0a0a);
+    }
   }
 
   &__title {
