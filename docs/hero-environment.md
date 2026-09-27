@@ -1,4 +1,4 @@
-# Fondo del Hero: océano azul abierto
+# Fondo del Hero: océano digital y monolito de circuitos
 
 La implementación utiliza Astro con scripts de cliente TypeScript. El nombre,
 subtítulo, traducciones y navegación continúan en el DOM. El canvas está dentro
@@ -25,33 +25,60 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
   tamaños, bucle y ciclo de vida.
 - `src/scripts/webgl/hero/cameraRig.ts`: encuadre y respuesta amortiguada al ratón.
 - `src/scripts/webgl/hero/environment.ts`: Water, luz, cielo, horizonte abierto
-  y entorno PMREM para las superficies de cristal.
-- `src/scripts/webgl/hero/microservices.ts`: cuatro placas, circuitos luminosos
-  y PointLight central cian.
-- `src/scripts/webgl/hero/particles.ts`: Points animados en GPU sobre el agua.
+  y entorno PMREM con reflejos cian/púrpura.
+- `src/scripts/webgl/hero/monolith.ts`: BoxGeometry biselada, material físico,
+  remates, luces y animación de flotación, giro y respiración.
+- `src/scripts/webgl/hero/circuitMaterial.ts`: circuitos procedurales sobre el
+  shader físico, con trazos, nodos, microchip y paquetes de datos móviles.
+- `src/scripts/webgl/hero/distantPillars.ts`: seis columnas lejanas y luces
+  de estado instanciadas, con alturas y pulsos diferentes.
+- `src/scripts/webgl/hero/particles.ts`: luciérnagas ascendentes animadas en GPU.
 - `src/scripts/home/heroScrollCue.ts`: aviso bilingüe con fade-out por scroll
   nativo a partir de 4px y limpieza de listeners; reaparece al volver al inicio.
 - `public/assets/hero/waternormals.jpg`: textura local; no se solicita a un CDN
   durante la visita.
 
+## Integración en Astro
+
+Ya está conectado: `Hero.astro` declara el canvas y `homeAnimations.ts` carga
+`initHeroScene(canvas)` mediante import dinámico en el navegador. No añadas un
+segundo inicializador ni una isla React. El controlador devuelto expone
+`destroy()` y se integra con la limpieza de la página existente.
+
+Para ajustar el resultado, las dimensiones y flotación están en `MONOLITH`, el
+material y los trazos en `circuitMaterial.ts`, los extremos de cámara en
+`HERO_CAMERA`, y bloom/niebla en `heroScene.ts`. No se añaden dependencias npm.
+
 ## Cómo se construye la imagen
 
 1. El cielo tiene un gradiente azul nocturno y una aureola detrás del objeto.
-   `FogExp2(0x040d20, 0.028)` desvanece el océano de 1200 × 1200 unidades.
-   No hay montañas ni geometrías laterales; el cielo comparte el color de niebla.
-2. Las placas usan `MeshPhysicalMaterial`, transmisión 0.94, rugosidad 0.07,
-   IOR 1.46 y grosor óptico 0.6. La transparencia se obtiene mediante transmisión
-   física; `opacity` permanece en 1 para conservar reflejos y evitar problemas
-   de ordenación por alpha. El entorno PMREM aporta reflejos azul/cian.
-3. Las caras internas y circuitos emiten radiancia HDR; no dependen sólo de una
-   luz puntual. El PointLight central ilumina la geometría cercana.
+   `FogExp2(0x030a1b, 0.03)` desvanece el océano de 1200 × 1200 unidades.
+   El cielo comparte el color de niebla. Se conserva el horizonte sin montañas.
+2. El monolito es una BoxGeometry de 3.2 × 5.2 × 2.2 unidades, con bisel de
+   0.045. Su `MeshPhysicalMaterial` es opaco, azul casi negro, metalness 0.78,
+   roughness 0.2 y clearcoat 1. El entorno PMREM aporta reflejos cian/púrpura
+   sobre la superficie oscura, sin una pasada adicional de transmisión.
+3. `onBeforeCompile` añade circuitos a la emisión del material físico, conservando
+   iluminación, reflejos y niebla. Las líneas se suavizan con derivadas `fwidth`.
+   No requiere imágenes de circuitos, descargas externas ni texturas por frame.
+   Pequeños paquetes recorren los trazos; `emissiveIntensity = 2.7 + sin(t*0.85)*0.55`
+   simula una respiración de unos 7.4 segundos. Las luces físicas acompañan el pulso.
 4. Water renderiza una cámara reflejada en una textura. Su shader combina ese
    reflejo con Fresnel y la textura de normales repetida, movida lentamente por
    su uniforme `time`. Se ajustan la amplitud de la normal y la dispersión azul
    cerca del núcleo conservando el cálculo de reflexión de Water. La superficie
    base de Water es geométricamente plana, pero su apariencia NO es un espejo
    liso: las olas pequeñas se simulan con normales animadas y distorsión.
-5. `RenderPass → UnrealBloomPass → OutputPass` conserva luces HDR hasta el bloom.
+5. Seis pilares se distribuyen en los laterales, desde Z=-30 hasta aproximadamente
+   Z=-63, con alturas entre 11 y 24. La distribución pseudoaleatoria es estable
+   entre visitas. La niebla los oculta progresivamente y su emisión es muy tenue.
+   Sus 42 luces de estado se dibujan con un solo InstancedMesh.
+6. Las 360 partículas nacen a Y=0.055. Un ciclo de vida GPU de 17–29 segundos
+   las eleva entre 2.6 y 5.4 unidades, con deriva horizontal suave. El alpha crece
+   desde cero al nacer y vuelve a cero antes de reiniciar el ciclo. También se
+   atenúan con la distancia, en consonancia con la niebla del entorno.
+7. `RenderPass → UnrealBloomPass → OutputPass` conserva luces HDR hasta el bloom.
+   Bloom usa intensidad 0.85, radio 0.6 y umbral 0.85; MSAA suaviza los circuitos.
    OutputPass aplica ACES y conversión final a sRGB, una sola vez. El postprocesado
    sólo afecta al canvas; jamás desenfoca el texto HTML.
 
@@ -61,7 +88,7 @@ La cámara combina desplazamiento e inclinación con `mousemove`: ratón arriba,
 pitch -1° y ojo Y=1.45; ratón abajo, pitch +11° y ojo Y=0.65. El horizonte
 pasa aproximadamente del 48% al 75% de altura en escritorio. Se conserva la
 distancia al objeto para evitar un efecto de zoom. No se usa `lookAt` para
-recentrar las placas: el cambio de encuadre debe ser visible, igual que en las
+recentrar el monolito: el cambio de encuadre debe ser visible, igual que en las
 referencias. La posición central se recupera suavemente al salir del Hero.
 
 Un muelle críticamente amortiguado (ω=3.2) tarda alrededor de 1.5s en completar
@@ -70,23 +97,23 @@ constante. Su solución es independiente del frame rate. El movimiento lateral
 combina ±1.6 unidades y ±4.5° de yaw, limitado según el aspecto en retrato.
 La cámara permanece siempre por encima del agua.
 
-El grupo está en Z=-2, escala 0.94 en escritorio (antes 1.28: un 27% más compacto
-en los tres ejes) y ajuste por aspecto en móvil;
-rota a 0.045 rad/s y flota con seno. Se limita el DPR
+El grupo está en Z=-2, centro Y=3.65, escala 0.94 en escritorio y ajuste por
+aspecto en móvil/tableta; rota a 0.026 rad/s y flota ±0.12 con seno. Se limita el DPR
 y el total de píxeles; la reflexión usa 512px en móvil y 1024px en escritorio.
 
 Se pausa al salir del Hero o al ocultar la pestaña. Con movimiento reducido se
 renderiza una imagen estática y se actualiza sólo al cambiar tamaño/preferencia.
 ResizeObserver y `resize` actualizan cámara, canvas, partículas, reflexión y
 composer. `destroy()` cancela RAF, desconecta observers/listeners y libera
-geometrías, materiales, textura normal, PMREM, reflexión y pases de postprocesado.
+geometrías, materiales, buffers de instancias, textura normal, PMREM, reflexión
+y pases de postprocesado. Los módulos de objetos no crean bucles o listeners propios.
 El módulo se importa dinámicamente sin bloquear la entrada de los textos; si
 WebGL o la textura fallan, se conserva el fondo CSS y la UI sigue disponible.
 
 ## Interfaz
 
 El título usa `clamp(2rem, 4.2vw, 4.5rem)` y queda en la zona inferior, sin
-parallax DOM, para despejar las placas. Una viñeta oscurece suavemente la zona
+parallax DOM, para despejar el monolito. Una viñeta oscurece suavemente la zona
 del texto sobre los reflejos. El aviso está en `bottom: 5%`; respeta movimiento
 reducido. La marca, viñeta y etiqueta lateral usan un color estático
 `rgba(213, 224, 255, 0.85)`, independiente del ciclo de color global.
@@ -100,7 +127,7 @@ altura mínima de 44px y foco visible. La navegación fija sincroniza `inert` y
 
 ```sh
 npx tsc --noEmit -p tsconfig.json
-node --experimental-strip-types --test tests/hero-camera.test.mjs
+node --experimental-strip-types --test tests/hero-camera.test.mjs tests/hero-environment.test.mjs
 npm run build
 ```
 
@@ -109,7 +136,10 @@ El `tsc` anterior valida los módulos TypeScript; no hace una auditoría complet
 de las plantillas `.astro`.
 Las pruebas de cámara comprueban el recorrido vertical, amortiguación a
 30/60/144 FPS, movimiento reducido y encuadre en las cuatro esquinas del ratón
-con cinco relaciones de aspecto y una vuelta completa de las placas.
+con cinco relaciones de aspecto y una vuelta completa del monolito. Las pruebas
+del entorno validan flotación, pulsación, inyección del shader físico, distancia
+de los pilares y animación GPU de las partículas. Es necesario revisar también
+la compilación GLSL y el aspecto en un navegador con WebGL.
 
 ## Referencias
 

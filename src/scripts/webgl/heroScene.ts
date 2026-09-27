@@ -4,9 +4,10 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createHeroEnvironment } from './hero/environment';
-import { createMicroservices } from './hero/microservices';
+import { createMonolith, MONOLITH } from './hero/monolith';
+import { createDistantPillars } from './hero/distantPillars';
 import { createDataParticles } from './hero/particles';
-import { createHeroCameraRig, getHeroCrystalScale } from './hero/cameraRig';
+import { createHeroCameraRig, getHeroObjectScale } from './hero/cameraRig';
 
 export interface HeroSceneController {
   destroy(): void;
@@ -38,29 +39,30 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.92;
   renderer.setClearColor(0x030819);
-  renderer.transmissionResolutionScale = 0.65;
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x040d20, 0.028);
+  scene.fog = new THREE.FogExp2(0x030a1b, 0.03);
   const focusZ = -2;
   const camera = new THREE.PerspectiveCamera(43, 1, 0.1, 650);
   const cameraRig = createHeroCameraRig(camera);
   const environment = createHeroEnvironment(scene, renderer, normals, focusZ);
-  const services = createMicroservices();
-  services.position.set(0, 3.65, focusZ);
-  scene.add(services);
-  const particles = createDataParticles();
+  const monolith = createMonolith();
+  monolith.group.position.set(0, MONOLITH.centerY, focusZ);
+  scene.add(monolith.group);
+  const pillars = createDistantPillars();
+  scene.add(pillars.group);
+  const particles = createDataParticles(scene.fog.density);
   scene.add(particles.points);
 
   // Half-float HDR retains emissive radiance above 1 until bloom and OutputPass.
-  // Multisample the HDR scene so the thin glass outlines remain stable in motion.
+  // Multisample the HDR scene so the thin circuitry remains stable in motion.
   const sceneTarget = new THREE.WebGLRenderTarget(1, 1, {
     type: THREE.HalfFloatType,
     samples: Math.min(4, renderer.capabilities.maxSamples),
   });
   const composer = new EffectComposer(renderer, sceneTarget);
   const renderPass = new RenderPass(scene, camera);
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.72, 0.65, 1.0);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.85, 0.6, 0.85);
   const output = new OutputPass();
   composer.addPass(renderPass);
   composer.addPass(bloom);
@@ -81,8 +83,8 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     const reduced = motionPreference.matches;
     if (!reduced) elapsed += delta;
     cameraRig.update(delta, pointer, reduced, mobile);
-    services.rotation.y = -0.26 + elapsed * 0.045;
-    services.position.y = 3.65 + Math.sin(elapsed * 0.52) * 0.12;
+    monolith.update(elapsed);
+    pillars.update(elapsed);
     environment.update(elapsed);
     particles.update(elapsed);
   }
@@ -117,7 +119,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     const width = Math.max(1, canvas.clientWidth);
     const height = Math.max(1, canvas.clientHeight);
     mobile = width < 768;
-    // Bound both DPR and total pixels for reflection + transmission + bloom.
+    // Bound both DPR and total pixels for reflection + HDR bloom.
     const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.5, Math.sqrt(2_600_000 / (width * height)));
     renderer.setPixelRatio(dpr);
     renderer.setSize(width, height, false);
@@ -127,7 +129,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     camera.fov = mobile ? 55 : 43;
     camera.updateProjectionMatrix();
     // Keep the full diagonal visible even on narrow portrait screens.
-    services.scale.setScalar(getHeroCrystalScale(camera.aspect, mobile));
+    monolith.group.scale.setScalar(getHeroObjectScale(camera.aspect, mobile));
     particles.setPixelRatio(dpr);
     environment.resize(mobile ? 512 : 1024);
     needsFrame = true;
@@ -195,6 +197,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
       const geometries = new Set<THREE.BufferGeometry>();
       const materials = new Set<THREE.Material>();
       scene.traverse((object) => {
+        if (object instanceof THREE.InstancedMesh) object.dispose();
         if (object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points) {
           geometries.add(object.geometry);
           const entries = Array.isArray(object.material) ? object.material : [object.material];

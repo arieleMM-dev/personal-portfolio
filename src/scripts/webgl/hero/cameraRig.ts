@@ -15,11 +15,11 @@ export const HERO_CAMERA = {
 } as const;
 
 /** Leave room for the full diagonal AND camera travel, including tall tablets. */
-export function getHeroCrystalScale(aspect: number, mobile: boolean): number {
+export function getHeroObjectScale(aspect: number, mobile: boolean): number {
   return Math.min(0.94, aspect * (mobile ? 1.95 : 1.05));
 }
 
-/** Owns camera motion only; neither the glass nor the HTML follows the mouse. */
+/** Owns camera motion only; neither the monolith nor the HTML follows the mouse. */
 export function createHeroCameraRig(camera: THREE.PerspectiveCamera) {
   const position = new THREE.Vector2();
   const velocity = new THREE.Vector2();
@@ -51,7 +51,7 @@ export function createHeroCameraRig(camera: THREE.PerspectiveCamera) {
         HERO_CAMERA.eyeHeight - position.y * HERO_CAMERA.verticalTravel,
         mobile ? HERO_CAMERA.mobileZ : HERO_CAMERA.desktopZ,
       );
-      // Do not lookAt the blades: that would recenter them and cancel the travel.
+      // Do not lookAt the monolith: that would recenter it and cancel the travel.
       camera.rotation.set(
         THREE.MathUtils.degToRad(pitch),
         THREE.MathUtils.degToRad(horizontal * HERO_CAMERA.yawRange),

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as THREE from 'three';
-import { createHeroCameraRig, getHeroCrystalScale, HERO_CAMERA } from '../src/scripts/webgl/hero/cameraRig.ts';
-import { createMicroservices } from '../src/scripts/webgl/hero/microservices.ts';
+import { createHeroCameraRig, getHeroObjectScale, HERO_CAMERA } from '../src/scripts/webgl/hero/cameraRig.ts';
+import { createMonolith } from '../src/scripts/webgl/hero/monolith.ts';
 
 function setup(width = 1920, height = 1080) {
   const mobile = width < 768;
@@ -61,12 +61,12 @@ test('reduced motion cancels momentum and restores the neutral framing', () => {
   assert.ok(Math.abs(THREE.MathUtils.radToDeg(camera.rotation.x) - 5) < 1e-10);
 });
 
-test('all four blades stay in frame at the four corners, across rotation and aspect ratios', () => {
-  const services = createMicroservices();
-  assert.equal(services.children.filter((child) => child.name.startsWith('glass-blade-')).length, 4);
+test('the monolith stays in frame at the four corners, across rotation and aspect ratios', () => {
+  const { group: services } = createMonolith();
+  assert.ok(services.getObjectByName('circuit-monolith-body'));
   for (const [width, height] of [[1920, 1080], [1366, 768], [800, 1024], [390, 844], [320, 844]]) {
     const { camera, move, mobile } = setup(width, height);
-    services.scale.setScalar(getHeroCrystalScale(camera.aspect, mobile));
+    services.scale.setScalar(getHeroObjectScale(camera.aspect, mobile));
     for (const x of [-1, 1]) for (const y of [-1, 1]) {
       move(x, y);
       for (let turn = 0; turn < 32; turn++) {
@@ -80,7 +80,7 @@ test('all four blades stay in frame at the four corners, across rotation and asp
               for (const pz of [box.min.z, box.max.z]) {
                 const projected = new THREE.Vector3(px, py, pz).project(camera);
                 assert.ok(Math.abs(projected.x) < 0.98 && Math.abs(projected.y) < 0.98,
-                  `${width}x${height}, pointer ${x},${y}, rotation ${turn}: clipped crystal`);
+                  `${width}x${height}, pointer ${x},${y}, rotation ${turn}: clipped monolith`);
               }
         }
       }
