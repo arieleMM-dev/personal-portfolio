@@ -1,16 +1,15 @@
 import * as THREE from 'three';
+import { HERO_PALETTE } from './palette.ts';
 
 /** Procedural circuitry injected into the physical lighting model, not a decal. */
 export function createCircuitMaterial() {
   const time = { value: 0 };
-  const material = new THREE.MeshPhysicalMaterial({
-    color: 0x091322,
-    metalness: 0.78,
-    roughness: 0.2,
-    clearcoat: 1,
-    clearcoatRoughness: 0.12,
-    envMapIntensity: 0.85,
-    emissive: 0xffffff,
+  const material = new THREE.MeshStandardMaterial({
+    color: HERO_PALETTE.obsidian,
+    metalness: 0.12,
+    roughness: 0.34,
+    envMapIntensity: 0.8,
+    emissive: HERO_PALETTE.circuit,
     emissiveIntensity: 2.7,
   });
   material.name = 'polished-obsidian-circuits';
@@ -46,11 +45,9 @@ export function createCircuitMaterial() {
           if (n.x > n.y) return vCircuitPosition.zy / vec2(2.2, 5.2) + 0.5;
           return vCircuitPosition.xz / vec2(3.2, 2.2) + 0.5;
         }
-        vec3 circuitEmission(vec2 uv) {
+        float circuitEmission(vec2 uv) {
           float aa = max(fwidth(uv.x), fwidth(uv.y)) * 0.8;
-          vec3 cyan = vec3(0.015, 0.78, 1.0);
-          vec3 violet = vec3(0.44, 0.055, 1.0);
-          vec3 glow = vec3(0.0);
+          float glow = 0.0;
           float chip = chipDistance(uv - vec2(0.5, 0.52), vec2(0.096, 0.06));
           for (int lane = 0; lane < 11; lane++) {
             float id = float(lane);
@@ -72,13 +69,12 @@ export function createCircuitMaterial() {
             // Small packets travel along the conductive trace, never across the face.
             float phase = fract(uCircuitTime * (0.06 + circuitHash(id) * 0.025) + id * 0.19);
             float packet = exp(-pow((uv.y - mix(start, end, phase)) * 95.0, 2.0));
-            vec3 tint = mix(cyan, violet, step(0.68, circuitHash(id + 1.0)));
-            glow += tint * (trace * (0.42 + packet * 1.6) + pad * 0.8);
+            glow += trace * (0.5 + packet * 1.6) + pad * 0.8;
           }
           float chipOutline = 1.0 - smoothstep(0.0014, 0.0014 + aa, abs(chip));
           float innerChip = chipDistance(uv - vec2(0.5, 0.52), vec2(0.08, 0.05));
           float innerOutline = 1.0 - smoothstep(0.0008, 0.0008 + aa, abs(innerChip));
-          glow += mix(cyan, violet, 0.25) * (chipOutline * 0.8 + innerOutline * 0.2);
+          glow += chipOutline * 0.8 + innerOutline * 0.2;
           float border = smoothstep(0.025, 0.05, min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y)));
           return glow * border;
         }
@@ -88,6 +84,6 @@ export function createCircuitMaterial() {
         totalEmissiveRadiance *= circuitEmission(boardUV);
       `);
   };
-  material.customProgramCacheKey = () => 'hero-circuit-physical-v1';
+  material.customProgramCacheKey = () => 'hero-circuit-standard-blue-v2';
   return { material, update(seconds: number) { time.value = seconds; } };
 }

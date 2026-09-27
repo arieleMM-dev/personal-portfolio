@@ -5,7 +5,8 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createHeroEnvironment } from './hero/environment';
 import { createMonolith, MONOLITH } from './hero/monolith';
-import { createDistantPillars } from './hero/distantPillars';
+import { createCityscape } from './hero/cityscape';
+import { HERO_PALETTE } from './hero/palette';
 import { createDataParticles } from './hero/particles';
 import { createHeroCameraRig, getHeroObjectScale } from './hero/cameraRig';
 
@@ -38,10 +39,10 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.92;
-  renderer.setClearColor(0x030819);
+  renderer.setClearColor(HERO_PALETTE.fog);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x030a1b, 0.03);
+  scene.fog = new THREE.FogExp2(HERO_PALETTE.fog, HERO_PALETTE.fogDensity);
   const focusZ = -2;
   const camera = new THREE.PerspectiveCamera(43, 1, 0.1, 650);
   const cameraRig = createHeroCameraRig(camera);
@@ -49,8 +50,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   const monolith = createMonolith();
   monolith.group.position.set(0, MONOLITH.centerY, focusZ);
   scene.add(monolith.group);
-  const pillars = createDistantPillars();
-  scene.add(pillars.group);
+  scene.add(createCityscape(scene.fog.color));
   const particles = createDataParticles(scene.fog.density);
   scene.add(particles.points);
 
@@ -84,7 +84,6 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     if (!reduced) elapsed += delta;
     cameraRig.update(delta, pointer, reduced, mobile);
     monolith.update(elapsed);
-    pillars.update(elapsed);
     environment.update(elapsed);
     particles.update(elapsed);
   }

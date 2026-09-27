@@ -25,14 +25,16 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
   tamaños, bucle y ciclo de vida.
 - `src/scripts/webgl/hero/cameraRig.ts`: encuadre y respuesta amortiguada al ratón.
 - `src/scripts/webgl/hero/environment.ts`: Water, luz, cielo, horizonte abierto
-  y entorno PMREM con reflejos cian/púrpura.
-- `src/scripts/webgl/hero/monolith.ts`: BoxGeometry biselada, material físico,
+  y entorno PMREM con reflejos exclusivamente azules/cian.
+- `src/scripts/webgl/hero/palette.ts`: colores compartidos y densidad de niebla.
+- `src/scripts/webgl/hero/monolith.ts`: BoxGeometry biselada, material estándar PBR,
   remates, luces y animación de flotación, giro y respiración.
 - `src/scripts/webgl/hero/circuitMaterial.ts`: circuitos procedurales sobre el
   shader físico, con trazos, nodos, microchip y paquetes de datos móviles.
-- `src/scripts/webgl/hero/distantPillars.ts`: seis columnas lejanas y luces
-  de estado instanciadas, con alturas y pulsos diferentes.
-- `src/scripts/webgl/hero/particles.ts`: luciérnagas ascendentes animadas en GPU.
+- `src/scripts/webgl/hero/cityscape.ts`: 84 edificios en un InstancedMesh estático,
+  con niebla por distancia y altura; sustituye al antiguo `distantPillars.ts`.
+- `src/scripts/webgl/hero/particles.ts`: PointsMaterial azul con ascenso y alpha
+  por partícula calculados en GPU.
 - `src/scripts/home/heroScrollCue.ts`: aviso bilingüe con fade-out por scroll
   nativo a partir de 4px y limpieza de listeners; reaparece al volver al inicio.
 - `public/assets/hero/waternormals.jpg`: textura local; no se solicita a un CDN
@@ -47,18 +49,23 @@ segundo inicializador ni una isla React. El controlador devuelto expone
 
 Para ajustar el resultado, las dimensiones y flotación están en `MONOLITH`, el
 material y los trazos en `circuitMaterial.ts`, los extremos de cámara en
-`HERO_CAMERA`, y bloom/niebla en `heroScene.ts`. No se añaden dependencias npm.
+`HERO_CAMERA`, bloom en `heroScene.ts` y color/densidad de niebla en
+`HERO_PALETTE`. No se añaden dependencias npm.
 
 ## Cómo se construye la imagen
 
 1. El cielo tiene un gradiente azul nocturno y una aureola detrás del objeto.
-   `FogExp2(0x030a1b, 0.03)` desvanece el océano de 1200 × 1200 unidades.
-   El cielo comparte el color de niebla. Se conserva el horizonte sin montañas.
+   `FogExp2(0x061329, 0.0065)` desvanece el océano de 1200 × 1200 unidades.
+   La densidad permite distinguir la primera fila de edificios y oculta las
+   posteriores. El cielo coincide con el color de niebla en el horizonte.
+   No hay montañas, tonos púrpura ni luces magenta en la escena WebGL.
 2. El monolito es una BoxGeometry de 3.2 × 5.2 × 2.2 unidades, con bisel de
-   0.045. Su `MeshPhysicalMaterial` es opaco, azul casi negro, metalness 0.78,
-   roughness 0.2 y clearcoat 1. El entorno PMREM aporta reflejos cian/púrpura
-   sobre la superficie oscura, sin una pasada adicional de transmisión.
-3. `onBeforeCompile` añade circuitos a la emisión del material físico, conservando
+   0.045. Su `MeshStandardMaterial` es negro obsidiana (`0x030609`), metalness
+   0.12 y roughness 0.34: reflejos suaves sin aspecto cromado, clearcoat ni
+   transmisión. El entorno PMREM aporta reflejos azul/cian. Las luces puntuales
+   están separadas de las caras para no producir zonas sobreexpuestas.
+3. `onBeforeCompile` añade una máscara escalar de circuitos a la emisión PBR,
+   cuyo único color procede de `material.emissive = 0x00baff`, conservando
    iluminación, reflejos y niebla. Las líneas se suavizan con derivadas `fwidth`.
    No requiere imágenes de circuitos, descargas externas ni texturas por frame.
    Pequeños paquetes recorren los trazos; `emissiveIntensity = 2.7 + sin(t*0.85)*0.55`
@@ -69,14 +76,29 @@ material y los trazos en `circuitMaterial.ts`, los extremos de cámara en
    cerca del núcleo conservando el cálculo de reflexión de Water. La superficie
    base de Water es geométricamente plana, pero su apariencia NO es un espejo
    liso: las olas pequeñas se simulan con normales animadas y distorsión.
-5. Seis pilares se distribuyen en los laterales, desde Z=-30 hasta aproximadamente
-   Z=-63, con alturas entre 11 y 24. La distribución pseudoaleatoria es estable
-   entre visitas. La niebla los oculta progresivamente y su emisión es muy tenue.
-   Sus 42 luces de estado se dibujan con un solo InstancedMesh.
+   Un AmbientLight azul de intensidad 0.18 rellena tenuemente las sombras.
+   El DirectionalLight cian está en (-6, 6, -48), apunta a (0, 0, -4), con una
+   elevación de unos 7.7° e intensidad 2.4. Water no obtiene su brillo solar
+   automáticamente de esa luz: `createOceanLighting` calcula el mismo vector
+   hacia la fuente y su radiancia para `sunDirection` y `sunColor`. Así las
+   normales animadas producen reflejos especulares rasantes reales del shader.
+5. La ciudad utiliza una BoxGeometry y un MeshStandardMaterial azul pizarra
+   (`0x152b45`) compartidos por 84 instancias en tres filas. Las alturas varían
+   aproximadamente entre 5 y 22, y las posiciones están entre Z=-165 y Z=-295.
+   Las transformaciones pseudoaleatorias son reproducibles y se cargan una vez.
+   Hay una llamada de dibujo por vista para toda la ciudad (otra en la reflexión).
+   `FogExp2` aporta distancia; un añadido al shader mezcla el color de niebla
+   con mayor intensidad cerca de Y=0 y menos hacia las azoteas. Es una
+   aproximación económica de niebla baja, no una simulación volumétrica. Usa
+   coordenadas mundiales con `instanceMatrix`, también en la cámara reflejada.
 6. Las 360 partículas nacen a Y=0.055. Un ciclo de vida GPU de 17–29 segundos
    las eleva entre 2.6 y 5.4 unidades, con deriva horizontal suave. El alpha crece
    desde cero al nacer y vuelve a cero antes de reiniciar el ciclo. También se
-   atenúan con la distancia, en consonancia con la niebla del entorno.
+   atenúan con la distancia, en consonancia con la niebla del entorno. Se usa
+   `PointsMaterial({ color: 0x00aaff })` con mezcla aditiva y `depthWrite: false`.
+   Su shader amplía el ciclo de vida mediante `onBeforeCompile`, sin cambiar el
+   tono RGB ni subir posiciones desde CPU cada frame. La niebla afecta al alpha
+   para evitar que sprites aditivos aporten cuadrados del color de la niebla.
 7. `RenderPass → UnrealBloomPass → OutputPass` conserva luces HDR hasta el bloom.
    Bloom usa intensidad 0.85, radio 0.6 y umbral 0.85; MSAA suaviza los circuitos.
    OutputPass aplica ACES y conversión final a sRGB, una sola vez. El postprocesado
@@ -137,15 +159,18 @@ de las plantillas `.astro`.
 Las pruebas de cámara comprueban el recorrido vertical, amortiguación a
 30/60/144 FPS, movimiento reducido y encuadre en las cuatro esquinas del ratón
 con cinco relaciones de aspecto y una vuelta completa del monolito. Las pruebas
-del entorno validan flotación, pulsación, inyección del shader físico, distancia
-de los pilares y animación GPU de las partículas. Es necesario revisar también
+del entorno validan flotación, pulsación, material estándar, paleta azul,
+dirección/radiancia de la luz rasante, instanciamiento y lejanía de la ciudad,
+niebla por altura y animación GPU de las partículas. Es necesario revisar también
 la compilación GLSL y el aspecto en un navegador con WebGL.
 
 ## Referencias
 
 - https://threejs.org/docs/pages/Water.html
 - https://threejs.org/docs/pages/UnrealBloomPass.html
-- https://threejs.org/docs/pages/MeshPhysicalMaterial.html
+- https://threejs.org/docs/pages/MeshStandardMaterial.html
+- https://threejs.org/docs/pages/InstancedMesh.html
+- https://threejs.org/docs/pages/PointsMaterial.html
 - La imagen proporcionada dirige luz y materiales. El océano abierto sustituye
   las montañas según la última iteración. No son los assets originales de la
   referencia ni una garantía de equivalencia píxel a píxel.

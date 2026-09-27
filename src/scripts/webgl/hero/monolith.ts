@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createCircuitMaterial } from './circuitMaterial.ts';
+import { HERO_PALETTE } from './palette.ts';
 
 export const MONOLITH = { width: 3.2, height: 5.2, depth: 2.2, centerY: 3.65, floatAmplitude: 0.12 } as const;
 
@@ -28,8 +29,8 @@ export function createMonolith() {
   body.name = 'circuit-monolith-body';
   group.add(body);
 
-  const trimMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x111b2d, metalness: 0.85, roughness: 0.17, clearcoat: 1, envMapIntensity: 0.75,
+  const trimMaterial = new THREE.MeshStandardMaterial({
+    color: HERO_PALETTE.obsidian, metalness: 0.18, roughness: 0.3, envMapIntensity: 0.75,
   });
   const capGeometry = new THREE.BoxGeometry(3.21, 0.065, 2.21);
   for (const y of [-2.57, 2.57]) {
@@ -38,19 +39,20 @@ export function createMonolith() {
     group.add(cap);
   }
 
-  const cyan = new THREE.MeshStandardMaterial({ color: 0x061426, emissive: 0x14bcff, emissiveIntensity: 2.0 });
-  const violet = new THREE.MeshStandardMaterial({ color: 0x0d071c, emissive: 0x8b36ff, emissiveIntensity: 1.7 });
+  const cyan = new THREE.MeshStandardMaterial({ color: 0x061426, emissive: HERO_PALETTE.cyan, emissiveIntensity: 2.0 });
+  const blue = new THREE.MeshStandardMaterial({ color: 0x040b18, emissive: HERO_PALETTE.blue, emissiveIntensity: 1.7 });
   const railGeometry = new THREE.BoxGeometry(0.018, 1.35, 0.025);
   for (const side of [-1, 1]) for (let index = 0; index < 3; index++) {
-    const rail = new THREE.Mesh(railGeometry, side < 0 ? cyan : violet);
+    const rail = new THREE.Mesh(railGeometry, side < 0 ? cyan : blue);
     rail.position.set(side * 1.535, (index - 1) * 1.54, 1.102);
     group.add(rail);
   }
-  const cyanLight = new THREE.PointLight(0x20bbff, 12, 17, 2);
-  cyanLight.position.set(-1.6, -1, 0.5);
-  const violetLight = new THREE.PointLight(0x8740ff, 8, 14, 2);
-  violetLight.position.set(1.5, 0.8, -0.6);
-  group.add(cyanLight, violetLight);
+  const cyanLight = new THREE.PointLight(HERO_PALETTE.cyan, 12, 17, 2);
+  // Keep lights off the surface: near-zero distance creates blown-out hotspots.
+  cyanLight.position.set(-3.0, -0.6, 1.8);
+  const blueLight = new THREE.PointLight(HERO_PALETTE.blue, 8, 14, 2);
+  blueLight.position.set(3.0, 1.2, -2.6);
+  group.add(cyanLight, blueLight);
 
   return {
     group,
@@ -60,9 +62,9 @@ export function createMonolith() {
       group.position.y = MONOLITH.centerY + Math.sin(time * 0.48) * MONOLITH.floatAmplitude;
       circuits.material.emissiveIntensity = 2.7 + breath * 0.55;
       cyan.emissiveIntensity = 1.9 + breath * 0.25;
-      violet.emissiveIntensity = 1.6 + breath * 0.25;
+      blue.emissiveIntensity = 1.6 + breath * 0.25;
       cyanLight.intensity = 12 + breath * 2;
-      violetLight.intensity = 8 + breath * 1.5;
+      blueLight.intensity = 8 + breath * 1.5;
       circuits.update(time);
     },
   };
