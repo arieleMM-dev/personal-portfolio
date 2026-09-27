@@ -26,6 +26,7 @@ export function createHeroEnvironment(
   normals: THREE.Texture,
   focusZ: number,
 ) {
+  const heartbeatUniform = { value: 0.5 };
   const sky = new THREE.Mesh(new THREE.SphereGeometry(450, 32, 20), new THREE.ShaderMaterial({
     uniforms: { uHorizon: { value: scene.fog?.color ?? new THREE.Color(HERO_PALETTE.fog) } },
     side: THREE.BackSide,
@@ -57,6 +58,7 @@ export function createHeroEnvironment(
   // Broad, low-energy light haze behind the monolith: bloom alone only spreads
   // bright pixels a short distance and cannot supply atmospheric depth.
   const haze = new THREE.Mesh(new THREE.PlaneGeometry(25, 19), new THREE.ShaderMaterial({
+    uniforms: { uHeartbeat: heartbeatUniform },
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
@@ -66,12 +68,13 @@ export function createHeroEnvironment(
     `,
     fragmentShader: `
       varying vec2 vUv;
+      uniform float uHeartbeat;
       void main() {
         vec2 p = (vUv - 0.5) * 2.0;
         float glow = exp(-dot(p * vec2(1.2, 1.0), p * vec2(1.2, 1.0)) * 4.2);
         glow *= 1.0 - smoothstep(0.55, 1.0, length(p));
         vec3 tint = vec3(0.002, 0.06, 0.18);
-        gl_FragColor = vec4(tint, glow * 0.6);
+        gl_FragColor = vec4(tint, glow * (0.55 + uHeartbeat * 0.18));
       }
     `,
   }));
@@ -97,20 +100,32 @@ export function createHeroEnvironment(
   water.position.y = 0;
   water.material.uniforms.size.value = 14;
   water.material.uniforms.uCorePosition = { value: new THREE.Vector2(0, focusZ) };
+  water.material.uniforms.uHeartbeat = heartbeatUniform;
   // Keep Water's reflection, Fresnel and animated normal sampling. Shallow
   // long waves and light scattering from the core enrich the nearby water.
   water.material.fragmentShader = water.material.fragmentShader
-    .replace('uniform float time;', 'uniform float time;\nuniform vec2 uCorePosition;')
+    .replace('uniform float time;', 'uniform float time;\nuniform vec2 uCorePosition;\nuniform float uHeartbeat;')
     .replace('vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );',
       'vec3 surfaceNormal = normalize( noise.xzy * vec3( 0.72, 1.0, 0.72 ) );')
     .replace('vec3 outgoingLight = albedo;', `
       float coreDistance = length(worldPosition.xz - uCorePosition);
       float caustic = pow(max(0.0, surfaceNormal.z * 0.5 + 0.5), 7.0);
       vec3 scatterTint = vec3(0.002, 0.085, 0.24);
-      vec3 coreScatter = scatterTint * exp(-coreDistance * 0.18) * caustic;
+      vec3 coreScatter = scatterTint * exp(-coreDistance * 0.18) * caustic * (0.8 + uHeartbeat * 0.5);
       vec3 outgoingLight = albedo + coreScatter;
     `);
   scene.add(water);
+
+  // Transmission draws opaque objects before the main pass. Both passes need
+  // the same water reflection, not a second mirror-scene render.
+  const renderReflection = water.onBeforeRender;
+  const reflectedFrames = new WeakMap<THREE.Camera, number>();
+  let frameVersion = 0;
+  water.onBeforeRender = (activeRenderer, activeScene, camera, geometry, material, group) => {
+    if (reflectedFrames.get(camera) === frameVersion) return;
+    reflectedFrames.set(camera, frameVersion);
+    renderReflection.call(water, activeRenderer, activeScene, camera, geometry, material, group);
+  };
 
   // r186 exposes the owning render target on Texture; retain it explicitly so
   // Water's internal reflection framebuffer is resized AND released on teardown.
@@ -138,7 +153,11 @@ export function createHeroEnvironment(
   pmrem.dispose();
 
   return {
-    update(time: number) { water.material.uniforms.time.value = time * 0.22; },
+    update(time: number, heartbeat: number) {
+      frameVersion++;
+      water.material.uniforms.time.value = time * 0.22;
+      heartbeatUniform.value = heartbeat;
+    },
     resize(size: number) { reflectionTarget?.setSize(size, size); },
     dispose() { reflectionTarget?.dispose(); environmentTarget.dispose(); },
   };

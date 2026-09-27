@@ -3,6 +3,7 @@ import test from 'node:test';
 import * as THREE from 'three';
 import { createHeroCameraRig, getHeroObjectScale, HERO_CAMERA } from '../src/scripts/webgl/hero/cameraRig.ts';
 import { createMonolith } from '../src/scripts/webgl/hero/monolith.ts';
+import { createCityscape } from '../src/scripts/webgl/hero/cityscape.ts';
 
 function setup(width = 1920, height = 1080) {
   const mobile = width < 768;
@@ -82,6 +83,41 @@ test('the monolith stays in frame at the four corners, across rotation and aspec
                 assert.ok(Math.abs(projected.x) < 0.98 && Math.abs(projected.y) < 0.98,
                   `${width}x${height}, pointer ${x},${y}, rotation ${turn}: clipped monolith`);
               }
+        }
+      }
+    }
+  }
+});
+
+test('near and far towers cannot cover the crystal at the parallax extremes', () => {
+  let seed = 71;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const { buildings } = createCityscape(new THREE.Color(), random);
+  const matrix = new THREE.Matrix4();
+  const towerBoxes = Array.from({ length: buildings.count }, (_, index) => {
+    buildings.getMatrixAt(index, matrix);
+    return new THREE.Box3(new THREE.Vector3(-0.5, -0.5, -0.5), new THREE.Vector3(0.5, 0.5, 0.5)).applyMatrix4(matrix);
+  });
+  const projectedRange = (box, camera) => {
+    const values = [];
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y])
+      for (const z of [box.min.z, box.max.z]) values.push(new THREE.Vector3(x, y, z).project(camera).x);
+    return [Math.min(...values), Math.max(...values)];
+  };
+  const { group } = createMonolith();
+  for (const [width, height] of [[1920, 1080], [800, 1024], [390, 844]]) {
+    const { camera, move, mobile } = setup(width, height);
+    group.scale.setScalar(getHeroObjectScale(camera.aspect, mobile));
+    group.position.set(0, 3.65, -2);
+    for (const x of [-1, 1]) for (const y of [-1, 1]) {
+      move(x, y);
+      for (let turn = 0; turn < 16; turn++) {
+        group.rotation.y = turn / 16 * Math.PI * 2;
+        group.updateMatrixWorld(true);
+        const [left, right] = projectedRange(new THREE.Box3().setFromObject(group), camera);
+        for (const box of towerBoxes) {
+          const [towerLeft, towerRight] = projectedRange(box, camera);
+          assert.ok(towerRight < left || towerLeft > right, `${width}x${height}: tower covers the crystal`);
         }
       }
     }

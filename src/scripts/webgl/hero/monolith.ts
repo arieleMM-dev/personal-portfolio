@@ -1,10 +1,14 @@
 import * as THREE from 'three';
 import { createCircuitMaterial } from './circuitMaterial.ts';
 import { HERO_PALETTE } from './palette.ts';
+import { getHeartbeat } from './heartbeat.ts';
 
-export const MONOLITH = { width: 3.2, height: 5.2, depth: 2.2, centerY: 3.65, floatAmplitude: 0.12 } as const;
+export const MONOLITH = {
+  width: 3.2, height: 5.2, depth: 2.2, centerY: 3.65, floatAmplitude: 0.12,
+  rotationSpeed: 0.041, emissiveMin: 2.2, emissiveRange: 1.2, lightMin: 9, lightRange: 9,
+} as const;
 
-/** A solid, lightly bevelled monolith; all GPU resources belong to heroScene. */
+/** Lightly bevelled blue crystal; all GPU resources belong to heroScene. */
 export function createMonolith() {
   const group = new THREE.Group();
   group.name = 'circuit-monolith';
@@ -29,42 +33,18 @@ export function createMonolith() {
   body.name = 'circuit-monolith-body';
   group.add(body);
 
-  const trimMaterial = new THREE.MeshStandardMaterial({
-    color: HERO_PALETTE.obsidian, metalness: 0.18, roughness: 0.3, envMapIntensity: 0.75,
-  });
-  const capGeometry = new THREE.BoxGeometry(3.21, 0.065, 2.21);
-  for (const y of [-2.57, 2.57]) {
-    const cap = new THREE.Mesh(capGeometry, trimMaterial);
-    cap.position.y = y;
-    group.add(cap);
-  }
-
-  const cyan = new THREE.MeshStandardMaterial({ color: 0x061426, emissive: HERO_PALETTE.cyan, emissiveIntensity: 2.0 });
-  const blue = new THREE.MeshStandardMaterial({ color: 0x040b18, emissive: HERO_PALETTE.blue, emissiveIntensity: 1.7 });
-  const railGeometry = new THREE.BoxGeometry(0.018, 1.35, 0.025);
-  for (const side of [-1, 1]) for (let index = 0; index < 3; index++) {
-    const rail = new THREE.Mesh(railGeometry, side < 0 ? cyan : blue);
-    rail.position.set(side * 1.535, (index - 1) * 1.54, 1.102);
-    group.add(rail);
-  }
-  const cyanLight = new THREE.PointLight(HERO_PALETTE.cyan, 12, 17, 2);
-  // Keep lights off the surface: near-zero distance creates blown-out hotspots.
-  cyanLight.position.set(-3.0, -0.6, 1.8);
-  const blueLight = new THREE.PointLight(HERO_PALETTE.blue, 8, 14, 2);
-  blueLight.position.set(3.0, 1.2, -2.6);
-  group.add(cyanLight, blueLight);
+  // No black caps or metal rails: the crystal is one uninterrupted volume.
+  const coreLight = new THREE.PointLight(HERO_PALETTE.cyan, 13.5, 28, 2);
+  coreLight.name = 'monolith-heart-light';
+  group.add(coreLight);
 
   return {
     group,
-    update(time: number) {
-      const breath = Math.sin(time * 0.85);
-      group.rotation.y = -0.36 + time * 0.026;
+    update(time: number, heartbeat = getHeartbeat(time)) {
+      group.rotation.y = -0.36 + time * MONOLITH.rotationSpeed;
       group.position.y = MONOLITH.centerY + Math.sin(time * 0.48) * MONOLITH.floatAmplitude;
-      circuits.material.emissiveIntensity = 2.7 + breath * 0.55;
-      cyan.emissiveIntensity = 1.9 + breath * 0.25;
-      blue.emissiveIntensity = 1.6 + breath * 0.25;
-      cyanLight.intensity = 12 + breath * 2;
-      blueLight.intensity = 8 + breath * 1.5;
+      circuits.material.emissiveIntensity = MONOLITH.emissiveMin + heartbeat * MONOLITH.emissiveRange;
+      coreLight.intensity = MONOLITH.lightMin + heartbeat * MONOLITH.lightRange;
       circuits.update(time);
     },
   };

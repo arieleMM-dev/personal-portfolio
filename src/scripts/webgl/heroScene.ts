@@ -7,6 +7,7 @@ import { createHeroEnvironment } from './hero/environment';
 import { createMonolith, MONOLITH } from './hero/monolith';
 import { createCityscape } from './hero/cityscape';
 import { HERO_PALETTE } from './hero/palette';
+import { getHeartbeat } from './hero/heartbeat';
 import { createDataParticles } from './hero/particles';
 import { createHeroCameraRig, getHeroObjectScale } from './hero/cameraRig';
 
@@ -50,7 +51,8 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   const monolith = createMonolith();
   monolith.group.position.set(0, MONOLITH.centerY, focusZ);
   scene.add(monolith.group);
-  scene.add(createCityscape(scene.fog.color));
+  const city = createCityscape(scene.fog.color);
+  scene.add(city.group);
   const particles = createDataParticles(scene.fog.density);
   scene.add(particles.points);
 
@@ -62,7 +64,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   });
   const composer = new EffectComposer(renderer, sceneTarget);
   const renderPass = new RenderPass(scene, camera);
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.85, 0.6, 0.85);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.6, 0.6, 1.05);
   const output = new OutputPass();
   composer.addPass(renderPass);
   composer.addPass(bloom);
@@ -82,9 +84,11 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   function updateScene(delta: number): void {
     const reduced = motionPreference.matches;
     if (!reduced) elapsed += delta;
+    const heartbeat = getHeartbeat(elapsed);
     cameraRig.update(delta, pointer, reduced, mobile);
-    monolith.update(elapsed);
-    environment.update(elapsed);
+    monolith.update(elapsed, heartbeat);
+    city.update(elapsed, heartbeat, reduced);
+    environment.update(elapsed, heartbeat);
     particles.update(elapsed);
   }
 
@@ -121,6 +125,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     // Bound both DPR and total pixels for reflection + HDR bloom.
     const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.5, Math.sqrt(2_600_000 / (width * height)));
     renderer.setPixelRatio(dpr);
+    renderer.transmissionResolutionScale = mobile ? 0.5 : 0.75;
     renderer.setSize(width, height, false);
     composer.setPixelRatio(dpr);
     composer.setSize(width, height);
