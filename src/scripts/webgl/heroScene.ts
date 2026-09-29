@@ -4,7 +4,8 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createHeroEnvironment } from './hero/environment';
-import { createMonolith, MONOLITH } from './hero/monolith';
+import { createVideoCube, VIDEO_CUBE } from './hero/videoCube';
+import { createHeroVideo, selectHeroVideo } from './hero/videoSource';
 import { createCityscape } from './hero/cityscape';
 import { HERO_PALETTE } from './hero/palette';
 import { getHeartbeat } from './hero/heartbeat';
@@ -48,9 +49,14 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   const camera = new THREE.PerspectiveCamera(43, 1, 0.1, 650);
   const cameraRig = createHeroCameraRig(camera);
   const environment = createHeroEnvironment(scene, renderer, normals, focusZ);
-  const monolith = createMonolith();
-  monolith.group.position.set(0, MONOLITH.centerY, focusZ);
-  scene.add(monolith.group);
+  const videoName = selectHeroVideo(window.location.search);
+  const video = createHeroVideo(import.meta.env.BASE_URL, videoName, () => {
+    needsFrame = true;
+    schedule();
+  });
+  const cube = createVideoCube(video.texture);
+  cube.group.position.set(0, VIDEO_CUBE.centerY, focusZ);
+  scene.add(cube.group);
   const city = createCityscape(scene.fog.color);
   scene.add(city.group);
   const particles = createDataParticles(scene.fog.density);
@@ -72,6 +78,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
 
   const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
   const pointer = new THREE.Vector2();
+  let pointerPresent = false;
   let elapsed = 0;
   let lastTimestamp: number | null = null;
   let rafId = 0;
@@ -86,7 +93,9 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     if (!reduced) elapsed += delta;
     const heartbeat = getHeartbeat(elapsed);
     cameraRig.update(delta, pointer, reduced, mobile);
-    monolith.update(elapsed, heartbeat);
+    cube.update(elapsed, heartbeat);
+    cube.updateInteraction(delta, pointer, pointerPresent, camera, reduced);
+    cube.setVideoState(video.ready, video.aspect);
     city.update(elapsed, heartbeat, reduced);
     environment.update(elapsed, heartbeat);
     particles.update(elapsed);
@@ -106,6 +115,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
 
   function schedule(): void {
     if (destroyed || contextLost || document.hidden || !visible || rafId) return;
+    video.setActive(!motionPreference.matches);
     if (motionPreference.matches && !needsFrame) return;
     lastTimestamp = null;
     rafId = requestAnimationFrame(frame);
@@ -115,6 +125,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     cancelAnimationFrame(rafId);
     rafId = 0;
     lastTimestamp = null;
+    video.setActive(false);
   }
 
   function resize(): void {
@@ -133,7 +144,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     camera.fov = mobile ? 55 : 43;
     camera.updateProjectionMatrix();
     // Keep the full diagonal visible even on narrow portrait screens.
-    monolith.group.scale.setScalar(getHeroObjectScale(camera.aspect, mobile));
+    cube.group.scale.setScalar(getHeroObjectScale(camera.aspect, mobile));
     particles.setPixelRatio(dpr);
     environment.resize(mobile ? 512 : 1024);
     needsFrame = true;
@@ -152,8 +163,9 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
       THREE.MathUtils.clamp((event.clientX - bounds.left) / bounds.width * 2 - 1, -1, 1),
       THREE.MathUtils.clamp((event.clientY - bounds.top) / bounds.height * 2 - 1, -1, 1),
     );
+    pointerPresent = true;
   }
-  function resetPointer(): void { pointer.set(0, 0); }
+  function resetPointer(): void { pointer.set(0, 0); pointerPresent = false; }
   function onVisibility(): void { if (document.hidden) pause(); else schedule(); }
   function onMotionChange(): void { pause(); needsFrame = true; schedule(); }
   function onContextLost(event: Event): void {
@@ -166,9 +178,11 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
 
   const resizeObserver = new ResizeObserver(resize);
   const intersectionObserver = new IntersectionObserver(([entry]) => {
-    visible = entry?.isIntersecting ?? false;
+    // Edge contact (ratio 0) is still "intersecting" in browsers. Do not keep
+    // the video decoder/GPU running after navigation lands exactly below Hero.
+    visible = (entry?.intersectionRatio ?? 0) > 0.001;
     if (visible) schedule(); else pause();
-  }, { threshold: 0 });
+  }, { threshold: 0.001 });
   resizeObserver.observe(canvas);
   intersectionObserver.observe(canvas);
   window.addEventListener('resize', resize, { passive: true });
@@ -196,6 +210,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
       motionPreference.removeEventListener('change', onMotionChange);
       canvas.removeEventListener('webglcontextlost', onContextLost);
       canvas.removeEventListener('webglcontextrestored', onContextRestored);
+      video.dispose();
       environment.dispose();
       normals.dispose();
       const geometries = new Set<THREE.BufferGeometry>();

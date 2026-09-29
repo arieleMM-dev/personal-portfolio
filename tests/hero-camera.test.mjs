@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as THREE from 'three';
 import { createHeroCameraRig, getHeroObjectScale, HERO_CAMERA } from '../src/scripts/webgl/hero/cameraRig.ts';
-import { createMonolith } from '../src/scripts/webgl/hero/monolith.ts';
+import { createVideoCube, VIDEO_CUBE } from '../src/scripts/webgl/hero/videoCube.ts';
 import { createCityscape } from '../src/scripts/webgl/hero/cityscape.ts';
 
 function setup(width = 1920, height = 1080) {
@@ -62,9 +62,9 @@ test('reduced motion cancels momentum and restores the neutral framing', () => {
   assert.ok(Math.abs(THREE.MathUtils.radToDeg(camera.rotation.x) - 5) < 1e-10);
 });
 
-test('the monolith stays in frame at the four corners, across rotation and aspect ratios', () => {
-  const { group: services } = createMonolith();
-  assert.ok(services.getObjectByName('circuit-monolith-body'));
+test('the video cube including its deformation bounds stays in frame across rotation and aspect ratios', () => {
+  const { group: services } = createVideoCube(new THREE.Texture());
+  assert.ok(services.getObjectByName('video-cube-voxels'));
   for (const [width, height] of [[1920, 1080], [1366, 768], [800, 1024], [390, 844], [320, 844]]) {
     const { camera, move, mobile } = setup(width, height);
     services.scale.setScalar(getHeroObjectScale(camera.aspect, mobile));
@@ -104,7 +104,7 @@ test('near and far towers cannot cover the crystal at the parallax extremes', ()
       for (const z of [box.min.z, box.max.z]) values.push(new THREE.Vector3(x, y, z).project(camera).x);
     return [Math.min(...values), Math.max(...values)];
   };
-  const { group } = createMonolith();
+  const { group } = createVideoCube(new THREE.Texture());
   for (const [width, height] of [[1920, 1080], [800, 1024], [390, 844]]) {
     const { camera, move, mobile } = setup(width, height);
     group.scale.setScalar(getHeroObjectScale(camera.aspect, mobile));
@@ -114,10 +114,15 @@ test('near and far towers cannot cover the crystal at the parallax extremes', ()
       for (let turn = 0; turn < 16; turn++) {
         group.rotation.y = turn / 16 * Math.PI * 2;
         group.updateMatrixWorld(true);
-        const [left, right] = projectedRange(new THREE.Box3().setFromObject(group), camera);
+        // Culling bounds expand in ALL directions, but attraction moves toward
+        // the eye (preserving each cell center's screen position). Use the actual
+        // shell plus 10% perspective/voxel-size margin for the visual corridor.
+        const half = VIDEO_CUBE.size * 0.55;
+        const shellBox = new THREE.Box3(new THREE.Vector3().setScalar(-half), new THREE.Vector3().setScalar(half));
+        const [left, right] = projectedRange(shellBox.applyMatrix4(group.matrixWorld), camera);
         for (const box of towerBoxes) {
           const [towerLeft, towerRight] = projectedRange(box, camera);
-          assert.ok(towerRight < left || towerLeft > right, `${width}x${height}: tower covers the crystal`);
+          assert.ok(towerRight < left || towerLeft > right, `${width}x${height}: tower ${towerLeft},${towerRight} overlaps cube ${left},${right}`);
         }
       }
     }

@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as THREE from 'three';
-import { createMonolith, MONOLITH } from '../src/scripts/webgl/hero/monolith.ts';
-import { createCircuitMaterial } from '../src/scripts/webgl/hero/circuitMaterial.ts';
+import { createVideoCube, VIDEO_CUBE } from '../src/scripts/webgl/hero/videoCube.ts';
 import { createCityscape, CITYSCAPE } from '../src/scripts/webgl/hero/cityscape.ts';
 import { createOceanLighting } from '../src/scripts/webgl/hero/environment.ts';
 import { HERO_PALETTE } from '../src/scripts/webgl/hero/palette.ts';
@@ -14,49 +13,48 @@ function seededRandom(seed = 17) {
   return () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
 }
 
-test('transmissive blue monolith and central light share exactly one bounded heartbeat', () => {
-  const monolith = createMonolith();
-  const body = monolith.group.getObjectByName('circuit-monolith-body');
+test('video cube and central light preserve the shared bounded heartbeat', () => {
+  const monolith = createVideoCube(new THREE.Texture());
+  const body = monolith.voxels;
   assert.ok(body.material instanceof THREE.MeshPhysicalMaterial);
-  assert.ok(body.material.transmission > 0.5 && body.material.transmission < 0.8);
+  assert.ok(body.material.transmission > 0 && body.material.transmission < 0.3);
   assert.equal(body.material.opacity, 1);
   assert.ok(body.material.thickness > 0 && body.material.ior > 1);
-  assert.equal(body.material.color.getHex(), HERO_PALETTE.crystal);
-  assert.equal(body.material.emissive.getHex(), HERO_PALETTE.circuit);
   assert.ok(body.material.metalness < 0.1 && body.material.roughness < 0.25);
-  const core = monolith.group.getObjectByName('monolith-heart-light');
+  const core = monolith.group.getObjectByName('video-cube-heart-light');
   assert.ok(core instanceof THREE.PointLight);
   assert.equal(core.position.length(), 0);
-  assert.ok(MONOLITH.rotationSpeed > 0.026 && MONOLITH.rotationSpeed < 0.055);
+  assert.ok(VIDEO_CUBE.rotationSpeed > 0.026 && VIDEO_CUBE.rotationSpeed < 0.055);
   for (let time = 0; time < 120; time += 0.5) {
     monolith.update(time);
-    assert.ok(monolith.group.position.y - MONOLITH.height / 2 > 0.8);
+    assert.ok(monolith.group.position.y - VIDEO_CUBE.size / 2 > 0.8);
     const pulse = getHeartbeat(time);
     assert.ok(pulse >= 0 && pulse <= 1);
-    assert.equal(body.material.emissiveIntensity, MONOLITH.emissiveMin + pulse * MONOLITH.emissiveRange);
-    assert.equal(core.intensity, MONOLITH.lightMin + pulse * MONOLITH.lightRange);
-    assert.ok(Math.abs(monolith.group.position.y - MONOLITH.centerY) <= MONOLITH.floatAmplitude + 1e-10);
+    assert.equal(body.material.emissiveIntensity, VIDEO_CUBE.emissiveMin + pulse * VIDEO_CUBE.emissiveRange);
+    assert.equal(core.intensity, VIDEO_CUBE.lightMin + pulse * VIDEO_CUBE.lightRange);
+    assert.ok(Math.abs(monolith.group.position.y - VIDEO_CUBE.centerY) <= VIDEO_CUBE.floatAmplitude + 1e-10);
   }
   assert.equal(getHeartbeat(HEARTBEAT.period / 4), 1);
   assert.equal(getHeartbeat(HEARTBEAT.period * 3 / 4), 0);
 });
 
-test('pixel emission preserves physical transmission and has no independent RGB hue', () => {
-  const circuits = createCircuitMaterial();
+test('video projection preserves physical lighting, transmission, output and fog', () => {
+  const { projection } = createVideoCube(new THREE.Texture());
   const shader = {
     vertexShader: THREE.ShaderLib.physical.vertexShader,
     fragmentShader: THREE.ShaderLib.physical.fragmentShader,
     uniforms: {},
   };
-  circuits.material.onBeforeCompile(shader, {});
-  assert.ok(shader.vertexShader.includes('vCircuitPosition = position;'));
-  assert.ok(shader.fragmentShader.includes('totalEmissiveRadiance *= circuitEmission(boardUV);'));
-  assert.ok(shader.fragmentShader.includes('float circuitEmission(vec2 uv)'));
+  projection.material.onBeforeCompile(shader, {});
+  assert.ok(shader.vertexShader.includes('vRestPosition = cellCenter + position;'));
+  assert.ok(shader.fragmentShader.includes('totalEmissiveRadiance *= projectedVideo;'));
+  assert.ok(shader.fragmentShader.includes('vec2 macroVideoUV()'));
   assert.ok(shader.fragmentShader.includes('#include <lights_physical_pars_fragment>'));
   assert.ok(shader.fragmentShader.includes('#include <transmission_fragment>'));
-  assert.ok(shader.fragmentShader.includes('vec2 pixelUV'));
-  circuits.update(14);
-  assert.equal(shader.uniforms.uCircuitTime.value, 14);
+  assert.ok(shader.fragmentShader.includes('#include <fog_fragment>'));
+  assert.ok(shader.fragmentShader.includes('#include <colorspace_fragment>'));
+  assert.ok(shader.fragmentShader.includes('sRGBTransferEOTF(videoSample)'));
+  assert.equal(shader.uniforms.uBlueMix, projection.uniforms.uBlueMix);
 });
 
 test('random city varies width, height and depth radically while keeping a clear central corridor', () => {
@@ -191,7 +189,7 @@ test('the low cyan directional light and Water sun share the same angle and radi
 test('palette, monolith lights and materials contain only blue/cyan or neutral channels', () => {
   const colors = Object.entries(HERO_PALETTE)
     .filter(([key]) => key !== 'fogDensity').map(([, value]) => new THREE.Color(value));
-  createMonolith().group.traverse((object) => {
+  createVideoCube(new THREE.Texture()).group.traverse((object) => {
     if (object instanceof THREE.Light) colors.push(object.color);
     if (object instanceof THREE.Mesh) colors.push(object.material.color, object.material.emissive);
   });

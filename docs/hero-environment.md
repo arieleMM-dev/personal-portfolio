@@ -1,4 +1,4 @@
-# Fondo del Hero: océano digital y monolito de circuitos
+# Fondo del Hero: océano digital y cubo de video instanciado
 
 La implementación utiliza Astro con scripts de cliente TypeScript. El nombre,
 subtítulo, traducciones y navegación continúan en el DOM. El canvas está dentro
@@ -27,10 +27,11 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 - `src/scripts/webgl/hero/environment.ts`: Water, luz, cielo, horizonte abierto
   y entorno PMREM con reflejos exclusivamente azules/cian.
 - `src/scripts/webgl/hero/palette.ts`: colores compartidos y densidad de niebla.
-- `src/scripts/webgl/hero/monolith.ts`: cristal biselado y PointLight central,
-  con flotación, giro y emisión sincronizados.
-- `src/scripts/webgl/hero/circuitMaterial.ts`: MeshPhysicalMaterial transmisivo
-  con paneles y píxeles emisivos procedurales, inspirado en el cubo de referencia.
+- `src/scripts/webgl/hero/videoCube.ts`: envolvente de 2.168 mini-cubos y luz central.
+- `src/scripts/webgl/hero/videoProjectionMaterial.ts`: material físico y GLSL de
+  proyección global, filtro azul y deformación de vértices.
+- `src/scripts/webgl/hero/videoCubeInteraction.ts`: raycaster/caja y resortes.
+- `src/scripts/webgl/hero/videoSource.ts`: selección de video, reproducción y limpieza.
 - `src/scripts/webgl/hero/heartbeat.ts`: pulso global y crestas del latido.
 - `src/scripts/webgl/hero/cityscape.ts`: 84 torres de escalas/profundidades variadas,
   venas luminosas y rayos ascendentes, en dos InstancedMesh.
@@ -50,10 +51,14 @@ Ya está conectado: `Hero.astro` declara el canvas y `homeAnimations.ts` carga
 segundo inicializador ni una isla React. El controlador devuelto expone
 `destroy()` y se integra con la limpieza de la página existente.
 
-Para ajustar el resultado, las dimensiones y flotación están en `MONOLITH`, el
-material y los trazos en `circuitMaterial.ts`, los extremos de cámara en
+Para ajustar el resultado, las dimensiones y flotación están en `VIDEO_CUBE`, el
+material y la proyección en `videoProjectionMaterial.ts`, los extremos de cámara en
 `HERO_CAMERA`, bloom en `heroScene.ts` y color/densidad de niebla en
 `HERO_PALETTE`. No se añaden dependencias npm.
+
+El monolito anterior (`monolith.ts`, `circuitMaterial.ts`) se conserva como
+referencia, pero ya no se importa en la escena. La implementación del video,
+sus shaders y las dos vistas de comparación se explican en [hero-video-projection.md](./hero-video-projection.md).
 
 ## Cómo se construye la imagen
 
@@ -62,20 +67,18 @@ material y los trazos en `circuitMaterial.ts`, los extremos de cámara en
    La densidad permite distinguir la primera fila de edificios y oculta las
    posteriores. El cielo coincide con el color de niebla en el horizonte.
    No hay montañas, tonos púrpura ni luces magenta en la escena WebGL.
-2. El monolito es una BoxGeometry de 3.2 × 5.2 × 2.2 unidades, con bisel de
-   0.045. Su MeshPhysicalMaterial es celeste (`0x49ceff`): transmission 0.62,
-   opacity 1, thickness 1.2, IOR 1.35, roughness 0.17, metalness 0.02 y clearcoat
-   0.6. La absorción azul tiene attenuationDistance 7. La opacidad permanece a 1
-   porque la transparencia óptica se calcula mediante transmisión, no alpha.
-   Se conservan el entorno PMREM y la refracción; no hay remates negros.
-3. `onBeforeCompile` añade una máscara escalar de paneles y píxeles a la emisión PBR,
-   cuyo único color procede de `material.emissive = 0x00baff`, conservando
-   iluminación, transmisión, reflejos y niebla. Los bordes se suavizan con `fwidth`.
-   Una emisión de base mantiene todo el cristal celeste; los píxeles se concentran
-   arriba y abajo, con paneles rectangulares y un barrido lento. No se descargan
-   mapas externos ni se generan texturas por frame. Un PointLight cian ocupa el
-   centro del monolito. Su luz ilumina el entorno; la emisión del material aporta
-   el brillo propio del cristal (no es una simulación volumétrica interna).
+2. El objeto central es una envolvente cúbica de 3.2 unidades: 20³ − 18³ = 2.168
+   instancias exteriores, sin celdas interiores ocultas. Comparten BoxGeometry,
+   MeshPhysicalMaterial y VideoTexture. El 9% de separación permite distinguir
+   la rejilla. Transmission 0.18, opacity 1, thickness 0.2, IOR 1.3, roughness
+   0.24, metalness 0.08 y clearcoat 0.55 equilibran cristal y legibilidad del video.
+3. `onBeforeCompile` proyecta el video por coordenadas locales del cubo completo,
+   anteriores a la deformación. Cada cara mayor contiene un mosaico continuo:
+   ningún mini-cubo repite por sí solo el fotograma entero. Un filtro azul/cian
+   en espacio lineal conserva el detalle. Raycaster + Box3 local alimentan un
+   campo de atracción con resortes; el vertex shader mueve las instancias hacia
+   la cámara. No se suben matrices por frame. Se conservan PMREM, transmisión,
+   luces físicas, niebla y PointLight central sincronizado con el entorno.
 4. Water renderiza una cámara reflejada en una textura. Su shader combina ese
    reflejo con Fresnel y la textura de normales repetida, movida lentamente por
    su uniforme `time`. Se ajustan la amplitud de la normal y la dispersión azul
@@ -120,7 +123,7 @@ material y los trazos en `circuitMaterial.ts`, los extremos de cámara en
 ## Latido y disparos individuales
 
 `getHeartbeat(t) = 0.5 + 0.5 * sin(t * 2π / 6.4)` se calcula una vez por frame.
-El material usa `emissiveIntensity = 2.2 + pulse * 1.2`, y el PointLight central
+El material usa `emissiveIntensity = 1.0 + pulse * 0.25`, y el PointLight central
 `intensity = 9 + pulse * 9`: ambos alcanzan máximos y mínimos simultáneamente.
 El agua, la aureola y los acentos urbanos reciben ese mismo valor, sin relojes
 independientes que puedan desincronizarse.
@@ -166,7 +169,9 @@ renderiza una imagen estática y se actualiza sólo al cambiar tamaño/preferenc
 ResizeObserver y `resize` actualizan cámara, canvas, partículas, reflexión y
 composer. `destroy()` cancela RAF, desconecta observers/listeners y libera
 geometrías, materiales, buffers de instancias, textura normal, PMREM, reflexión
-y pases de postprocesado. Los módulos de objetos no crean bucles o listeners propios.
+y pases de postprocesado. `videoSource.dispose()` pausa y descarga el medio,
+libera VideoTexture y retira el elemento oculto y sus listeners. El video también
+se pausa fuera del Hero, en segundo plano y con movimiento reducido.
 El módulo se importa dinámicamente sin bloquear la entrada de los textos; si
 WebGL o la textura fallan, se conserva el fondo CSS y la UI sigue disponible.
 
@@ -187,7 +192,7 @@ altura mínima de 44px y foco visible. La navegación fija sincroniza `inert` y
 
 ```sh
 npx tsc --noEmit -p tsconfig.json
-node --experimental-strip-types --test tests/hero-camera.test.mjs tests/hero-environment.test.mjs
+node --experimental-strip-types --test tests/hero-camera.test.mjs tests/hero-environment.test.mjs tests/hero-video.test.mjs
 npm run build
 ```
 
@@ -200,7 +205,9 @@ con cinco relaciones de aspecto y una vuelta completa del monolito. Las pruebas
 del entorno validan flotación, latido sincronizado, material transmisivo, paleta azul,
 dirección/radiancia de la luz rasante, variabilidad y separación de las torres,
 niebla por altura, buffers compartidos, cadencia independiente de FPS,
-cancelación de disparos y animación GPU de las partículas. Es necesario revisar también
+cancelación de disparos y animación GPU de las partículas. Las pruebas de video
+comprueban las 2.168 celdas, UV vecinas, límites de deformación, raycast transformado,
+resortes, selección local y reproducción/limpieza con un medio simulado. Es necesario revisar también
 la compilación GLSL y el aspecto en un navegador con WebGL.
 
 ## Referencias
