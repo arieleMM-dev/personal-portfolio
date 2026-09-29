@@ -93,7 +93,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     if (!reduced) elapsed += delta;
     const heartbeat = getHeartbeat(elapsed);
     cameraRig.update(delta, pointer, reduced, mobile);
-    cube.update(elapsed, heartbeat);
+    cube.update(elapsed, heartbeat, reduced);
     cube.updateInteraction(delta, pointer, pointerPresent, camera, reduced);
     cube.setVideoState(video.ready, video.aspect);
     city.update(elapsed, heartbeat, reduced);

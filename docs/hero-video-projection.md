@@ -54,7 +54,7 @@ al desplegar, aunque el navegador no los descargue de forma predeterminada.
 `videoCube.ts` genera sólo la capa exterior de una matriz 20 × 20 × 20:
 `20³ − 18³ = 2168` instancias. Comparten una BoxGeometry y un material.
 Las matrices contienen únicamente la traslación; nunca se actualizan por frame.
-Se conserva un PointLight central, el giro de 0.041 rad/s y la flotación ±0.12.
+Se conserva un PointLight central, el giro de 0.04715 rad/s y la flotación ±0.12.
 El tamaño 3.2 mantiene el corredor libre entre las torres en todo el parallax.
 
 `videoProjectionMaterial.ts` amplía MeshPhysicalMaterial mediante
@@ -139,7 +139,31 @@ consistente a 30/60/144 FPS con sólo unos pocos uniforms. El desplazamiento
 apunta hacia la cámara real, no siempre a +Z; sigue funcionando tras rotar 180°.
 Las cotas de culling incluyen la deformación máxima, también en el reflejo.
 
-## 4. Autoplay silenciado y limpieza
+## 4. Ondas orgánicas de escamas
+
+`scaleRipples.ts` añade pequeños movimientos espontáneos sobre una zona de una
+cara visible. La primera onda llega tras 3.5–5.5 segundos de animación; dura
+2.6–3.5 segundos y deja 4.8–9.2 segundos de reposo antes de la siguiente. Sólo
+hay una onda activa. Cara, centro, dirección, amplitud y duración varían al
+iniciarse el evento, no se sortean por frame.
+
+El shader calcula una cresta viajera dentro de un parche circular con bordes
+suaves. Levanta las celdas 0.15–0.25 unidades como máximo y las inclina alrededor
+de un borde; detrás pasa un retroceso menor, del 18%, y vuelven al reposo. La
+envolvente de entrada/salida evita saltos. Se rotan también las normales para
+que los reflejos acompañen a las escamas. Las UV siguen en coordenadas de reposo:
+la película permanece adherida al cubo y no se desliza entre piezas.
+
+Se combina con la atracción del cursor; las cotas de culling contemplan ambos
+efectos a la vez. No se crean geometrías, luces, timers ni buffers por evento:
+sólo cambian uniforms. El mismo reloj del Hero pausa las ondas fuera de pantalla.
+Movimiento reducido cancela la onda y, al reactivar, espera antes de iniciar otra.
+Un salto de reloj no reproduce una cola de eventos antiguos.
+
+No se modifican video1, su filtro azul, el giro, el agua, la ciudad ni la UI.
+Las pruebas específicas están en `tests/hero-scale-ripples.test.mjs`.
+
+## 5. Autoplay silenciado y limpieza
 
 `videoSource.ts` crea el medio sólo en el navegador:
 

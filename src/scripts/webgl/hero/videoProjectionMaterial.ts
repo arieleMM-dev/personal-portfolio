@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { SCALE_RIPPLE_GLSL, SCALE_RIPPLE_NORMAL, type ScaleRippleUniforms } from './scaleRipples.ts';
 
 /** GLSL is kept separate from scene/lifecycle code for tuning and review. */
 export const PROJECTION_VERTEX_UNIFORMS = /* glsl */ `
@@ -9,6 +10,7 @@ uniform float uRadius;
 uniform float uDisplacement;
 varying vec3 vRestPosition;
 varying vec3 vProjectionNormal;
+${SCALE_RIPPLE_GLSL}
 `;
 
 export const PROJECTION_VERTEX = /* glsl */ `
@@ -23,8 +25,11 @@ influence *= influence;
 float attraction = influence * uAttraction;
 // Local camera direction, NOT global +Z: works throughout a complete rotation.
 vec3 towardCamera = normalize(uCameraLocal - cellCenter);
-transformed = position * (1.0 + attraction * 0.16)
-  + towardCamera * attraction * uDisplacement;
+transformed = position * (1.0 + attraction * 0.16);
+// Tip each little scale around its trailing edge, with matching PBR normals.
+vec3 hinge = -uRippleDirection * uRipplePitch * 0.35;
+transformed = rotateScale(transformed - hinge, rippleAxis, ripple.y) + hinge;
+transformed += towardCamera * attraction * uDisplacement + uRippleNormal * ripple.x;
 // Three applies instanceMatrix afterwards, including in worldpos/transmission.
 `;
 
@@ -72,8 +77,9 @@ vec3 projectedVideo = mix(fallback, coolVideo(videoSample.rgb), uVideoReady);
 diffuseColor.rgb *= projectedVideo;
 `;
 
-export function createVideoProjectionMaterial(texture: THREE.Texture, size: number) {
+export function createVideoProjectionMaterial(texture: THREE.Texture, size: number, rippleUniforms: ScaleRippleUniforms) {
   const uniforms = {
+    ...rippleUniforms,
     uMouse: { value: new THREE.Vector3() },
     uCameraLocal: { value: new THREE.Vector3(0, 0, 20) },
     uAttraction: { value: 0 },
@@ -103,12 +109,13 @@ export function createVideoProjectionMaterial(texture: THREE.Texture, size: numb
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', `#include <common>\n${PROJECTION_VERTEX_UNIFORMS}`)
+      .replace('#include <beginnormal_vertex>', SCALE_RIPPLE_NORMAL)
       .replace('#include <begin_vertex>', PROJECTION_VERTEX);
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>\n${PROJECTION_FRAGMENT_UNIFORMS}`)
       .replace('#include <map_fragment>', PROJECTION_FRAGMENT)
       .replace('#include <emissivemap_fragment>', 'totalEmissiveRadiance *= projectedVideo;');
   };
-  material.customProgramCacheKey = () => 'hero-video-box-projection-v1';
+  material.customProgramCacheKey = () => 'hero-video-box-projection-scales-v2';
   return { material, uniforms };
 }

@@ -3,6 +3,7 @@ import { createVideoProjectionMaterial } from './videoProjectionMaterial.ts';
 import { createVideoCubeInteraction } from './videoCubeInteraction.ts';
 import { HERO_PALETTE } from './palette.ts';
 import { getHeartbeat } from './heartbeat.ts';
+import { createScaleRipples, SCALE_RIPPLE } from './scaleRipples.ts';
 
 export const VIDEO_CUBE = {
   divisions: 20, size: 3.2, fill: 0.91, centerY: 3.65, floatAmplitude: 0.12,
@@ -22,10 +23,11 @@ export function createCubeShell(divisions: number, size: number): THREE.Vector3[
 }
 
 /** 2,168 exterior voxels, one material and static instance matrices. */
-export function createVideoCube(texture: THREE.Texture) {
+export function createVideoCube(texture: THREE.Texture, random: () => number = Math.random) {
   const group = new THREE.Group();
   group.name = 'video-projection-cube';
-  const projection = createVideoProjectionMaterial(texture, VIDEO_CUBE.size);
+  const ripples = createScaleRipples(VIDEO_CUBE.size, VIDEO_CUBE.divisions, random);
+  const projection = createVideoProjectionMaterial(texture, VIDEO_CUBE.size, ripples.uniforms);
   const centers = createCubeShell(VIDEO_CUBE.divisions, VIDEO_CUBE.size);
   const cellSize = VIDEO_CUBE.size / VIDEO_CUBE.divisions * VIDEO_CUBE.fill;
   const geometry = new THREE.BoxGeometry(cellSize, cellSize, cellSize);
@@ -34,8 +36,12 @@ export function createVideoCube(texture: THREE.Texture) {
   const matrix = new THREE.Matrix4();
   centers.forEach((center, index) => voxels.setMatrixAt(index, matrix.makeTranslation(center)));
   voxels.instanceMatrix.needsUpdate = true;
-  // CPU culling cannot see vertex displacement. Include maximum attraction + scale.
-  const limit = VIDEO_CUBE.size / 2 + projection.uniforms.uDisplacement.value + cellSize * 0.16;
+  // CPU culling cannot see vertex displacement. Bound simultaneous mouse pull,
+  // scale lift and hinge tilt, also for the reflected camera.
+  const hingeRadius = cellSize * Math.sqrt(3) / 2 * 1.16 + VIDEO_CUBE.size / VIDEO_CUBE.divisions * 0.35;
+  const hingeTravel = 2 * hingeRadius * Math.sin(SCALE_RIPPLE.tiltMax / 2);
+  const limit = VIDEO_CUBE.size / 2 + projection.uniforms.uDisplacement.value + cellSize * 0.16
+    + SCALE_RIPPLE.amplitudeMax + hingeTravel;
   voxels.boundingBox = new THREE.Box3(new THREE.Vector3().setScalar(-limit), new THREE.Vector3().setScalar(limit));
   voxels.boundingSphere = voxels.boundingBox.getBoundingSphere(new THREE.Sphere());
   group.add(voxels);
@@ -45,12 +51,13 @@ export function createVideoCube(texture: THREE.Texture) {
   const interaction = createVideoCubeInteraction(group, VIDEO_CUBE.size);
 
   return {
-    group, voxels, projection, interaction,
-    update(time: number, heartbeat = getHeartbeat(time)): void {
+    group, voxels, projection, interaction, ripples,
+    update(time: number, heartbeat = getHeartbeat(time), reducedMotion = false): void {
       group.rotation.y = -0.36 + time * VIDEO_CUBE.rotationSpeed;
       group.position.y = VIDEO_CUBE.centerY + Math.sin(time * 0.48) * VIDEO_CUBE.floatAmplitude;
       projection.material.emissiveIntensity = VIDEO_CUBE.emissiveMin + heartbeat * VIDEO_CUBE.emissiveRange;
       light.intensity = VIDEO_CUBE.lightMin + heartbeat * VIDEO_CUBE.lightRange;
+      ripples.update(time, projection.uniforms.uCameraLocal.value, !reducedMotion);
     },
     updateInteraction(delta: number, pointer: Readonly<THREE.Vector2>, present: boolean, camera: THREE.PerspectiveCamera, reducedMotion: boolean): void {
       interaction.update(delta, pointer, present, camera, reducedMotion);
