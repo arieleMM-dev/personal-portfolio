@@ -24,11 +24,7 @@ export const translations: Record<string, Record<string, string>> = {
     'experience.title': 'Experience',
     'contact.label': 'Get in Touch',
     'contact.title': "Let's build<br />the future.",
-    'contact.subtitle': 'If you have a project we can work on, please reach out to me',
-    'contact.name': 'Name',
-    'contact.email': 'Email',
-    'contact.message': 'Message',
-    'contact.send': 'Send Message'
+    'contact.subtitle': 'If you have a project we can work on, please reach out to me'
   },
   es: {
     'nav.home': 'Inicio',
@@ -55,10 +51,6 @@ export const translations: Record<string, Record<string, string>> = {
     'experience.title': 'Experiencia',
     'contact.label': 'Ponte en contacto',
     'contact.title': 'Construyamos<br />el futuro.',
-    'contact.subtitle': 'Si tienes un proyecto en el que podamos trabajar, comunícate conmigo',
-    'contact.name': 'Nombre',
-    'contact.email': 'Correo',
-    'contact.message': 'Mensaje',
-    'contact.send': 'Enviar Mensaje'
+    'contact.subtitle': 'Si tienes un proyecto en el que podamos trabajar, comunícate conmigo'
   }
 };

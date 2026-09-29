@@ -41,18 +41,6 @@ export function startLenis() {
   document.documentElement.classList.add('lenis-smooth');
 }
 
-export function stopLenis() {
-  if (!lenisInstance) return;
-
-  lenisInstance.stop();
-  document.documentElement.classList.add('lenis-stopped');
-  document.documentElement.classList.remove('lenis-smooth');
-}
-
-export function getLenis() {
-  return lenisInstance;
-}
-
 export function scrollTo(target: string | number | HTMLElement, options?: { offset?: number; duration?: number }) {
   lenisInstance?.scrollTo(target, {
     offset: options?.offset ?? 0,

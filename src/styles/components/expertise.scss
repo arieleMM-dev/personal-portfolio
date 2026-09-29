@@ -56,29 +56,7 @@
     will-change: transform, opacity;
   }
 
-  // ── Giant Watermark SVG ──
-  &__watermark {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-    color: rgba(255, 255, 255, 0.04);
-    transition: color 0.4s ease;
-    will-change: transform;
-
-    svg {
-      width: 60%;
-      max-width: 180px;
-      max-height: 75%;
-      display: block;
-      flex-shrink: 0;
-    }
-  }
-
-  // ── Text content sits above watermark ──
+  // Text content sits above the section background.
   &__content {
     position: relative;
     z-index: 10;
@@ -128,31 +106,4 @@
     font-style: normal;
   }
 
-  &__techs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    list-style: none;
-  }
-
-  // ── Pill Tags — Brand-colored with dark bg ──
-  &__tech {
-    font-family: $font-mono;
-    font-size: clamp(0.65rem, 0.9vw, 0.78rem);
-    font-weight: 400;
-    letter-spacing: 0.04em;
-    // color and border-color are set via inline styles per tag
-    padding: 0.35em 0.8em;
-    border: 1px solid; // border-color from inline style
-    border-radius: 100px;
-    background: rgba(255, 255, 255, 0.03);
-    transition:
-      border-color 0.35s ease,
-      color 0.35s ease,
-      background-color 0.35s ease;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.07);
-    }
-  }
 }

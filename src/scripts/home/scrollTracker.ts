@@ -9,10 +9,6 @@ export function initScrollTracker() {
   if (!tracker) return;
 
   const links = document.querySelectorAll<HTMLAnchorElement>('[data-scroll-tracker-link]');
-  const progressLine = document.querySelector<HTMLElement>('[data-scroll-tracker-progress]');
-
-  // Animate global progress spark over the whole document - Eliminado
-
   function activateLink(activeLink: HTMLAnchorElement) {
     links.forEach(l => l.classList.remove('is-active'));
     activeLink.classList.add('is-active');

@@ -69,7 +69,6 @@ const {
       initPreloader(() => {
         startLenis();
         cleanupHome = initHome();
-        window.dispatchEvent(new CustomEvent('preloader:complete'));
       });
 
       // A BFCache entry must remain resumable when the visitor presses Back.

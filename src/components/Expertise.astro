@@ -1,9 +1,5 @@
 ---
-import { TECH_COLORS, CONCEPT_COLOR, columns } from '../data/expertise';
-
-function getTagColor(tag: string): string {
-  return TECH_COLORS[tag] || CONCEPT_COLOR;
-}
+import { columns } from '../data/expertise';
 ---
 
 <section class="expertise" id="expertise" data-expertise>
@@ -15,10 +11,7 @@ function getTagColor(tag: string): string {
   <div class="expertise__grid grid grid-cols-1 lg:grid-cols-3 gap-8" data-expertise-grid>
     {
       columns.map((col, i) => (
-        <article
-          class={`expertise__column ${col.className || ''}`}
-          data-expertise-col
-        >
+        <article class="expertise__column" data-expertise-col>
 
 
           <!-- Content -->

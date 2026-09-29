@@ -29,7 +29,6 @@ import '../styles/components/experience.scss';
     if (!listContainer) return;
 
     let activeId: string | null = null;
-    let isMobile = window.innerWidth < 768;
 
     function renderList() {
       const lang = (document.documentElement.getAttribute('lang') || 'en') as 'es'|'en';
@@ -117,7 +116,6 @@ import '../styles/components/experience.scss';
         const id = item.getAttribute('data-job-id');
 
         mm.add(DESKTOP_BREAKPOINT, () => {
-          isMobile = false;
           const onEnter = () => animateIn(item as HTMLElement);
           const onLeave = () => animateOut(item as HTMLElement);
           
@@ -131,7 +129,6 @@ import '../styles/components/experience.scss';
         });
 
         mm.add(MOBILE_BREAKPOINT, () => {
-          isMobile = true;
           const onClick = () => {
             if (activeId === id) {
               animateOut(item as HTMLElement);

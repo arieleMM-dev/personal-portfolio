@@ -56,9 +56,8 @@ material y la proyección en `videoProjectionMaterial.ts`, los extremos de cáma
 `HERO_CAMERA`, bloom en `heroScene.ts` y color/densidad de niebla en
 `HERO_PALETTE`. No se añaden dependencias npm.
 
-El monolito anterior (`monolith.ts`, `circuitMaterial.ts`) se conserva como
-referencia, pero ya no se importa en la escena. La implementación del video,
-sus shaders y las dos vistas de comparación se explican en [hero-video-projection.md](./hero-video-projection.md).
+La implementación del video, sus shaders y las dos vistas de comparación se
+explican en [hero-video-projection.md](./hero-video-projection.md).
 
 ## Cómo se construye la imagen
 

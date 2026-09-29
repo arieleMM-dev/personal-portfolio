@@ -290,14 +290,11 @@ function initAboutAnimation() {
 }
 
 /**
- * Expertise section: scroll-triggered cascade reveal for 5 glassmorphism cards.
- * Each card fades in with staggered slide-up. Watermark SVGs receive
- * a subtle parallax Y-shift for immersive depth.
+ * Expertise section: scroll-triggered reveal for the three tag clouds.
  */
 function initExpertiseAnimation() {
   const section = document.querySelector<HTMLElement>('[data-expertise]');
   const columns = document.querySelectorAll<HTMLElement>('[data-expertise-col]');
-  const watermarks = document.querySelectorAll<HTMLElement>('[data-expertise-watermark]');
   const title = document.querySelector<HTMLElement>('[data-expertise-title]');
 
   if (!section || !columns.length) return;
@@ -307,17 +304,12 @@ function initExpertiseAnimation() {
     gsap.set(title, { opacity: 0, y: 30 });
   }
 
-  // Set watermarks to their parallax start position
-  if (watermarks.length) {
-    gsap.set(watermarks, { yPercent: 15 });
-  }
-
   // Build the scrub timeline
   const tl = gsap.timeline({
     scrollTrigger: {
       trigger: section,
       start: 'top top',
-      // Generous scroll space for 5 cards
+      // Generous scroll space for the three columns
       end: () => `+=${window.innerHeight * 1.44}`,
       pin: true,
       scrub: 1,
@@ -336,7 +328,7 @@ function initExpertiseAnimation() {
     });
   }
 
-  // Stagger each column reveal — 5 cards cascade
+  // Stagger each column reveal
   tl.to(
     columns,
     {
@@ -349,18 +341,6 @@ function initExpertiseAnimation() {
     title ? 0.12 : 0,
   );
 
-  // Parallax drift on watermarks — runs across the entire timeline
-  if (watermarks.length) {
-    tl.to(
-      watermarks,
-      {
-        yPercent: -15,
-        duration: 1,
-        ease: 'none',
-      },
-      0, // start from the very beginning of the timeline
-    );
-  }
 }
 
 /**

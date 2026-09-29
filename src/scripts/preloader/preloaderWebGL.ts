@@ -17,9 +17,6 @@ import {
 import { createMarqueeRowGeometry } from './cylinderGeometry';
 import { createTextAtlasCanvas, MARQUEE_ROW_COUNT } from './textAtlas';
 
-export const FINAL_PHRASE =
-  'Donde el mundo ve infinitos problemas, se el precursor de infinitas soluciones';
-
 export type PreloaderMode = 'loading' | 'phrase' | 'done';
 
 /* ─── Shaders ─── */
@@ -243,13 +240,6 @@ export class PreloaderWebGL {
 
   enterPhraseMode() {
     this.mode = 'phrase';
-  }
-
-  setCylinderOpacity(v: number) {
-    this.rows.forEach((row) => {
-      row.opacity = v;
-      row.mesh.program.uniforms.uOpacity.value = v;
-    });
   }
 
   private updateLoading() {

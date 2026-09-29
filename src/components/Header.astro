@@ -74,13 +74,6 @@ function capitalize(str: string) {
         el.innerHTML = dict[key];
       }
     });
-    // Also update placeholders
-    document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-i18n-placeholder]').forEach(el => {
-      const key = el.getAttribute('data-i18n-placeholder');
-      if (key && dict[key]) {
-        el.placeholder = dict[key];
-      }
-    });
   }
 
   function updateToggleUI(lang: string) {

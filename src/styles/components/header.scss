@@ -14,10 +14,6 @@
   opacity: 0;
   visibility: hidden;
 
-  &.is-visible {
-    visibility: visible;
-  }
-
   &__brand {
     color: rgba(213, 224, 255, 0.85);
     flex-shrink: 0;

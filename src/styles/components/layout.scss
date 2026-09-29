@@ -1,16 +1,3 @@
-@use '../variables' as *;
-
-.orbital-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 50;
-  transition: filter 0.5s ease, opacity 0.5s ease;
-}
-
 .layout {
   min-height: 100vh;
   position: relative;
