@@ -9,6 +9,8 @@
 }
 
 html {
+  --dynamic-glow-color: #66d9ff;
+  color-scheme: dark;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -36,6 +38,13 @@ body {
   background-color: $color-bg;
   color: $color-text;
   overflow-x: hidden;
+}
+
+::selection { background: rgba(102, 217, 255, 0.25); color: #fff; }
+[hidden] { display: none !important; }
+:where(a, button, summary):focus-visible { outline: 2px solid #66d9ff; outline-offset: 5px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
 body.is-loading {

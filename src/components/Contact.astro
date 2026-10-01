@@ -1,61 +1,28 @@
 ---
 import { contactLinks } from '../data/contact';
 ---
-
-<footer class="contact" id="contact" data-contact>
+<footer class="contact portfolio-section" id="contact" data-contact aria-labelledby="contact-title">
+  <div class="contact__horizon" aria-hidden="true"><span></span><span></span><span></span></div>
   <div class="contact__inner" data-contact-inner>
-    <span class="contact__label text-xl md:text-2xl font-bold tracking-[0.3em] uppercase font-heading mb-8" data-i18n="contact.label">Get in Touch</span>
-    
-    <div class="flex flex-col items-center gap-8 md:gap-12 w-full max-w-3xl mx-auto mb-24 md:mb-32">
-      <h2 class="contact__title !mb-0" data-contact-title>
-        <span data-i18n="contact.title">Let's build<br />the future.</span><span class="dynamic-dot"></span>
-      </h2>
-
-      <p class="text-lg md:text-2xl lg:text-3xl text-white/70 text-center leading-relaxed font-serif" data-i18n="contact.subtitle">
-        Si tienes un proyecto en el que podamos trabajar, comunícate conmigo
-      </p>
-
-      <a 
-        href="mailto:arielmorillo.ct@gmail.com" 
-        class="group relative overflow-hidden inline-flex items-center justify-center bg-white/5 border border-white/10 text-white rounded-full px-8 py-5 md:px-10 md:py-6 w-full max-w-sm md:max-w-md transition-all duration-300 hover:bg-white/10 hover:border-orange-500 hover:shadow-[0_15px_35px_rgba(249,115,22,0.2)]" 
-        aria-label="Send Email"
-      >
-        <!-- Original Text (Contactar) -->
-        <div class="flex items-center gap-3 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] translate-x-0 group-hover:translate-x-[150%] group-hover:opacity-0">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-            <polyline points="22,6 12,13 2,6"></polyline>
-          </svg>
-          <span class="text-lg md:text-xl lg:text-2xl font-medium tracking-wide">Contactar</span>
-        </div>
-        
-        <!-- Reveal Text (Email) -->
-        <div class="absolute inset-0 flex items-center justify-center gap-2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] -translate-x-full opacity-0 group-hover:translate-x-0 group-hover:opacity-100 text-orange-400">
-          <span class="text-sm md:text-base lg:text-lg font-mono tracking-tight md:tracking-wide">arielmorillo.ct@gmail.com</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden md:block">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-        </div>
-      </a>
+    <p class="section-kicker"><span>05 /</span><span data-i18n="contact.label">El siguiente paso</span></p>
+    <a class="availability" href="mailto:arielmorillo.ct@gmail.com"><span class="status-dot" aria-hidden="true"></span><span data-i18n="common.available">Disponible para nuevos retos</span></a>
+    <h2 id="contact-title" class="section-title contact__title" data-contact-title data-i18n="contact.title">Una buena idea<br /><span>empieza hablando.</span></h2>
+    <p class="section-copy" data-i18n="contact.subtitle">¿Un proyecto, una oportunidad o una conversación sobre software? Me gustaría escucharte.</p>
+    <div class="contact__actions">
+      <a href="mailto:arielmorillo.ct@gmail.com" class="button-primary"><span data-i18n="contact.cta">Hablemos</span><span aria-hidden="true">↗</span></a>
+      <button type="button" class="contact__email" data-copy-email="arielmorillo.ct@gmail.com">
+        <span>arielmorillo.ct@gmail.com</span>
+        <span class="micro-label" data-copy-label data-i18n="contact.copy">Copiar correo</span>
+      </button>
     </div>
-
-    <nav class="contact__links mt-16 md:mt-24" data-contact-links aria-label="Social links">
-      {
-        contactLinks.map((link) => (
-          <a
-            href={link.href}
-            class="contact__link"
-            data-contact-link
-            {...(link.external
-              ? { target: '_blank', rel: 'noopener noreferrer' }
-              : {})}
-          >
-            <span class="contact__link-text">{link.label}</span>
-            <span class="contact__link-line" aria-hidden="true" />
-          </a>
-        ))
-      }
+    <p class="contact__feedback" data-copy-feedback role="status" aria-live="polite"></p>
+    <nav class="contact__links" aria-label="Social links">
+      {contactLinks.map(link => (
+        <a href={link.href} class="text-link" {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+          <span>{link.label}</span><span aria-hidden="true">↗</span>
+        </a>
+      ))}
     </nav>
+    <div class="contact__footer"><span>© {new Date().getFullYear()} Ariel Morillo</span><span>Astro · TypeScript · Three.js</span><a href="#home" data-nav-link><span data-i18n="contact.back">Volver al inicio</span> ↑</a></div>
   </div>
 </footer>

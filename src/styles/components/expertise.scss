@@ -1,109 +1,20 @@
 @use '../variables' as *;
-
 .expertise {
-  position: relative;
-  z-index: $z-content;
-  min-height: 100vh;
-  padding: clamp(6rem, 14vh, 10rem) 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  &__header {
-    margin-bottom: clamp(3rem, 6vh, 5rem);
-    text-align: center;
-  }
-
-  &__label {
-    display: block;
-    color: $color-accent;
-    margin-bottom: 1rem;
-  }
-
-  &__title {
-    font-family: $font-sans;
-    font-size: clamp(2.5rem, 7vw, 5rem);
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
-    color: $color-text;
-  }
-
-  // ── Responsive CSS Grid — Bento Box Pattern ──
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    grid-auto-rows: min-content;
-    gap: clamp(2rem, 4vw, 4rem);
-    max-width: 1400px;
-    margin: 0 auto;
-    width: 100%;
-
-    @media (min-width: 1024px) {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  // ── Column ──
-  &__column {
-    position: relative;
-    overflow: visible; // Allow tag cloud to spill slightly if needed
-
-    // Initial state — hidden for GSAP reveal
-    opacity: 0;
-    transform: translateY(40px);
-    will-change: transform, opacity;
-  }
-
-  // Text content sits above the section background.
-  &__content {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  &__header-block {
-    margin-bottom: clamp(1rem, 2.5vh, 1.5rem);
-  }
-
-  &__index {
-    display: block;
-    font-family: $font-mono;
-    font-size: clamp(0.6rem, 0.9vw, 0.7rem);
-    font-weight: 400;
-    letter-spacing: 0.08em;
-    color: $color-text-faint;
-    margin-bottom: 0.4rem;
-  }
-
-  &__col-title {
-    font-family: $font-sans;
-    font-size: clamp(1.3rem, 2vw, 1.6rem);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: $color-text;
-    transition: color 0.35s ease;
-  }
-
-  &__col-desc {
-    font-family: $font-mono;
-    font-size: clamp(0.85rem, 1.1vw, 0.95rem);
-    font-weight: 400;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.7);
-    font-style: italic;
-    margin-bottom: clamp(1.5rem, 3vh, 2rem);
-    transition: color 0.35s ease;
-    flex-grow: 1;
-  }
-
-  &__comment-char {
-    color: rgba(255, 255, 255, 0.25);
-    font-weight: 600;
-    font-style: normal;
-  }
-
+  &__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  &__column { padding: 1.6rem; display: flex; flex-direction: column; }
+  &__symbol { color: #82d7ff !important; font-size: 1.1rem !important; }
+  &__col-title { font-weight: 500; font-size: 1.65rem; margin-bottom: 0.8rem; letter-spacing: -0.015em; }
+  &__col-desc { color: #9eb5d0; font-size: 1.07rem; line-height: 1.55; min-height: 100px; margin-bottom: 1.4rem; }
+  .tech-list { margin-bottom: 1.25rem; }
+  &__detail { margin-top: auto; border-top: 1px solid rgba(112, 161, 211, 0.16); }
+  &__detail p { color: #a4bdd9; font-size: 1rem; line-height: 1.55; padding-bottom: 1rem; }
+  .text-link { font-size: 0.95rem; margin-top: 0.5rem; }
+  &__visual { position: relative; height: 120px; display: flex; align-items: center; justify-content: center; margin-block: 0.5rem 1.5rem; }
+  &__visual span { position: absolute; width: 70px; height: 45px; border: 1px solid rgba(114, 207, 255, calc(0.15 + var(--layer) * 0.1)); background: rgba(45, 124, 207, 0.04); transform: translateY(calc(var(--layer) * -9px + 18px)) rotate(-27deg) skew(20deg); border-radius: 4px; transition: transform 0.8s $ease-out-expo; }
+  &__column:hover &__visual--0 span, &__column:focus-within &__visual--0 span { transform: translateY(calc(var(--layer) * -14px + 28px)) rotate(-27deg) skew(20deg); }
+  &__visual--1 span { width: calc(28px + var(--layer) * 16px); height: calc(28px + var(--layer) * 16px); transform: rotate(45deg); background: none; }
+  &__column:hover &__visual--1 span, &__column:focus-within &__visual--1 span { transform: rotate(135deg); }
+  &__visual--2 span { width: 23px; height: calc(22px + var(--layer) * 12px); transform: translateX(calc(var(--layer) * 29px - 58px)); bottom: 20px; background: linear-gradient(0deg, rgba(62, 169, 234, 0.12), transparent); }
+  &__column:hover &__visual--2 span, &__column:focus-within &__visual--2 span { transform: translateX(calc(var(--layer) * 29px - 58px)) translateY(calc(var(--layer) * -3px)); }
+  @media (max-width: 1050px) { &__grid { grid-template-columns: 1fr; } &__column { padding: 1.7rem; } &__visual { height: 95px; } &__col-desc { min-height: 0; max-width: 650px; } }
 }

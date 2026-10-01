@@ -1,16 +1,45 @@
 ---
+import { translations } from '../data/translations';
+const stages = ['api', 'logic', 'data'];
 ---
-
-<section class="about" id="about" data-about>
-  <div class="about__inner">
-    <div class="about__left" data-about-title-wrap>
-      <h2 class="about__title text-4xl md:text-5xl lg:text-[3.5vw] font-black tracking-widest uppercase font-heading whitespace-nowrap" data-about-title>
-        <span data-i18n="about.title">ABOUT ME</span><span class="dynamic-dot"></span>
-      </h2>
-    </div>
-    <div class="about__right" data-about-text-wrap>
-      <div class="about__text text-left leading-relaxed md:leading-loose text-lg md:text-xl lg:text-2xl font-serif" data-about-text data-i18n="about.text">
+<section class="about portfolio-section" id="about" data-about aria-labelledby="about-title">
+  <div class="section-head" data-reveal>
+    <p class="section-kicker"><span>01 /</span><span data-i18n="about.title">Sobre mí</span></p>
+    <h2 id="about-title" class="section-title" data-about-title data-i18n="about.headline">Backend con propósito.<br /><span>Software con criterio.</span></h2>
+  </div>
+  <div class="about__grid">
+    <div class="about__profile" data-about-text data-reveal>
+      <p class="about__intro" data-i18n="about.intro">Soy Ariel, estudiante de Ingeniería de Software. Diseño APIs y construyo la lógica que convierte una idea en un producto funcional.</p>
+      <p class="section-copy" data-i18n="about.body">Trabajo con Node.js, TypeScript y bases de datos relacionales. Me importan las decisiones detrás del código: claridad, pruebas y una arquitectura que pueda crecer.</p>
+      <div class="about__facts">
+        <div><span class="micro-label" data-i18n="about.focusLabel">Enfoque</span><strong>Backend & APIs</strong></div>
+        <div><span class="micro-label" data-i18n="about.learningLabel">Explorando</span><strong data-i18n="about.learning">Arquitectura & DevOps</strong></div>
       </div>
+      <a class="availability" href="#contact" data-nav-link><span class="status-dot" aria-hidden="true"></span><span data-i18n="common.available">Disponible para nuevos retos</span><span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="architecture surface" data-surface data-reveal data-architecture>
+      <div class="panel-meta"><span class="micro-label" data-i18n="about.system">Cómo pienso un sistema</span><span aria-hidden="true">REQUEST → RESPONSE</span></div>
+      <div class="architecture__diagram" aria-hidden="true">
+        <div class="architecture__orbit"></div>
+        <div class="architecture__core"><span>{ }</span></div>
+        <span class="architecture__packet"></span>
+        <span class="architecture__axis">INPUT</span><span class="architecture__axis">OUTPUT</span>
+      </div>
+      <div class="architecture__steps" role="group" aria-label="Capas del sistema" data-i18n-aria-label="about.system">
+        {stages.map((stage, i) => (
+          <button type="button" class:list={['architecture__step', { 'is-active': i === 0 }]} data-architecture-stage={stage} aria-pressed={i === 0 ? 'true' : 'false'} aria-controls={`architecture-${stage}`}>
+            <span>0{i + 1}</span><span data-i18n={`about.${stage}.label`}>{stage}</span>
+          </button>
+        ))}
+      </div>
+      <div class="architecture__descriptions" aria-live="polite">
+        {stages.map((stage, i) => (
+          <div id={`architecture-${stage}`} data-architecture-panel={stage} hidden={i !== 0}>
+            <p data-i18n={`about.${stage}.desc`}>{translations.es[`about.${stage}.desc`]}</p>
+          </div>
+        ))}
+      </div>
+      <p class="architecture__hint micro-label" data-i18n="about.hint">Explora cada capa del sistema</p>
     </div>
   </div>
 </section>

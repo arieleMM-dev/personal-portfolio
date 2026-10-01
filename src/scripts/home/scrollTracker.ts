@@ -9,9 +9,17 @@ export function initScrollTracker() {
   if (!tracker) return;
 
   const links = document.querySelectorAll<HTMLAnchorElement>('[data-scroll-tracker-link]');
+  const abort = new AbortController();
+  const triggers: ScrollTrigger[] = [];
   function activateLink(activeLink: HTMLAnchorElement) {
-    links.forEach(l => l.classList.remove('is-active'));
+    links.forEach(l => { l.classList.remove('is-active'); l.removeAttribute('aria-current'); });
     activeLink.classList.add('is-active');
+    activeLink.setAttribute('aria-current', 'location');
+    const id = activeLink.dataset.scrollTrackerLink;
+    document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]').forEach(link => {
+      if (link.getAttribute('href') === `#${id}`) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
   }
 
   // Bind sections to their respective tracker links
@@ -22,13 +30,13 @@ export function initScrollTracker() {
     const targetSection = document.getElementById(sectionId);
     if (!targetSection) return;
 
-    ScrollTrigger.create({
+    triggers.push(ScrollTrigger.create({
       trigger: targetSection,
       start: 'top center',
       end: 'bottom center',
       onEnter: () => activateLink(link),
       onEnterBack: () => activateLink(link),
-    });
+    }));
 
     // Smooth scroll via Lenis for click
     link.addEventListener('click', (e) => {
@@ -44,7 +52,7 @@ export function initScrollTracker() {
       
       if (targetSection.id === 'expertise' || targetSection.hasAttribute('data-expertise')) {
         const triggers = ScrollTrigger.getAll();
-        const sectionTrigger = triggers.find(t => t.trigger === targetSection && (t.pin || t.vars.scrub));
+        const sectionTrigger = triggers.find(t => t.trigger === targetSection && t.pin);
         
         if (sectionTrigger && sectionTrigger.end) {
           const targetScroll = sectionTrigger.end - 20;
@@ -53,10 +61,11 @@ export function initScrollTracker() {
         }
       }
       
-      scrollTo(targetSection, { duration: 1.5 });
-    });
+      scrollTo(targetSection, { duration: 1.5, offset: parseFloat(getComputedStyle(targetSection).paddingTop) || 0 });
+    }, { signal: abort.signal });
   });
 
   // Ensure calculations are accurate after initial setup
   ScrollTrigger.refresh();
+  return () => { abort.abort(); triggers.forEach(trigger => trigger.kill()); };
 }

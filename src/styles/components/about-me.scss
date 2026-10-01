@@ -1,54 +1,33 @@
 @use '../variables' as *;
-
 .about {
-  position: relative;
-  z-index: $z-content;
-  padding: 8rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-
-  &__inner {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 4rem;
-
-    @media (min-width: 768px) {
-      grid-template-columns: 1fr 1.2fr;
-      gap: 6rem;
-      align-items: center;
-    }
-  }
-
-  &__left {
-    overflow: hidden; // for reveal animation
-  }
-
-  &__title {
-    color: #ffffff;
-    margin: 0;
-  }
-
-  &__text {
-    color: #ffffff;
-    margin: 0;
-    opacity: 0.6;
-
-    p {
-      display: block;
-      margin-bottom: 2rem;
-      
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
-
-    span {
-      opacity: 1;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.04);
-      padding: 0.1rem 0.3rem;
-      border-radius: 4px;
-      color: #ffffff;
-    }
-  }
+  &::before { content: ''; position: absolute; top: -4rem; left: 15%; width: 80%; height: 550px; z-index: -1; background: radial-gradient(ellipse at 65% 30%, rgba(15, 81, 147, 0.14), transparent 65%); pointer-events: none; }
+  &__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; }
+  &__intro { font-size: clamp(1.35rem, 2vw, 1.65rem); line-height: 1.55; color: #d4e3f7; text-wrap: pretty; }
+  &__facts { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid rgba(133, 173, 221, 0.16); margin-top: 2rem; padding-top: 1.5rem; gap: 1rem; }
+  &__facts strong { display: block; font-weight: 500; font-size: 1.1rem; margin-top: 0.35rem; }
+  .availability { margin-top: 1.25rem; }
+  @media (max-width: 900px) { &__grid { grid-template-columns: 1fr; } }
 }
+.architecture {
+  padding: 1.7rem;
+  &__diagram { height: 195px; display: flex; align-items: center; justify-content: center; perspective: 700px; }
+  &__orbit { position: absolute; width: 190px; height: 100px; border: 1px solid rgba(93, 179, 255, 0.25); border-radius: 50%; transform: rotate(-25deg); }
+  &__orbit::before, &__orbit::after { content: ''; position: absolute; inset: -15px; border: 1px solid rgba(93, 179, 255, 0.1); border-radius: 50%; }
+  &__orbit::after { inset: 18px; }
+  &__core { width: 95px; height: 95px; display: grid; place-items: center; transform: rotate(-16deg) skew(6deg); border: 1px solid rgba(102, 217, 255, 0.6); border-radius: 12px; background: linear-gradient(135deg, rgba(52, 166, 245, 0.2), rgba(12, 43, 72, 0.5)); box-shadow: 0 0 40px rgba(36, 130, 229, 0.15), inset 0 0 20px rgba(36, 130, 229, 0.1); transition: transform 0.7s $ease-out-expo, box-shadow 0.7s; }
+  &__core span { font-family: $font-mono; font-size: 1.8rem; color: #9ae8ff; }
+  &[data-active-stage='logic'] &__core { transform: rotate(0deg) skew(0deg) scale(1.1); box-shadow: 0 0 45px rgba(36, 170, 229, 0.25); }
+  &[data-active-stage='data'] &__core { transform: rotate(16deg) skew(-6deg); }
+  &__axis { position: absolute; left: 0; font-family: $font-mono; font-size: 0.5rem; letter-spacing: 0.12em; color: #718cae; }
+  &__axis:last-child { left: auto; right: 0; }
+  &__packet { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #9ae8ff; box-shadow: 0 0 14px #66d9ff; opacity: 0; }
+  &.is-visible &__packet { animation: packet-flow 4s ease-in-out infinite; }
+  &__steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+  &__step { min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.5rem; border: 1px solid rgba(107, 159, 211, 0.18); border-radius: 7px; color: #9cb0c9; transition: background 0.3s, border-color 0.3s, color 0.3s; }
+  &__step > span:first-child { font-family: $font-mono; font-size: 0.55rem; opacity: 0.6; }
+  &__step.is-active { border-color: rgba(102, 217, 255, 0.55); background: rgba(36, 134, 213, 0.13); color: #c6efff; }
+  &__descriptions { min-height: 100px; margin-top: 1.3rem; font-size: 1.1rem; line-height: 1.55; color: #a6bdd9; }
+  &__hint { font-size: 0.55rem; text-align: center; margin-top: 0.5rem; }
+  @media (max-width: 400px) { padding: 1.1rem; &__step { font-size: 0.9rem; } &__axis { display: none; } }
+}
+@keyframes packet-flow { 0% { transform: translateX(-110px); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(110px); opacity: 0; } }

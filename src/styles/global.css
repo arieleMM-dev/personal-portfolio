@@ -3,5 +3,5 @@
 @theme {
   --font-serif: "Playfair Display", serif;
   --font-heading: "League Spartan", sans-serif;
-  --font-sans: "Playfair Display", serif;
+  --font-sans: "League Spartan", system-ui, sans-serif;
 }

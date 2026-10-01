@@ -57,16 +57,22 @@ function capitalize(str: string) {
 
 <script>
   import { translations } from '../data/translations';
+  import { projects, type Language } from '../data/work';
 
   const LANG_STORAGE_KEY = 'portfolio-lang';
   const toggles = document.querySelectorAll<HTMLButtonElement>('[data-lang-toggle]');
   
   // Set initial state from localStorage or default to 'en'
-  const savedLang = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
+  const savedLang: Language = localStorage.getItem(LANG_STORAGE_KEY) === 'es' ? 'es' : 'en';
   document.documentElement.setAttribute('lang', savedLang);
   
-  function updateTranslations(lang: string) {
-    const dict = translations[lang] || translations['en'];
+  function updateTranslations(lang: Language) {
+    const dict = { ...translations[lang] };
+    Object.entries(projects).forEach(([id, project]) => {
+      dict[`work.${id}.title`] = project.displayTitle[lang];
+      dict[`work.${id}.short`] = project.short[lang];
+      dict[`work.${id}.open`] = `${dict['work.viewProject']}: ${project.displayTitle[lang]}`;
+    });
     document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       if (key && dict[key]) {
@@ -74,10 +80,15 @@ function capitalize(str: string) {
         el.innerHTML = dict[key];
       }
     });
+    document.querySelectorAll<HTMLElement>('[data-i18n-aria-label]').forEach(el => {
+      const key = el.dataset.i18nAriaLabel;
+      if (key && dict[key]) el.setAttribute('aria-label', dict[key]);
+    });
   }
 
   function updateToggleUI(lang: string) {
     toggles.forEach(toggle => {
+      toggle.setAttribute('aria-label', lang === 'es' ? 'Cambiar a inglés' : 'Switch to Spanish');
       const texts = toggle.querySelectorAll<HTMLElement>('[data-lang]');
       texts.forEach(t => {
         if (t.getAttribute('data-lang') === lang) {
@@ -95,12 +106,13 @@ function capitalize(str: string) {
   toggles.forEach(toggle => {
     toggle.addEventListener('click', () => {
       const currentLang = document.documentElement.getAttribute('lang') || 'en';
-      const newLang = currentLang === 'en' ? 'es' : 'en';
+      const newLang: Language = currentLang === 'en' ? 'es' : 'en';
       
       document.documentElement.setAttribute('lang', newLang);
       localStorage.setItem(LANG_STORAGE_KEY, newLang);
       updateToggleUI(newLang);
       updateTranslations(newLang);
+      document.dispatchEvent(new CustomEvent('portfolio:language-change'));
     });
   });
 </script>

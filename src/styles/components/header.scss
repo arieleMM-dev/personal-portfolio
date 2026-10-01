@@ -72,6 +72,7 @@
       transform-origin: left;
     }
 
+    &[aria-current='location'] .nav-text { color: #a2e7ff; }
     &:hover {
       color: #FFF;
 
@@ -136,7 +137,7 @@
     z-index: $z-header-sticky;
     justify-content: flex-end;
     padding: 1rem clamp(2rem, 6vw, 5rem);
-    background: rgba(10, 10, 10, 0.82);
+    background: rgba(3, 9, 22, 0.88);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     opacity: 0;

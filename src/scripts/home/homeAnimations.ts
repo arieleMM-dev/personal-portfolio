@@ -4,6 +4,7 @@ import { scrollTo } from '../lenis';
 import type { HeroSceneController } from '../webgl/heroScene';
 import { initScrollTracker } from './scrollTracker';
 import { initHeroScrollCue } from './heroScrollCue';
+import { initPortfolioInteractions } from './portfolioInteractions';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -35,6 +36,7 @@ const CONFIG = {
 };
 
 export function initHome() {
+  const events = new AbortController();
   const heroCanvas = document.querySelector<HTMLCanvasElement>('[data-hero-scene]');
   const header = document.querySelector<HTMLElement>('[data-header]');
   const headerSticky = document.querySelector<HTMLElement>('[data-header-sticky]');
@@ -59,7 +61,8 @@ export function initHome() {
         console.warn('Hero background could not load; the page remains available.', error);
       });
   }
-  const colorEngine = initGlobalColorEngine();
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const contentMedia = gsap.matchMedia();
 
   // ── GSAP Context for Memory Leak Prevention ──────────────────────────
   const ctx = gsap.context(() => {
@@ -111,7 +114,7 @@ export function initHome() {
       );
     }
 
-    // Orange dot: luminous pop with scale overshoot
+    // The static blue-white dot follows the title introduction.
     if (heroDot) {
       introTl.to(
         heroDot,
@@ -177,7 +180,7 @@ export function initHome() {
         e.preventDefault();
         
         if (href === '#home') {
-          scrollTo(0, { duration: 2 });
+          scrollTo(0, { duration: reducedMotion ? 0 : 2 });
           return;
         }
 
@@ -186,7 +189,7 @@ export function initHome() {
 
         if (target.id === 'expertise' || target.hasAttribute('data-expertise')) {
           const triggers = ScrollTrigger.getAll();
-          const sectionTrigger = triggers.find(t => t.trigger === target && (t.pin || t.vars.scrub));
+          const sectionTrigger = triggers.find(t => t.trigger === target && t.pin);
           
           if (sectionTrigger && sectionTrigger.end) {
             const targetScroll = sectionTrigger.end - 20;
@@ -195,30 +198,22 @@ export function initHome() {
           }
         }
         
-        scrollTo(target, { duration: 2 });
-      });
+        scrollTo(target, { duration: reducedMotion ? 0 : 2, offset: parseFloat(getComputedStyle(target).paddingTop) || 0 });
+      }, { signal: events.signal });
     });
 
-    // ── About: Text Reveal ──────────────────────────────────────────────
-    initAboutAnimation();
+    if (reducedMotion) introTl.progress(1);
+    initContentAnimations(contentMedia);
 
-    // ── Expertise: Pin & Scrub ──────────────────────────────────────────
-    initExpertiseAnimation();
-
-    // ── Contact: Fade-in ────────────────────────────────────────────────
-    initContactAnimation();
-
-    // ── Native Dynamic Dots ──────────────────────────────────────────────
-    initDynamicDots();
-
-    initBackToTop();
+    initBackToTop(events.signal);
   }); // End GSAP Context
 
-  initScrollTracker();
+  const destroyTracker = initScrollTracker();
+  const destroyInteractions = initPortfolioInteractions();
 
   const cursorTrail = document.getElementById('cursor-trail');
   let cursorCleanup: (() => void) | undefined;
-  if (cursorTrail) {
+  if (cursorTrail && !reducedMotion && matchMedia('(pointer: fine)').matches) {
     gsap.set(cursorTrail, { opacity: 1 });
     const trails = cursorTrail.querySelectorAll('.pointer-trail');
     
@@ -242,227 +237,75 @@ export function initHome() {
 
   return () => {
     disposed = true;
+    events.abort();
     ctx.revert(); // Cleans up all GSAP timelines and ScrollTriggers created in this context
     heroScene?.destroy();
     destroyScrollCue();
-    colorEngine.destroy();
+    contentMedia.revert();
+    destroyInteractions();
+    destroyTracker?.();
     if (cursorCleanup) cursorCleanup();
   };
 }
 
 /**
- * Reveal animation for the About section text.
+ * Content stays readable without JavaScript. Motion is progressively added
+ * only after the preloader, with a scroll reveal that adapts to the viewport.
  */
-function initAboutAnimation() {
-  const section = document.querySelector<HTMLElement>('[data-about]');
-  const title = document.querySelector<HTMLElement>('[data-about-title]');
-  const text = document.querySelector<HTMLElement>('[data-about-text]');
-
-  if (!section) return;
-
-  const tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: section,
-      start: 'top 75%',
-      toggleActions: 'play none none reverse',
-    },
-  });
-
-  if (title) {
-    gsap.set(title, { opacity: 0, y: 50 });
-    tl.to(title, {
-      opacity: 1,
-      y: 0,
-      duration: 1,
-      ease: 'power3.out',
-    });
-  }
-
-  if (text) {
-    gsap.set(text, { opacity: 0, y: 30 });
-    tl.to(text, {
-      opacity: 1,
-      y: 0,
-      duration: 1,
-      ease: 'power3.out',
-    }, '-=0.6');
-  }
-}
-
-/**
- * Expertise section: scroll-triggered reveal for the three tag clouds.
- */
-function initExpertiseAnimation() {
-  const section = document.querySelector<HTMLElement>('[data-expertise]');
-  const columns = document.querySelectorAll<HTMLElement>('[data-expertise-col]');
-  const title = document.querySelector<HTMLElement>('[data-expertise-title]');
-
-  if (!section || !columns.length) return;
-
-  // Title reveal on enter
-  if (title) {
-    gsap.set(title, { opacity: 0, y: 30 });
-  }
-
-  // Build the scrub timeline
-  const tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: section,
-      start: 'top top',
-      // Generous scroll space for the three columns
-      end: () => `+=${window.innerHeight * 1.44}`,
-      pin: true,
-      scrub: 1,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-    },
-  });
-
-  // Title fades in first
-  if (title) {
-    tl.to(title, {
-      opacity: 1,
-      y: 0,
-      duration: 0.25,
-      ease: 'none',
-    });
-  }
-
-  // Stagger each column reveal
-  tl.to(
-    columns,
-    {
-      opacity: 1,
-      y: 0,
-      duration: 0.4,
-      stagger: 0.12,
-      ease: 'none',
-    },
-    title ? 0.12 : 0,
-  );
-
-}
-
-/**
- * Simple fade-in + slide-up for the Contact footer on scroll.
- */
-function initContactAnimation() {
-  const inner = document.querySelector<HTMLElement>('[data-contact-inner]');
-
-  if (!inner) return;
-
-  gsap.to(inner, {
-    opacity: 1,
-    y: 0,
-    duration: 1,
-    ease: 'power2.out',
-    scrollTrigger: {
-      trigger: inner,
-      start: 'top 85%',
-      toggleActions: 'play none none reverse',
-    },
-  });
-}
-
-/**
- * Animate the native HTML dynamic dots using GSAP.
- */
-function initDynamicDots() {
-  // Main section titles
-  const mainTitles = document.querySelectorAll<HTMLElement>(
-    '[data-about-title], [data-expertise-title], [data-contact-title]'
-  );
-
-  mainTitles.forEach((title) => {
-    const dot = title.querySelector('.dynamic-dot');
-    if (dot) {
-      ScrollTrigger.create({
-        trigger: title,
-        start: 'top 85%',
-        onEnter: () => {
-          gsap.to(dot, {
-            opacity: 1,
-            scale: 1,
-            duration: 0.5,
-            ease: 'back.out(1.7)',
-          });
-        },
-      });
+function initContentAnimations(media: gsap.MatchMedia) {
+  media.add({
+    reduced: '(prefers-reduced-motion: reduce)',
+    spacious: '(min-width: 1100px) and (min-height: 960px)',
+    wide: '(min-width: 1100px)',
+    all: '(min-width: 0px)',
+  }, context => {
+    const conditions = context.conditions!;
+    const columns = document.querySelectorAll<HTMLElement>('[data-expertise-col]');
+    const section = document.querySelector<HTMLElement>('[data-expertise]');
+    if (conditions.reduced) {
+      gsap.set('[data-reveal], [data-expertise-col]', { clearProps: 'opacity,transform' });
+      return;
     }
-  });
-
-  // Expertise column titles (staggered)
-  const expertiseGrid = document.querySelector<HTMLElement>('[data-expertise-grid]');
-  if (expertiseGrid) {
-    const columnDots = expertiseGrid.querySelectorAll('.dynamic-dot');
-    if (columnDots.length) {
-      ScrollTrigger.create({
-        trigger: expertiseGrid,
-        start: 'top 70%', // Adjust depending on when cards fade in
-        onEnter: () => {
-          gsap.to(columnDots, {
-            opacity: 1,
-            scale: 1,
-            duration: 0.5,
-            stagger: 0.2,
-            ease: 'back.out(1.7)',
-          });
-        },
+    document.querySelectorAll<HTMLElement>('[data-reveal]').forEach(element => {
+      gsap.fromTo(element, { opacity: 0, y: 28 }, {
+        opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: element, start: 'top 90%', once: true },
       });
+    });
+    if (!section || !columns.length) return;
+    if (!conditions.wide) {
+      columns.forEach(column => gsap.fromTo(column, { opacity: 0.2, y: 28 }, {
+        opacity: 1, y: 0, ease: 'none',
+        scrollTrigger: { trigger: column, start: 'top 90%', end: 'top 55%', scrub: 0.7 },
+      }));
+      return;
     }
-  }
-}
-
-/**
- * Global Color Engine — transitions inside the Hero's cyan/purple spectrum.
- */
-function initGlobalColorEngine() {
-  const colors = [
-    [39, 217, 255],  // Cyan brillante (#27d9ff)
-    [79, 70, 229],   // Índigo eléctrico (#4f46e5)
-    [168, 85, 247],  // Púrpura neón (#a855f7)
-    [34, 211, 238],  // Cyan profundo (#22d3ee)
-  ];
-  const numColors = colors.length;
-  const root = document.documentElement;
-  let rafId = 0;
-
-  const tick = (time: number) => {
-    const duration = 12000;
-    const progress = (time % duration) / duration;
-    const index = progress * numColors;
-    const i1 = Math.floor(index);
-    const i2 = (i1 + 1) % numColors;
-    const fract = index - i1;
-
-    // Smoothstep for silky transition
-    const f = fract * fract * (3.0 - 2.0 * fract);
-
-    const r = colors[i1][0] + (colors[i2][0] - colors[i1][0]) * f;
-    const g = colors[i1][1] + (colors[i2][1] - colors[i1][1]) * f;
-    const b = colors[i1][2] + (colors[i2][2] - colors[i1][2]) * f;
-
-    root.style.setProperty('--dynamic-glow-color', `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`);
-    rafId = requestAnimationFrame(tick);
-  };
-
-  rafId = requestAnimationFrame(tick);
-  return {
-    destroy: () => cancelAnimationFrame(rafId)
-  };
+    const pin = Boolean(conditions.spacious && section.offsetHeight < window.innerHeight - 80);
+    gsap.fromTo(columns, { opacity: 0.2, y: 35 }, {
+      opacity: 1, y: 0, stagger: 0.16, ease: 'none',
+      scrollTrigger: {
+        trigger: section,
+        start: pin ? 'top top+=80' : 'top 65%',
+        end: pin ? '+=550' : 'center 50%',
+        pin,
+        scrub: 0.8,
+        invalidateOnRefresh: true,
+      },
+    });
+  });
 }
 
 /**
  * Premium Back To Top Button Animation
  */
-function initBackToTop() {
+function initBackToTop(signal: AbortSignal) {
   const btn = document.querySelector<HTMLElement>('[data-back-to-top]');
   if (!btn) return;
 
   const svg = btn.querySelector('svg');
 
   // Curvilinear Levitation (continuous float) on SVG
-  if (svg) {
+  if (svg && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     gsap.fromTo(svg,
       { y: -6 },
       {
@@ -501,5 +344,5 @@ function initBackToTop() {
 
   btn.addEventListener('click', () => {
     scrollTo(document.body, { duration: 1.5 });
-  });
+  }, { signal });
 }

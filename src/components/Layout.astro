@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import '../styles/global.scss';
+import '../styles/components/sections.scss';
 import '../styles/components/layout.scss';
 import '../styles/components/preloader.scss';
 import '../styles/components/header.scss';
@@ -23,7 +24,7 @@ interface Props {
 
 const {
   title = 'Portfolio',
-  description = 'Creative Frontend Developer Portfolio',
+  description = 'Ariel Morillo — Ingeniería de software, desarrollo backend, APIs y experiencias web interactivas.',
 } = Astro.props;
 ---
 
@@ -37,20 +38,21 @@ const {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <title>{title}</title>
   </head>
   <body>
+    <noscript><style>.preloader, .header--sticky, #cursor-trail { display: none !important; } .header { opacity: 1; visibility: visible; } .hero__letter, .hero__subtitle, .hero__dot { opacity: 1; transform: none; }</style></noscript>
     <Preloader />
     <ScrollTracker />
     <div id="cursor-trail" class="fixed top-0 left-0 pointer-events-none z-[9999] opacity-0">
-      <div class="pointer-trail absolute top-0 left-0 w-2 h-2 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--dynamic-glow-color, #F97316); background-color: var(--dynamic-glow-color, #F97316);"></div>
-      <div class="pointer-trail absolute top-0 left-0 w-1.5 h-1.5 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 8px var(--dynamic-glow-color, #F97316); background-color: var(--dynamic-glow-color, #F97316);"></div>
-      <div class="pointer-trail absolute top-0 left-0 w-1 h-1 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 6px var(--dynamic-glow-color, #F97316); background-color: var(--dynamic-glow-color, #F97316);"></div>
+      <div class="pointer-trail absolute top-0 left-0 w-2 h-2 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--dynamic-glow-color); background-color: var(--dynamic-glow-color);"></div>
+      <div class="pointer-trail absolute top-0 left-0 w-1.5 h-1.5 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 8px var(--dynamic-glow-color); background-color: var(--dynamic-glow-color);"></div>
+      <div class="pointer-trail absolute top-0 left-0 w-1 h-1 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 6px var(--dynamic-glow-color); background-color: var(--dynamic-glow-color);"></div>
     </div>
-    <div class="layout px-4 sm:px-8 md:px-16 lg:px-24">
+    <div class="layout">
       <main class="layout__main">
         <slot />
       </main>

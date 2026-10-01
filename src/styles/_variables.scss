@@ -1,10 +1,10 @@
-// Design tokens — strict B&W base
-$color-bg: #0A0A0A;
-$color-text: #ffffff;
+// Shared midnight-blue palette, from the ocean to the content panels.
+$color-bg: #030916;
+$color-text: #e9f1ff;
 $color-text-faint: rgba(255, 255, 255, 0.28);
-$color-accent: #6eb5ff;
+$color-accent: #66d9ff;
 
-$font-sans: 'Playfair Display', serif;
+$font-sans: 'League Spartan', system-ui, sans-serif;
 $font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
 $z-content: 1;

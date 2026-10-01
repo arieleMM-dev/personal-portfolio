@@ -12,7 +12,7 @@ export function initLenis(options: { stopped?: boolean } = {}) {
   lenisInstance = new Lenis({
     duration: 1.4,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    smoothWheel: true,
+    smoothWheel: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     touchMultiplier: 1.2,
   });
 
@@ -44,6 +44,7 @@ export function startLenis() {
 export function scrollTo(target: string | number | HTMLElement, options?: { offset?: number; duration?: number }) {
   lenisInstance?.scrollTo(target, {
     offset: options?.offset ?? 0,
-    duration: options?.duration ?? 1.8,
+    duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : options?.duration ?? 1.8,
+    immediate: matchMedia('(prefers-reduced-motion: reduce)').matches,
   });
 }
