@@ -9,15 +9,14 @@
   &__title { font-size: clamp(3.3rem, 6.3vw, 5.5rem); }
   .section-copy { margin-inline: auto; max-width: 490px; }
   &__actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 1.5rem 2rem; margin-top: 2.5rem; }
-  &__email { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; padding: 0.5rem; text-align: left; min-height: 52px; }
-  &__email > span:first-child { font-family: $font-mono; font-size: 0.75rem; color: #c1d7ef; overflow-wrap: anywhere; }
-  &__email:hover .micro-label { color: #9ae8ff; }
+  &__email { display: inline-flex; align-items: center; gap: 0.8rem; padding: 1rem 0.5rem; min-height: 52px; color: #c1d7ef; transition: color 0.4s; }
+  &__email svg { color: #8ae2ff; }
+  &__email:hover { color: #fff; }
   &__feedback { min-height: 1.5rem; margin-top: 1rem; font-size: 0.9rem; color: #9ae8ff; }
   &__links { display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; }
-  &__footer { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-top: 2rem; margin-top: 5rem; border-top: 1px solid rgba(97, 152, 213, 0.18); color: #849dbc; font-family: $font-mono; font-size: 0.6rem; line-height: 1.7; text-align: left; }
-  &__horizon { position: absolute; inset: 5% -5% 25%; pointer-events: none; overflow: hidden; z-index: -1; opacity: 0.75; background: radial-gradient(ellipse at 50% 60%, rgba(13, 69, 119, 0.23), transparent 65%); }
+  &__horizon { position: absolute; inset: 5% 0 25%; pointer-events: none; overflow: hidden; z-index: -1; opacity: 0.75; background: radial-gradient(ellipse at 50% 60%, rgba(13, 69, 119, 0.23), transparent 65%); }
   &__horizon span { position: absolute; left: 10%; right: 10%; bottom: 25%; height: 150px; border-top: 1px solid rgba(66, 154, 220, 0.16); border-radius: 50%; transform: rotateX(65deg); box-shadow: 0 -8px 30px rgba(18, 112, 194, 0.05); }
   &__horizon span:nth-child(2) { bottom: 18%; left: 0; right: 0; opacity: 0.65; }
   &__horizon span:nth-child(3) { bottom: 10%; left: -15%; right: -15%; opacity: 0.35; }
-  @media (max-width: 600px) { &__horizon { inset-inline: 0; } &__actions { flex-direction: column; } &__email { align-items: center; } &__footer { justify-content: center; text-align: center; } }
+  @media (max-width: 600px) { &__actions { flex-direction: column; gap: 0.5rem; } }
 }

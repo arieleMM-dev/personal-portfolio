@@ -4,31 +4,37 @@ const stages = ['api', 'logic', 'data'];
 ---
 <section class="about portfolio-section" id="about" data-about aria-labelledby="about-title">
   <div class="section-head" data-reveal>
-    <p class="section-kicker"><span>01 /</span><span data-i18n="about.title">Sobre mí</span></p>
+    <p class="section-kicker"><span data-i18n="about.title">Sobre mí</span></p>
     <h2 id="about-title" class="section-title" data-about-title data-i18n="about.headline">Backend con propósito.<br /><span>Software con criterio.</span></h2>
   </div>
   <div class="about__grid">
     <div class="about__profile" data-about-text data-reveal>
-      <p class="about__intro" data-i18n="about.intro">Soy Ariel, estudiante de Ingeniería de Software. Diseño APIs y construyo la lógica que convierte una idea en un producto funcional.</p>
-      <p class="section-copy" data-i18n="about.body">Trabajo con Node.js, TypeScript y bases de datos relacionales. Me importan las decisiones detrás del código: claridad, pruebas y una arquitectura que pueda crecer.</p>
+      <p class="about__intro" data-i18n="about.intro">Soy Ariel, estudiante de Ingeniería de Software. Construyo backend y lógica de negocio para convertir necesidades reales en software que funciona.</p>
+      <p class="section-copy" data-i18n="about.body">Trabajo con Node.js y TypeScript. Me interesa entender cómo encajan las piezas de un sistema complejo y profundizar en su arquitectura: responsabilidades claras, pruebas y decisiones que permitan crecer.</p>
       <div class="about__facts">
-        <div><span class="micro-label" data-i18n="about.focusLabel">Enfoque</span><strong>Backend & APIs</strong></div>
+        <div><span class="micro-label" data-i18n="about.focusLabel">Enfoque</span><strong data-i18n="about.focus">Backend & sistemas</strong></div>
         <div><span class="micro-label" data-i18n="about.learningLabel">Explorando</span><strong data-i18n="about.learning">Arquitectura & DevOps</strong></div>
       </div>
       <a class="availability" href="#contact" data-nav-link><span class="status-dot" aria-hidden="true"></span><span data-i18n="common.available">Disponible para nuevos retos</span><span aria-hidden="true">↗</span></a>
     </div>
-    <div class="architecture surface" data-surface data-reveal data-architecture>
+    <div class="architecture" data-reveal data-architecture data-active-stage="api">
       <div class="panel-meta"><span class="micro-label" data-i18n="about.system">Cómo pienso un sistema</span><span aria-hidden="true">REQUEST → RESPONSE</span></div>
       <div class="architecture__diagram" aria-hidden="true">
-        <div class="architecture__orbit"></div>
-        <div class="architecture__core"><span>{ }</span></div>
-        <span class="architecture__packet"></span>
+        <svg class="architecture__network" viewBox="0 0 440 280" fill="none">
+          <defs><radialGradient id="system-glow"><stop stop-color="#38bfff" stop-opacity=".18"/><stop offset="1" stop-color="#38bfff" stop-opacity="0"/></radialGradient></defs>
+          <ellipse cx="220" cy="140" rx="170" ry="130" fill="url(#system-glow)"/>
+          <g class="architecture__routes" stroke="currentColor"><path d="M40 140H110L160 90H220M110 140L160 190H220M220 90H280L330 140H400M220 190H280L330 140"/><path d="M160 90V190M280 90V190" stroke-dasharray="3 8"/></g>
+          <g class="architecture__satellites" stroke="currentColor"><circle cx="110" cy="140" r="9"/><circle cx="330" cy="140" r="9"/><circle cx="160" cy="90" r="5"/><circle cx="160" cy="190" r="5"/><circle cx="280" cy="90" r="5"/><circle cx="280" cy="190" r="5"/></g>
+          <g class="architecture__model architecture__model--api"><path d="M220 78L274 109V171L220 202L166 171V109Z"/><path d="M220 78V140M166 109L220 140L274 109M220 140V202"/><path class="architecture__signal" d="M40 140H110L160 90H220V140L274 109L330 140H400"/></g>
+          <g class="architecture__model architecture__model--logic"><path d="M220 74L286 140L220 206L154 140Z"/><path d="M220 96L264 140L220 184L176 140Z"/><circle cx="220" cy="140" r="14"/><path class="architecture__signal" d="M40 140H154L220 74L286 140H400"/></g>
+          <g class="architecture__model architecture__model--data"><ellipse cx="220" cy="100" rx="53" ry="19"/><path d="M167 100V179C167 205 273 205 273 179V100M167 126C167 152 273 152 273 126M167 153C167 179 273 179 273 153"/><path class="architecture__signal" d="M40 140H110L160 190H220M220 90H280L330 140H400"/></g>
+        </svg>
         <span class="architecture__axis">INPUT</span><span class="architecture__axis">OUTPUT</span>
       </div>
       <div class="architecture__steps" role="group" aria-label="Capas del sistema" data-i18n-aria-label="about.system">
         {stages.map((stage, i) => (
           <button type="button" class:list={['architecture__step', { 'is-active': i === 0 }]} data-architecture-stage={stage} aria-pressed={i === 0 ? 'true' : 'false'} aria-controls={`architecture-${stage}`}>
-            <span>0{i + 1}</span><span data-i18n={`about.${stage}.label`}>{stage}</span>
+            <span data-i18n={`about.${stage}.label`}>{translations.es[`about.${stage}.label`]}</span>
           </button>
         ))}
       </div>

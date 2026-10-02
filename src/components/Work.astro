@@ -1,37 +1,35 @@
 ---
 import { projects } from '../data/work';
+import TechnologyList from './TechnologyList.astro';
 const featured = ['jirah', 'portfolio'] as const;
 const upcoming = ['pos', 'helpdesk'] as const;
 ---
 <section class="work portfolio-section" id="work" aria-labelledby="work-title">
   <div class="section-head" data-reveal>
-    <p class="section-kicker"><span>03 /</span><span data-i18n="work.label">Trabajo seleccionado</span></p>
+    <p class="section-kicker"><span data-i18n="work.label">Proyectos</span></p>
     <h2 id="work-title" class="section-title" data-i18n="work.title">Ideas convertidas<br /><span>en software.</span></h2>
     <p class="section-copy" data-i18n="work.subtitle">Explora lo que construí y las decisiones detrás de cada proyecto.</p>
   </div>
   <div class="work__grid" id="work-grid">
-    {featured.map((id, i) => (
-      <article class={`work__card work__card--${id} surface`} data-project={id} data-surface data-reveal>
-        <button class="work__visual" type="button" data-project-open={id} aria-haspopup="dialog" aria-label={`Explorar ${projects[id].displayTitle.es}`} data-i18n-aria-label={`work.${id}.open`}>
-          <div class="work__browser-bar" aria-hidden="true"><span></span><span></span><span></span><small>{id === 'jirah' ? 'finca-jirah / dashboard' : 'ariel-morillo / digital-ocean'}</small></div>
-          {id === 'jirah' ? (
-            <img src="/assets/jirah/dashboard.jpg" alt="Dashboard de gestión agrícola Finca Jirah" class="work__image" loading="lazy" width="1440" height="900" />
-          ) : (
-            <div class="work__ocean">
-              <img src="/assets/portfolio/hero-refresh.jpg" alt="Hero del portafolio con el océano digital y el cubo interactivo" loading="lazy" width="1264" height="720" />
-              <video muted loop playsinline preload="metadata" data-preview-video aria-hidden="true" poster="/assets/hero/waternormals.jpg">
-                <source src="/assets/hero/video1-optimized.mp4" type="video/mp4" />
-              </video>
+    {featured.map(id => (
+      <article class={`work__project work__project--${id}`} data-project={id}>
+        <div class="work__stage" data-reveal>
+          <button class="work__visual" type="button" data-project-open={id} data-project-visual aria-haspopup="dialog" aria-label={`Explorar ${projects[id].displayTitle.es}`} data-i18n-aria-label={`work.${id}.open`}>
+            <div class="work__parallax" data-project-parallax>
+              <div class="work__media" data-project-media>
+                <img src={projects[id].image} alt="" class="work__image" loading="lazy" width="1440" height="900" />
+              </div>
             </div>
-          )}
-          <span class="work__visual-action"><span data-i18n="work.viewProject">Explorar proyecto</span><span aria-hidden="true">↗</span></span>
-        </button>
-        <div class="work__card-info">
-          <div class="panel-meta"><span class="micro-label">0{i + 1} / {id === 'jirah' ? 'FULLSTACK · OFFLINE-FIRST' : 'CREATIVE WEB · WEBGL'}</span><span class="work__status" data-i18n="work.completed">Completado</span></div>
+            <span class="work__visual-action"><span data-i18n="work.viewProject">Explorar proyecto</span><span aria-hidden="true">↗</span></span>
+          </button>
+        </div>
+        <div class="work__project-info" data-reveal>
+          <div class="panel-meta"><span class="micro-label">{id === 'jirah' ? 'FULLSTACK · OFFLINE-FIRST' : 'CREATIVE WEB · WEBGL'}</span><span class="work__status" data-i18n="work.completed">Completado</span></div>
           <h3 data-i18n={`work.${id}.title`}>{projects[id].title}</h3>
           <p data-i18n={`work.${id}.short`}>{projects[id].short.es}</p>
-          <ul class="tech-list">{projects[id].tags.map(tag => <li>{tag}</li>)}</ul>
-          <button class="text-link" type="button" data-project-open={id} aria-haspopup="dialog"><span data-i18n="work.caseStudy">Ver caso de estudio</span><span aria-hidden="true">↗</span></button>
+          {id === 'jirah' && <p class="work__location" data-i18n="work.jirah.location">Pedro Vicente Maldonado · Ecuador</p>}
+          <TechnologyList technologies={projects[id].tags} />
+          <button class="text-link" type="button" data-project-open={id} aria-haspopup="dialog"><span data-i18n="work.caseStudy">Ver proyecto</span><span aria-hidden="true">↗</span></button>
         </div>
       </article>
     ))}
@@ -39,13 +37,13 @@ const upcoming = ['pos', 'helpdesk'] as const;
   <div class="work__upcoming-head" data-reveal><span class="micro-label" data-i18n="work.upcoming">En el laboratorio</span><span data-i18n="work.upcomingNote">Proyectos en desarrollo</span></div>
   <div class="work__upcoming">
     {upcoming.map((id, i) => (
-      <article class={`work__concept surface work__concept--${id}`} data-surface data-reveal>
+      <article class={`work__concept work__concept--${id}`} data-reveal>
         <div class="work__concept-diagram" aria-hidden="true"><span>{i === 0 ? '↔' : '◎'}</span><i></i><i></i><i></i></div>
         <div>
           <span class="micro-label" data-i18n="work.developing">En desarrollo</span>
           <h3 data-i18n={`work.${id}.title`}>{projects[id].title}</h3>
           <p data-i18n={`work.${id}.short`}>{projects[id].short.es}</p>
-          <ul class="tech-list">{projects[id].tags.map(tag => <li>{tag}</li>)}</ul>
+          <TechnologyList technologies={projects[id].tags} />
         </div>
       </article>
     ))}
@@ -54,27 +52,29 @@ const upcoming = ['pos', 'helpdesk'] as const;
 
 <dialog class="work-modal" id="work-modal" aria-labelledby="modal-title" data-lenis-prevent>
   <div class="work-modal__content">
-    <div class="work-modal__top"><span class="micro-label" data-i18n="work.caseLabel">Caso de estudio</span><button class="work-modal__close" type="button" data-modal-close aria-label="Cerrar proyecto" autofocus>✕</button></div>
+    <div class="work-modal__top"><span class="micro-label" data-i18n="work.caseLabel">Proyecto en breve</span><button class="work-modal__close" type="button" data-modal-close aria-label="Cerrar proyecto" autofocus>✕</button></div>
     <div class="work-modal__body" id="modal-body">
       <h3 class="work-modal__title" id="modal-title"></h3>
       <p class="work-modal__short" id="modal-short"></p>
-      <div class="work-modal__case-grid">
-        <div><h4 class="micro-label" data-i18n="work.problem">El problema</h4><p id="modal-problem"></p></div>
-        <div><h4 class="micro-label" data-i18n="work.decisions">Decisiones de ingeniería</h4><ul id="modal-bullets"></ul></div>
-        <div><h4 class="micro-label" data-i18n="work.result">El resultado</h4><p id="modal-result"></p></div>
+      <div class="work-modal__overview">
+        <button class="work-modal__cover" data-open-gallery type="button" aria-label="Explorar pantallas" data-i18n-aria-label="work.gallery"><img id="modal-cover" alt="" /><span aria-hidden="true">↗</span></button>
+        <div><h4 class="micro-label" data-i18n="work.decisions">Mi aportación</h4><ul id="modal-bullets"></ul></div>
       </div>
-      <ul class="tech-list" id="modal-tags"></ul>
-      <button class="button-primary" id="modal-gallery-btn" type="button"><span data-i18n="work.gallery">Explorar pantallas</span><span aria-hidden="true">↗</span></button>
+      <ul class="tech-list" id="modal-tags" aria-label="Tecnologías" data-i18n-aria-label="common.technologies"></ul>
+      <button class="button-primary" id="modal-gallery-btn" data-open-gallery type="button"><span data-i18n="work.gallery">Explorar pantallas</span><span aria-hidden="true">↗</span></button>
     </div>
     <div class="work-modal__gallery" id="modal-gallery" hidden>
-      <div class="work-modal__gallery-toolbar"><button class="text-link" id="modal-gallery-back" type="button"><span aria-hidden="true">←</span><span data-i18n="work.back">Volver al caso</span></button><span class="micro-label" id="modal-gallery-counter"></span></div>
+      <div class="work-modal__gallery-toolbar"><button class="text-link" id="modal-gallery-back" type="button"><span aria-hidden="true">←</span><span data-i18n="work.back">Volver al resumen</span></button><span class="micro-label" id="modal-gallery-counter"></span></div>
       <div class="work-modal__gallery-main">
         <button class="work-modal__gallery-nav" id="modal-gallery-prev" type="button" aria-label="Previous image">←</button>
-        <img id="modal-gallery-main-img" alt="" />
+        <div class="work-modal__viewport" id="modal-gallery-viewport" tabindex="0" role="region" aria-label="Imagen del proyecto"><img id="modal-gallery-main-img" alt="" /></div>
         <button class="work-modal__gallery-nav" id="modal-gallery-next" type="button" aria-label="Next image">→</button>
       </div>
+      <div class="work-modal__gallery-progress" aria-hidden="true"><span id="modal-gallery-progress"></span></div>
+      <div class="work-modal__gallery-tools"><span class="micro-label" data-i18n="work.gallery.hint">Flechas para recorrer · Amplía para ver los detalles</span><button class="text-link" id="modal-gallery-zoom" type="button" aria-pressed="false">Ampliar imagen</button></div>
+      <p id="modal-gallery-error" role="status" hidden data-i18n="work.gallery.error">No se pudo cargar esta imagen. Prueba otra pantalla.</p>
       <p id="modal-gallery-context-desc" aria-live="polite"></p>
-      <div class="work-modal__gallery-thumbs" id="modal-gallery-thumbs" aria-label="Gallery"></div>
+      <div class="work-modal__gallery-thumbs" id="modal-gallery-thumbs" aria-label="Explorar pantallas" data-i18n-aria-label="work.gallery"></div>
     </div>
   </div>
 </dialog>

@@ -9,25 +9,28 @@
   @media (max-width: 900px) { &__grid { grid-template-columns: 1fr; } }
 }
 .architecture {
-  padding: 1.7rem;
-  &__diagram { height: 195px; display: flex; align-items: center; justify-content: center; perspective: 700px; }
-  &__orbit { position: absolute; width: 190px; height: 100px; border: 1px solid rgba(93, 179, 255, 0.25); border-radius: 50%; transform: rotate(-25deg); }
-  &__orbit::before, &__orbit::after { content: ''; position: absolute; inset: -15px; border: 1px solid rgba(93, 179, 255, 0.1); border-radius: 50%; }
-  &__orbit::after { inset: 18px; }
-  &__core { width: 95px; height: 95px; display: grid; place-items: center; transform: rotate(-16deg) skew(6deg); border: 1px solid rgba(102, 217, 255, 0.6); border-radius: 12px; background: linear-gradient(135deg, rgba(52, 166, 245, 0.2), rgba(12, 43, 72, 0.5)); box-shadow: 0 0 40px rgba(36, 130, 229, 0.15), inset 0 0 20px rgba(36, 130, 229, 0.1); transition: transform 0.7s $ease-out-expo, box-shadow 0.7s; }
-  &__core span { font-family: $font-mono; font-size: 1.8rem; color: #9ae8ff; }
-  &[data-active-stage='logic'] &__core { transform: rotate(0deg) skew(0deg) scale(1.1); box-shadow: 0 0 45px rgba(36, 170, 229, 0.25); }
-  &[data-active-stage='data'] &__core { transform: rotate(16deg) skew(-6deg); }
-  &__axis { position: absolute; left: 0; font-family: $font-mono; font-size: 0.5rem; letter-spacing: 0.12em; color: #718cae; }
+  position: relative;
+  padding-block: 1rem;
+  min-width: 0;
+  .panel-meta { gap: 0.5rem; flex-wrap: wrap; }
+  &__diagram { position: relative; height: clamp(240px, 24vw, 310px); display: grid; place-items: center; }
+  &__network { width: 100%; height: 100%; overflow: visible; color: #78d9ff; }
+  &__routes { opacity: 0.22; }
+  &__satellites { opacity: 0.65; fill: #07162a; }
+  &__model { stroke: #91e5ff; stroke-width: 1.2; fill: rgba(42, 141, 219, 0.055); opacity: 0; transform-origin: 220px 140px; transform: scale(0.88); transition: opacity 0.7s ease, transform 1s $ease-out-expo; }
+  &[data-active-stage='api'] &__model--api, &[data-active-stage='logic'] &__model--logic, &[data-active-stage='data'] &__model--data { opacity: 1; transform: scale(1); }
+  &__signal { fill: none; stroke: #b2f0ff; stroke-width: 2; stroke-dasharray: 8 430; opacity: 0; filter: drop-shadow(0 0 4px #4acbff); }
+  &.is-visible &__signal { opacity: 0.9; animation: system-signal 6s linear infinite; }
+  &__axis { position: absolute; left: 0; top: 50%; font-family: $font-mono; font-size: 0.5rem; letter-spacing: 0.12em; color: #718cae; }
   &__axis:last-child { left: auto; right: 0; }
-  &__packet { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #9ae8ff; box-shadow: 0 0 14px #66d9ff; opacity: 0; }
-  &.is-visible &__packet { animation: packet-flow 4s ease-in-out infinite; }
-  &__steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
-  &__step { min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.5rem; border: 1px solid rgba(107, 159, 211, 0.18); border-radius: 7px; color: #9cb0c9; transition: background 0.3s, border-color 0.3s, color 0.3s; }
-  &__step > span:first-child { font-family: $font-mono; font-size: 0.55rem; opacity: 0.6; }
-  &__step.is-active { border-color: rgba(102, 217, 255, 0.55); background: rgba(36, 134, 213, 0.13); color: #c6efff; }
-  &__descriptions { min-height: 100px; margin-top: 1.3rem; font-size: 1.1rem; line-height: 1.55; color: #a6bdd9; }
+  &__steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; border-bottom: 1px solid rgba(107, 159, 211, 0.22); }
+  &__step { position: relative; min-height: 52px; padding: 0.5rem; color: #9cb0c9; transition: color 0.4s; }
+  &__step::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #8ae2ff; transform: scaleX(0); transition: transform 0.6s $ease-out-expo; }
+  &__step:hover { color: #e1f6ff; }
+  &__step.is-active { color: #c6efff; }
+  &__step.is-active::after { transform: scaleX(1); }
+  &__descriptions { min-height: 120px; margin-top: 1.3rem; font-size: 1.1rem; line-height: 1.6; color: #a6bdd9; }
   &__hint { font-size: 0.55rem; text-align: center; margin-top: 0.5rem; }
-  @media (max-width: 400px) { padding: 1.1rem; &__step { font-size: 0.9rem; } &__axis { display: none; } }
+  @media (max-width: 400px) { &__axis { display: none; } &__descriptions { min-height: 145px; } }
 }
-@keyframes packet-flow { 0% { transform: translateX(-110px); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(110px); opacity: 0; } }
+@keyframes system-signal { to { stroke-dashoffset: -438; } }

@@ -4,14 +4,15 @@ const jobs = jobsData;
 ---
 <section class="experience portfolio-section" id="experience" aria-labelledby="experience-title">
   <div class="section-head" data-reveal>
-    <p class="section-kicker"><span>04 /</span><span data-i18n="experience.label">Trayectoria</span></p>
+    <p class="section-kicker"><span data-i18n="experience.label">Trayectoria</span></p>
     <h2 id="experience-title" class="section-title" data-i18n="experience.title">Una base técnica.<br /><span>Una dirección clara.</span></h2>
     <p class="section-copy" data-i18n="experience.subtitle">De la infraestructura a la construcción de software.</p>
   </div>
-  <div class="experience__timeline" id="experience-list">
+  <div class="experience__timeline" id="experience-list" data-timeline>
+    <span class="experience__rail" aria-hidden="true"><span data-timeline-progress></span></span>
     <article class="experience__item experience__item--current" data-reveal>
       <div class="experience__date"><span class="status-dot" aria-hidden="true"></span><span data-i18n="experience.now">Ahora</span></div>
-      <div class="experience__content surface" data-surface>
+      <div class="experience__content">
         <p class="micro-label" data-i18n="experience.educationLabel">Formación & proyectos propios</p>
         <h3 data-i18n="experience.educationTitle">Ingeniería de Software</h3>
         <p data-i18n="experience.educationBody">Estudiante de 7mo semestre, enfocado en backend, APIs y calidad de software. Desarrollo proyectos propios mientras profundizo en arquitectura y DevOps.</p>
@@ -21,13 +22,13 @@ const jobs = jobsData;
     {jobs.map(job => (
       <article class="experience__item" data-reveal>
         <div class="experience__date"><span aria-hidden="true" class="experience__node"></span><span>{job.year.es}</span></div>
-        <div class="experience__content surface" data-surface>
+        <div class="experience__content">
           <p class="micro-label">{job.company} · {job.location}</p>
           <h3 data-i18n={`experience.${job.id}.title`}>{job.title.es}</h3>
           <p data-i18n={`experience.${job.id}.summary`}>Soporte técnico, administración de sistemas y despliegue de infraestructura.</p>
-          <details class="experience__detail">
-            <summary><span data-i18n="experience.details">Ver responsabilidades</span><span aria-hidden="true">+</span></summary>
-            <ul>{job.bullets.es.map((bullet, i) => <li data-i18n={`experience.${job.id}.bullet${i}`}>{bullet}</li>)}</ul>
+          <details class="experience__detail disclosure" data-disclosure>
+            <summary><span data-i18n="experience.details">Ver responsabilidades</span><span class="disclosure__action"><span class="micro-label" data-disclosure-label data-i18n="common.expand">Abrir</span><span class="disclosure__icon" aria-hidden="true">+</span></span></summary>
+            <div class="disclosure__body"><ul>{job.bullets.es.map((bullet, i) => <li data-i18n={`experience.${job.id}.bullet${i}`}>{bullet}</li>)}</ul></div>
           </details>
         </div>
       </article>

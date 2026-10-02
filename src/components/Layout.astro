@@ -44,14 +44,9 @@ const {
     <title>{title}</title>
   </head>
   <body>
-    <noscript><style>.preloader, .header--sticky, #cursor-trail { display: none !important; } .header { opacity: 1; visibility: visible; } .hero__letter, .hero__subtitle, .hero__dot { opacity: 1; transform: none; }</style></noscript>
+    <noscript><style>.preloader, .header--sticky { display: none !important; } .header { opacity: 1; visibility: visible; } .hero__letter, .hero__subtitle, .hero__dot { opacity: 1; transform: none; }</style></noscript>
     <Preloader />
     <ScrollTracker />
-    <div id="cursor-trail" class="fixed top-0 left-0 pointer-events-none z-[9999] opacity-0">
-      <div class="pointer-trail absolute top-0 left-0 w-2 h-2 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 10px var(--dynamic-glow-color); background-color: var(--dynamic-glow-color);"></div>
-      <div class="pointer-trail absolute top-0 left-0 w-1.5 h-1.5 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 8px var(--dynamic-glow-color); background-color: var(--dynamic-glow-color);"></div>
-      <div class="pointer-trail absolute top-0 left-0 w-1 h-1 rounded-full" style="transform: translate(-50%, -50%); box-shadow: 0 0 6px var(--dynamic-glow-color); background-color: var(--dynamic-glow-color);"></div>
-    </div>
     <div class="layout">
       <main class="layout__main">
         <slot />

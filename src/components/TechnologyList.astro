@@ -1,0 +1,8 @@
+---
+import { technologyIcon } from '../data/technologies';
+interface Props { technologies: string[] }
+const { technologies } = Astro.props;
+---
+<ul class="tech-list" aria-label="Tecnologías" data-i18n-aria-label="common.technologies">
+  {technologies.map(name => <li><span class="tech-icon" style={`--tech-icon: url('${technologyIcon(name)}')`} aria-hidden="true"></span><span>{name}</span></li>)}
+</ul>

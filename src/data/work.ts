@@ -10,8 +10,6 @@ export interface Project {
   bullets: Record<Language, string[]>;
   gallery: GalleryItem[];
   tags: string[];
-  problem?: LocalizedText;
-  result?: LocalizedText;
 }
 
 export const projects = {
@@ -20,19 +18,19 @@ export const projects = {
     "status": "Completado",
     "image": "/assets/jirah/dashboard.jpg",
     "short": {
-      "es": "Sistema Fullstack offline-first para la trazabilidad en tiempo real de la cadena de producción agrícola.",
-      "en": "Offline-first Fullstack system for real-time traceability of the agricultural production chain."
+      "es": "Software desarrollado para Finca Jirah, una finca real en Pedro Vicente Maldonado, Ecuador. Una plataforma fullstack offline-first para registrar y conectar su producción agrícola.",
+      "en": "Software developed for Finca Jirah, a real farm in Pedro Vicente Maldonado, Ecuador. An offline-first fullstack platform to record and connect its agricultural production."
     },
     "bullets": {
       "es": [
-        "Diseño de arquitectura y modelado relacional con Prisma ORM.",
-        "Desarrollo de API REST nativa en entorno Next.js/Node.js.",
-        "Arquitectura Offline-First (PWA) con IndexedDB para sincronización diferida en zonas rurales."
+        "Modelado relacional con Prisma y PostgreSQL.",
+        "API REST y lógica de negocio con Node.js / Next.js.",
+        "Trabajo sin conexión y sincronización diferida con IndexedDB."
       ],
       "en": [
-        "Architecture design and relational modeling with Prisma ORM.",
-        "Native REST API development in a Next.js/Node.js environment.",
-        "Offline-First architecture (PWA) using IndexedDB for deferred synchronization in rural areas."
+        "Relational modeling with Prisma and PostgreSQL.",
+        "REST API and business logic with Node.js / Next.js.",
+        "Offline work and deferred synchronization with IndexedDB."
       ]
     },
     "gallery": [
@@ -97,14 +95,6 @@ export const projects = {
     "displayTitle": {
       "es": "Finca Jirah",
       "en": "Finca Jirah"
-    },
-    "problem": {
-      "es": "La producción agrícola necesita registrar pesajes, clasificación y personal, incluso cuando la conexión a internet no es estable.",
-      "en": "Agricultural production needs weight, classification and workforce records, even when an internet connection is unreliable."
-    },
-    "result": {
-      "es": "Una plataforma que integra las operaciones de la finca con persistencia local y sincronización diferida para continuar el trabajo sin conexión.",
-      "en": "A platform that brings farm operations together with local persistence and deferred synchronization to support work offline."
     }
   },
   "portfolio": {
@@ -145,15 +135,15 @@ export const projects = {
       {
         "image": "/assets/portfolio/knowledge-refresh.jpg",
         "description": {
-          "es": "Capacidades técnicas organizadas por desarrollo, datos y entrega.",
-          "en": "Technical capabilities organized by development, data and delivery."
+          "es": "Base backend: desarrollo, datos y pruebas, arquitectura y sistemas.",
+          "en": "Backend foundations: development, data and testing, architecture and systems."
         }
       },
       {
         "image": "/assets/portfolio/projects-refresh.jpg",
         "description": {
-          "es": "Proyectos destacados y casos de estudio.",
-          "en": "Featured projects and case studies."
+          "es": "Proyectos destacados y su aportación técnica.",
+          "en": "Featured projects and their technical contributions."
         }
       },
       {
@@ -167,21 +157,12 @@ export const projects = {
     "tags": [
       "Astro",
       "TypeScript",
-      "SCSS",
-      "GSAP",
-      "WebGL"
+      "Three.js",
+      "SCSS"
     ],
     "displayTitle": {
       "es": "Océano digital",
       "en": "Digital ocean"
-    },
-    "problem": {
-      "es": "Presentar mi trabajo técnico en una experiencia propia, con una escena interactiva que conviva con contenido legible y navegación fluida.",
-      "en": "Present my technical work through a distinctive experience, with an interactive scene alongside readable content and smooth navigation."
-    },
-    "result": {
-      "es": "Un portafolio bilingüe con un cubo instanciado, proyección de video, agua reflectante y contenido organizado por componentes.",
-      "en": "A bilingual portfolio with an instanced cube, video projection, reflective water and content organized into components."
     }
   },
   "pos": {

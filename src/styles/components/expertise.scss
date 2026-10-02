@@ -1,20 +1,45 @@
 @use '../variables' as *;
 .expertise {
-  &__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
-  &__column { padding: 1.6rem; display: flex; flex-direction: column; }
-  &__symbol { color: #82d7ff !important; font-size: 1.1rem !important; }
-  &__col-title { font-weight: 500; font-size: 1.65rem; margin-bottom: 0.8rem; letter-spacing: -0.015em; }
-  &__col-desc { color: #9eb5d0; font-size: 1.07rem; line-height: 1.55; min-height: 100px; margin-bottom: 1.4rem; }
-  .tech-list { margin-bottom: 1.25rem; }
-  &__detail { margin-top: auto; border-top: 1px solid rgba(112, 161, 211, 0.16); }
-  &__detail p { color: #a4bdd9; font-size: 1rem; line-height: 1.55; padding-bottom: 1rem; }
-  .text-link { font-size: 0.95rem; margin-top: 0.5rem; }
-  &__visual { position: relative; height: 120px; display: flex; align-items: center; justify-content: center; margin-block: 0.5rem 1.5rem; }
-  &__visual span { position: absolute; width: 70px; height: 45px; border: 1px solid rgba(114, 207, 255, calc(0.15 + var(--layer) * 0.1)); background: rgba(45, 124, 207, 0.04); transform: translateY(calc(var(--layer) * -9px + 18px)) rotate(-27deg) skew(20deg); border-radius: 4px; transition: transform 0.8s $ease-out-expo; }
-  &__column:hover &__visual--0 span, &__column:focus-within &__visual--0 span { transform: translateY(calc(var(--layer) * -14px + 28px)) rotate(-27deg) skew(20deg); }
-  &__visual--1 span { width: calc(28px + var(--layer) * 16px); height: calc(28px + var(--layer) * 16px); transform: rotate(45deg); background: none; }
-  &__column:hover &__visual--1 span, &__column:focus-within &__visual--1 span { transform: rotate(135deg); }
-  &__visual--2 span { width: 23px; height: calc(22px + var(--layer) * 12px); transform: translateX(calc(var(--layer) * 29px - 58px)); bottom: 20px; background: linear-gradient(0deg, rgba(62, 169, 234, 0.12), transparent); }
-  &__column:hover &__visual--2 span, &__column:focus-within &__visual--2 span { transform: translateX(calc(var(--layer) * 29px - 58px)) translateY(calc(var(--layer) * -3px)); }
-  @media (max-width: 1050px) { &__grid { grid-template-columns: 1fr; } &__column { padding: 1.7rem; } &__visual { height: 95px; } &__col-desc { min-height: 0; max-width: 650px; } }
+  &__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  &__column { position: relative; padding: 0 1.8rem; display: flex; flex-direction: column; min-width: 0; }
+  &__column:first-child { padding-left: 0; }
+  &__column:last-child { padding-right: 0; }
+  &__column + &__column { border-left: 1px solid rgba(133, 173, 221, 0.16); }
+  &__col-title { font-weight: 500; font-size: clamp(1.6rem, 2.5vw, 1.95rem); margin-bottom: 0.8rem; letter-spacing: -0.015em; }
+  &__col-desc { color: #9eb5d0; font-size: 1.1rem; line-height: 1.6; min-height: 105px; margin-bottom: 1.4rem; }
+  .tech-list { margin-bottom: 1.8rem; }
+  &__visual { position: relative; height: 225px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.8rem; perspective: 700px; }
+  &__visual::before { content: ''; position: absolute; width: 230px; height: 230px; background: radial-gradient(ellipse, rgba(32, 129, 219, 0.12), transparent 68%); }
+  &__visual span { position: absolute; width: 112px; height: 76px; border: 1px solid rgba(114, 207, 255, calc(0.2 + var(--layer) * 0.12)); background: linear-gradient(135deg, rgba(45, 124, 207, 0.1), transparent); transform: translateY(calc(var(--layer) * -14px + 28px)) rotate(-27deg) skew(20deg); border-radius: 2px; transition: transform 1.2s $ease-out-expo, border-color 0.8s; }
+  &__visual--0 span::after { content: ''; position: absolute; inset: 13px; border-top: 1px solid rgba(135, 226, 255, 0.35); border-right: 1px solid rgba(135, 226, 255, 0.15); }
+  &__visual--1 span { width: calc(38px + var(--layer) * 29px); height: calc(38px + var(--layer) * 29px); transform: rotateX(30deg) rotateZ(45deg); border-radius: 50%; background: none; }
+  &__visual--1 span::after { content: ''; position: absolute; width: 5px; height: 5px; left: 13%; top: 13%; background: #8ae2ff; border-radius: 50%; box-shadow: 0 0 10px rgba(102, 217, 255, 0.5); }
+  &__visual--2 span { width: 34px; height: calc(38px + var(--layer) * 21px); transform: translateX(calc(var(--layer) * 39px - 78px)); bottom: 45px; background: linear-gradient(0deg, rgba(62, 169, 234, 0.15), transparent); }
+  &__visual--2 span::after { content: ''; position: absolute; top: 12px; left: 8px; right: 8px; height: 3px; background: #9ae8ff; opacity: calc(0.3 + var(--layer) * 0.13); box-shadow: 0 0 14px rgba(102, 217, 255, 0.35); }
+  &__visual span { animation-duration: 7s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-delay: calc(var(--layer) * -0.65s); animation-play-state: paused; }
+  &__visual--0 span { animation-name: architecture-breathe; }
+  &__visual--1 span { animation-name: data-orbit; animation-duration: calc(18s + var(--layer) * 3s); animation-timing-function: linear; }
+  &__visual--2 span { animation-name: system-wave; }
+  &__visual.is-visible span { animation-play-state: running; }
+  @media (prefers-reduced-motion: reduce) { &__visual span { animation: none; } }
+  @media (max-width: 1050px) {
+    &__grid { grid-template-columns: 1fr; gap: 3rem; }
+    &__column, &__column:first-child, &__column:last-child { padding: 0; }
+    &__column + &__column { border-left: 0; border-top: 1px solid rgba(133, 173, 221, 0.16); padding-top: 2rem; }
+    &__visual { height: 210px; margin-bottom: 1.2rem; }
+    &__col-desc { min-height: 0; max-width: 650px; }
+  }
+}
+
+@keyframes architecture-breathe {
+  0%, 100% { transform: translateY(calc(var(--layer) * -14px + 28px)) rotate(-27deg) skew(20deg); }
+  50% { transform: translateY(calc(var(--layer) * -22px + 38px)) rotate(-22deg) skew(20deg); }
+}
+@keyframes data-orbit {
+  from { transform: rotateX(30deg) rotateZ(0deg); }
+  to { transform: rotateX(30deg) rotateZ(360deg); }
+}
+@keyframes system-wave {
+  0%, 100% { transform: translateX(calc(var(--layer) * 39px - 78px)) translateY(0); }
+  50% { transform: translateX(calc(var(--layer) * 39px - 78px)) translateY(-18px); }
 }

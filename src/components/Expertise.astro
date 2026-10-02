@@ -1,32 +1,23 @@
 ---
 import { columns } from '../data/expertise';
 import { translations } from '../data/translations';
+import TechnologyList from './TechnologyList.astro';
 ---
 <section class="expertise portfolio-section" id="expertise" data-expertise aria-labelledby="expertise-title">
-  <div class="section-head" data-expertise-header>
-    <p class="section-kicker"><span>02 /</span><span data-i18n="expertise.label">Capacidades</span></p>
+  <div class="section-head" data-reveal>
+    <p class="section-kicker"><span data-i18n="expertise.label">Conocimientos</span></p>
     <h2 id="expertise-title" class="section-title" data-expertise-title data-i18n="expertise.title">Las piezas detrás<br /><span>de cada solución.</span></h2>
-    <p class="section-copy" data-i18n="expertise.subtitle">Herramientas que uso, decisiones que tomo y la forma en que construyo.</p>
+    <p class="section-copy" data-i18n="expertise.subtitle">Tecnologías que he usado en proyectos y en las que sigo profundizando.</p>
   </div>
   <div class="expertise__grid" data-expertise-grid>
     {columns.map((col, i) => (
-      <article class="expertise__column surface" data-expertise-col data-surface>
-        <div class="panel-meta"><span class="micro-label">{col.index} /</span><span class="expertise__symbol" aria-hidden="true">{['{ }', '◈', '⌘'][i]}</span></div>
-        <div class={`expertise__visual expertise__visual--${i}`} aria-hidden="true">
+      <article class="expertise__column" data-expertise-col>
+        <div class={`expertise__visual expertise__visual--${i}`} data-ambient-motion aria-hidden="true">
           {Array.from({ length: 5 }, (_, n) => <span style={`--layer: ${n}`}></span>)}
         </div>
         <h3 class="expertise__col-title" data-i18n={col.titleKey}>{translations.es[col.titleKey]}</h3>
         <p class="expertise__col-desc" data-i18n={col.descKey}>{translations.es[col.descKey]}</p>
-        <ul class="tech-list" aria-label="Tecnologías" data-i18n-aria-label="common.technologies">
-          {col.techs.map(tech => <li>{tech}</li>)}
-        </ul>
-        <details class="expertise__detail">
-          <summary><span data-i18n="expertise.explore">Mi enfoque</span><span aria-hidden="true">+</span></summary>
-          <p data-i18n={`expertise.col${i + 1}.detail`}>{translations.es[`expertise.col${i + 1}.detail`]}</p>
-        </details>
-        <button class="text-link" type="button" data-project-open={i === 2 ? 'portfolio' : 'jirah'}>
-          <span data-i18n={i === 2 ? 'expertise.portfolioLink' : 'expertise.jirahLink'}>{translations.es[i === 2 ? 'expertise.portfolioLink' : 'expertise.jirahLink']}</span><span aria-hidden="true">↗</span>
-        </button>
+        <TechnologyList technologies={col.techs} />
       </article>
     ))}
   </div>

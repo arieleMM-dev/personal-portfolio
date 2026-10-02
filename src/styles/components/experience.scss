@@ -1,18 +1,24 @@
 @use '../variables' as *;
 .experience {
+  &::before { content: ''; position: absolute; inset: 15% 0 10%; background: radial-gradient(ellipse at 25% 40%, rgba(18, 94, 148, 0.11), transparent 65%); z-index: -1; pointer-events: none; }
   &__timeline { position: relative; }
-  &__timeline::before { content: ''; position: absolute; left: 7px; top: 1rem; bottom: 2rem; width: 1px; background: linear-gradient(#66d9ff, rgba(84, 144, 212, 0.12)); }
-  &__item { display: grid; grid-template-columns: 170px 1fr; gap: 1.5rem; margin-bottom: 1.8rem; }
-  &__date { display: flex; align-items: center; align-self: start; gap: 1.2rem; font-family: $font-mono; font-size: 0.7rem; color: #93adcf; padding-top: 2rem; }
+  &__rail { position: absolute; left: 7px; top: 1.5rem; bottom: 3rem; width: 1px; background: rgba(84, 144, 212, 0.13); }
+  &__rail > span { display: block; position: absolute; inset: 0; background: linear-gradient(#2c668e, #9ae8ff); transform-origin: top; box-shadow: 0 0 16px rgba(102, 217, 255, 0.2); }
+  &__rail > span::after { content: ''; position: absolute; bottom: 0; left: -2px; width: 5px; height: 5px; background: #c2f2ff; border-radius: 50%; box-shadow: 0 0 16px #66d9ff; }
+  &__item { display: grid; grid-template-columns: 170px 1fr; gap: 1.5rem; padding-block: 1.5rem 3rem; }
+  &__date { display: flex; align-items: center; align-self: start; gap: 1.2rem; font-family: $font-mono; font-size: 0.7rem; color: #93adcf; padding-top: 0.3rem; }
   &__date .status-dot, &__node { margin-left: 4px; }
   &__node { width: 6px; height: 6px; flex-shrink: 0; border: 1px solid #7c9dc5; border-radius: 50%; background: #030916; }
-  &__content { padding: 1.8rem 2rem; }
-  &__content h3 { font-size: 1.7rem; font-weight: 500; margin-block: 0.65rem; letter-spacing: -0.015em; }
-  &__content p:not(.micro-label) { color: #a5bad6; font-size: 1.13rem; line-height: 1.65; max-width: 650px; }
+  &__content { position: relative; padding-bottom: 2rem; border-bottom: 1px solid rgba(133, 173, 221, 0.15); }
+  &__content h3 { font-size: clamp(1.9rem, 3.3vw, 2.6rem); font-weight: 500; margin-block: 0.9rem; letter-spacing: -0.03em; }
+  &__content p:not(.micro-label) { color: #a5bad6; font-size: 1.18rem; line-height: 1.65; max-width: 650px; }
   &__content .text-link { margin-top: 0.8rem; }
-  &__detail { border-top: 1px solid rgba(112, 161, 211, 0.15); margin-top: 1.25rem; }
-  &__detail li { font-size: 1.1rem; color: #a5bad6; line-height: 1.6; margin-block: 0.6rem; }
-  &__detail ul { padding-left: 1rem; }
-  &__item--current .surface { border-color: rgba(102, 217, 255, 0.25); }
-  @media (max-width: 700px) { &__item { grid-template-columns: 1fr; padding-left: 1.6rem; gap: 0.7rem; } &__date { padding-top: 0; } &__date .status-dot, &__node { position: absolute; left: 0; margin-left: 4px; } &__content { padding: 1.5rem; } }
+  &__detail { margin-top: 1.5rem; border-bottom: 0; }
+  &__detail li { font-size: 1.1rem; color: #a5bad6; line-height: 1.6; margin-block: 0.75rem; }
+  &__detail ul { padding: 0.4rem 0 0.5rem 1.2rem; }
+  @media (max-width: 700px) {
+    &__item { grid-template-columns: 1fr; padding-left: 1.8rem; gap: 1.1rem; }
+    &__date { padding-top: 0; }
+    &__date .status-dot, &__node { position: absolute; left: 0; margin-left: 4px; }
+  }
 }

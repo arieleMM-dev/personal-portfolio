@@ -187,17 +187,6 @@ export function initHome() {
         const target = document.querySelector<HTMLElement>(href);
         if (!target) return;
 
-        if (target.id === 'expertise' || target.hasAttribute('data-expertise')) {
-          const triggers = ScrollTrigger.getAll();
-          const sectionTrigger = triggers.find(t => t.trigger === target && t.pin);
-          
-          if (sectionTrigger && sectionTrigger.end) {
-            const targetScroll = sectionTrigger.end - 20;
-            scrollTo(targetScroll, { duration: 2 });
-            return;
-          }
-        }
-        
         scrollTo(target, { duration: reducedMotion ? 0 : 2, offset: parseFloat(getComputedStyle(target).paddingTop) || 0 });
       }, { signal: events.signal });
     });
@@ -211,30 +200,6 @@ export function initHome() {
   const destroyTracker = initScrollTracker();
   const destroyInteractions = initPortfolioInteractions();
 
-  const cursorTrail = document.getElementById('cursor-trail');
-  let cursorCleanup: (() => void) | undefined;
-  if (cursorTrail && !reducedMotion && matchMedia('(pointer: fine)').matches) {
-    gsap.set(cursorTrail, { opacity: 1 });
-    const trails = cursorTrail.querySelectorAll('.pointer-trail');
-    
-    if (trails.length) {
-      const onMouseMove = (e: MouseEvent) => {
-        gsap.to(trails, {
-          x: e.clientX,
-          y: e.clientY,
-          stagger: -0.05,
-          ease: 'power2.out',
-          duration: 0.3,
-          overwrite: 'auto'
-        });
-      };
-      window.addEventListener('mousemove', onMouseMove);
-      cursorCleanup = () => {
-        window.removeEventListener('mousemove', onMouseMove);
-      };
-    }
-  }
-
   return () => {
     disposed = true;
     events.abort();
@@ -244,7 +209,6 @@ export function initHome() {
     contentMedia.revert();
     destroyInteractions();
     destroyTracker?.();
-    if (cursorCleanup) cursorCleanup();
   };
 }
 
@@ -255,42 +219,30 @@ export function initHome() {
 function initContentAnimations(media: gsap.MatchMedia) {
   media.add({
     reduced: '(prefers-reduced-motion: reduce)',
-    spacious: '(min-width: 1100px) and (min-height: 960px)',
-    wide: '(min-width: 1100px)',
     all: '(min-width: 0px)',
   }, context => {
     const conditions = context.conditions!;
-    const columns = document.querySelectorAll<HTMLElement>('[data-expertise-col]');
-    const section = document.querySelector<HTMLElement>('[data-expertise]');
     if (conditions.reduced) {
       gsap.set('[data-reveal], [data-expertise-col]', { clearProps: 'opacity,transform' });
+      gsap.set('[data-timeline-progress], [data-project-parallax]', { clearProps: 'transform' });
       return;
     }
-    document.querySelectorAll<HTMLElement>('[data-reveal]').forEach(element => {
-      gsap.fromTo(element, { opacity: 0, y: 28 }, {
-        opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
-        scrollTrigger: { trigger: element, start: 'top 90%', once: true },
+    // Scroll-linked rather than one-shot: the entrance also reverses on the way back.
+    document.querySelectorAll<HTMLElement>('[data-reveal], [data-expertise-col]').forEach(element => {
+      gsap.fromTo(element, { opacity: 0, y: 24 }, {
+        opacity: 1, y: 0, ease: 'none',
+        scrollTrigger: { trigger: element, start: 'top 96%', end: 'top 68%', scrub: 0.6, invalidateOnRefresh: true },
       });
     });
-    if (!section || !columns.length) return;
-    if (!conditions.wide) {
-      columns.forEach(column => gsap.fromTo(column, { opacity: 0.2, y: 28 }, {
-        opacity: 1, y: 0, ease: 'none',
-        scrollTrigger: { trigger: column, start: 'top 90%', end: 'top 55%', scrub: 0.7 },
-      }));
-      return;
-    }
-    const pin = Boolean(conditions.spacious && section.offsetHeight < window.innerHeight - 80);
-    gsap.fromTo(columns, { opacity: 0.2, y: 35 }, {
-      opacity: 1, y: 0, stagger: 0.16, ease: 'none',
-      scrollTrigger: {
-        trigger: section,
-        start: pin ? 'top top+=80' : 'top 65%',
-        end: pin ? '+=550' : 'center 50%',
-        pin,
-        scrub: 0.8,
-        invalidateOnRefresh: true,
-      },
+    gsap.fromTo('[data-timeline-progress]', { scaleY: 0 }, {
+      scaleY: 1, ease: 'none',
+      scrollTrigger: { trigger: '[data-timeline]', start: 'top 75%', end: 'bottom 65%', scrub: 0.7, invalidateOnRefresh: true },
+    });
+    document.querySelectorAll<HTMLElement>('[data-project]').forEach(project => {
+      gsap.fromTo(project.querySelector('[data-project-parallax]'), { yPercent: -3 }, {
+        yPercent: 3, ease: 'none',
+        scrollTrigger: { trigger: project, start: 'top bottom', end: 'bottom top', scrub: 0.9, invalidateOnRefresh: true },
+      });
     });
   });
 }

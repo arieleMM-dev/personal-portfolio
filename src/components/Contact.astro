@@ -3,16 +3,16 @@ import { contactLinks } from '../data/contact';
 ---
 <footer class="contact portfolio-section" id="contact" data-contact aria-labelledby="contact-title">
   <div class="contact__horizon" aria-hidden="true"><span></span><span></span><span></span></div>
-  <div class="contact__inner" data-contact-inner>
-    <p class="section-kicker"><span>05 /</span><span data-i18n="contact.label">El siguiente paso</span></p>
-    <a class="availability" href="mailto:arielmorillo.ct@gmail.com"><span class="status-dot" aria-hidden="true"></span><span data-i18n="common.available">Disponible para nuevos retos</span></a>
+  <div class="contact__inner" data-contact-inner data-reveal>
+    <p class="section-kicker"><span data-i18n="contact.label">Contacto</span></p>
+    <p class="availability"><span class="status-dot" aria-hidden="true"></span><span data-i18n="common.available">Disponible para nuevos retos</span></p>
     <h2 id="contact-title" class="section-title contact__title" data-contact-title data-i18n="contact.title">Una buena idea<br /><span>empieza hablando.</span></h2>
     <p class="section-copy" data-i18n="contact.subtitle">¿Un proyecto, una oportunidad o una conversación sobre software? Me gustaría escucharte.</p>
     <div class="contact__actions">
-      <a href="mailto:arielmorillo.ct@gmail.com" class="button-primary"><span data-i18n="contact.cta">Hablemos</span><span aria-hidden="true">↗</span></a>
-      <button type="button" class="contact__email" data-copy-email="arielmorillo.ct@gmail.com">
-        <span>arielmorillo.ct@gmail.com</span>
-        <span class="micro-label" data-copy-label data-i18n="contact.copy">Copiar correo</span>
+      <button type="button" class="button-primary" data-compose-email><span data-i18n="contact.cta">Hablemos</span><span aria-hidden="true">↗</span></button>
+      <button type="button" class="contact__email" data-copy-email>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4V16H8"/></svg>
+        <span data-copy-label data-i18n="contact.copy">Copiar correo</span>
       </button>
     </div>
     <p class="contact__feedback" data-copy-feedback role="status" aria-live="polite"></p>
@@ -23,6 +23,6 @@ import { contactLinks } from '../data/contact';
         </a>
       ))}
     </nav>
-    <div class="contact__footer"><span>© {new Date().getFullYear()} Ariel Morillo</span><span>Astro · TypeScript · Three.js</span><a href="#home" data-nav-link><span data-i18n="contact.back">Volver al inicio</span> ↑</a></div>
+    <noscript><p class="section-copy" data-i18n="contact.noScript">Activa JavaScript para usar los botones de correo.</p></noscript>
   </div>
 </footer>
