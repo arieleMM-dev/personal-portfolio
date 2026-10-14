@@ -7,7 +7,7 @@ import { createScaleRipples, SCALE_RIPPLE } from './scaleRipples.ts';
 
 export const VIDEO_CUBE = {
   divisions: 20, size: 3.2, fill: 0.91, centerY: 3.65, floatAmplitude: 0.12,
-  rotationSpeed: 0.04715, emissiveMin: 1.0, emissiveRange: 0.25,
+  rotationSpeed: 0.05658, emissiveMin: 1.0, emissiveRange: 0.25,
   lightMin: 9, lightRange: 9,
 } as const;
 

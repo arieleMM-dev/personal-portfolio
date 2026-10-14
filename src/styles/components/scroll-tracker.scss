@@ -12,8 +12,6 @@
     display: none; // Hidden on mobile
   }
 
-  // Line wrapper and progress removed
-
   &__nodes {
     position: relative;
     z-index: 2;
@@ -30,14 +28,40 @@
   }
 
   &__link {
+    --tracker-label-gap: 1rem;
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    width: 9px;
+    height: 25px;
     text-decoration: none;
     pointer-events: auto; // Reactivate clicks on links
     cursor: pointer;
     color: inherit;
     padding: 0.5rem 0;
+
+    // Comfortable target without changing the existing node positions.
+    &::before {
+      content: '';
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+    }
+
+    &:focus-visible {
+      outline: none;
+      &::before { outline: 1px solid #7aabc8; outline-offset: -3px; }
+    }
+
+    &:not(.is-active):focus-visible .scroll-tracker__label {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(0, -50%);
+    }
 
     &.is-active {
       .scroll-tracker__node {
@@ -47,26 +71,45 @@
       }
       .scroll-tracker__label {
         opacity: 1;
-        transform: translateX(0);
+        visibility: visible;
+        transform: translate(0, -50%);
         color: rgba(213, 224, 255, 0.85);
       }
     }
   }
 
   &__node {
+    flex-shrink: 0;
     width: 9px;
     height: 9px;
     border-radius: 50%;
     background-color: rgba(255, 255, 255, 0.2);
-    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   &__label {
+    position: absolute;
+    left: calc(100% + var(--tracker-label-gap));
+    top: 50%;
+    white-space: nowrap;
+    color: #91a2bd;
     text-transform: uppercase;
     letter-spacing: 0.2em;
     opacity: 0;
-    transform: translateX(-10px);
+    visibility: hidden;
+    transform: translate(-3px, -50%);
     pointer-events: none;
-    transition: all 0.4s ease-in-out;
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.28s;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &__link:not(.is-active):hover {
+      .scroll-tracker__label { opacity: 1; visibility: visible; transform: translate(0, -50%); }
+      .scroll-tracker__node { background-color: rgba(213, 224, 255, 0.45); }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__node, &__label { transition: none; }
   }
 }

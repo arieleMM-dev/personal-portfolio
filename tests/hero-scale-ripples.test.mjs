@@ -124,7 +124,7 @@ test('wave motion updates uniforms only; normals rotate while video UVs remain i
   assert.ok(shader.vertexShader.includes('vProjectionNormal = normal;'));
   assert.ok(shader.vertexShader.indexOf('vRestPosition = cellCenter + position') < shader.vertexShader.indexOf('transformed = rotateScale'));
   assert.ok(shader.fragmentShader.includes('#include <transmission_fragment>'));
-  assert.equal(VIDEO_CUBE.rotationSpeed, 0.04715);
+  assert.equal(VIDEO_CUBE.rotationSpeed, 0.05658);
   assert.ok(cube.voxels.boundingBox.max.x >= VIDEO_CUBE.size / 2 + 0.85 + SCALE_RIPPLE.amplitudeMax);
   cube.update(20, 0.5, true);
   assert.equal(cube.ripples.uniforms.uRippleAmplitude.value, 0);

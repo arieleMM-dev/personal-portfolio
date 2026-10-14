@@ -98,12 +98,14 @@ export function createVideoProjectionMaterial(texture: THREE.Texture, size: numb
     transmission: 0.18,
     thickness: 0.2,
     ior: 1.3,
-    roughness: 0.24,
+    roughness: 0.34,
     metalness: 0.08,
-    clearcoat: 0.55,
-    clearcoatRoughness: 0.22,
-    envMapIntensity: 0.5,
-    specularIntensity: 0.3,
+    // Broad, cyan-tinted reflections avoid sharp white flashes during rotation.
+    clearcoat: 0.18,
+    clearcoatRoughness: 0.42,
+    envMapIntensity: 0.35,
+    specularIntensity: 0.12,
+    specularColor: 0x9edfff,
   });
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);

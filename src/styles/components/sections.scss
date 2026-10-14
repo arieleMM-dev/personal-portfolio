@@ -51,6 +51,6 @@ details summary::-webkit-details-marker { display: none; }
 @media (min-width: 1000px) {
   .scroll-tracker { left: 1.7rem; }
   .scroll-tracker__label { font-size: 0.55rem; letter-spacing: 0.08em; }
-  .scroll-tracker__link { gap: 0.65rem; }
+  .scroll-tracker__link { --tracker-label-gap: 0.65rem; }
   .scroll-tracker__nodes { gap: 2.8rem; }
 }
