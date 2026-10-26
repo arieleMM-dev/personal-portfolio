@@ -59,18 +59,22 @@
     bottom: max(3%, env(safe-area-inset-bottom));
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.6rem;
     min-height: 44px;
-    padding: 0.5rem 0.75rem;
+    padding: 0.4rem 1rem 0.4rem 0.45rem;
     font-family: $font-mono;
     font-size: 0.6875rem;
-    color: #b6cce3;
-    border-bottom: 1px solid rgba(148, 201, 234, 0.25);
-    transition: color 0.25s ease, border-color 0.25s ease;
+    color: #c3d9ee;
+    border-radius: 999px;
+    background: rgba(8, 24, 43, 0.66);
+    box-shadow: inset 0 0 0 1px rgba(132, 207, 242, 0.12), 0 4px 20px rgba(0, 5, 16, 0.18);
+    transition: color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    > svg { width: 28px; height: 28px; padding: 7px; border-radius: 50%; color: #8edfff; background: rgba(102, 217, 255, 0.09); flex-shrink: 0; }
     .motion-play { display: none; }
     &[aria-pressed='true'] .motion-play { display: block; }
     &[aria-pressed='true'] .motion-pause { display: none; }
-    &:hover { color: #e4f6ff; border-color: #92dafa; }
+    &:hover, &:focus-visible { color: #eaf8ff; background-color: rgba(15, 43, 65, 0.88); box-shadow: inset 0 0 0 1px rgba(132, 207, 242, 0.28), 0 0 24px rgba(61, 166, 217, 0.09); }
+    &[aria-pressed='true'] > svg { background: rgba(102, 217, 255, 0.16); }
     @media (max-width: 600px) { bottom: calc(5% + 2.7rem); }
   }
 
