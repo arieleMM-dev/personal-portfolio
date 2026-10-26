@@ -5,6 +5,7 @@ import type { HeroSceneController } from '../webgl/heroScene';
 import { initScrollTracker } from './scrollTracker';
 import { initHeroScrollCue } from './heroScrollCue';
 import { initPortfolioInteractions } from './portfolioInteractions';
+import { isAmbientPaused } from '../motion';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -175,19 +176,20 @@ export function initHome() {
     // ── Nav Link Smooth Scroll ──────────────────────────────────────────
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
         const href = link.getAttribute('href');
         if (!href?.startsWith('#')) return;
         e.preventDefault();
         
         if (href === '#home') {
-          scrollTo(0, { duration: reducedMotion ? 0 : 2 });
+          scrollTo(0, { duration: reducedMotion ? 0 : 2, hash: href, focus: e.detail === 0 });
           return;
         }
 
         const target = document.querySelector<HTMLElement>(href);
         if (!target) return;
 
-        scrollTo(target, { duration: reducedMotion ? 0 : 2, offset: parseFloat(getComputedStyle(target).paddingTop) || 0 });
+        scrollTo(target, { duration: reducedMotion ? 0 : 2, offset: parseFloat(getComputedStyle(target).paddingTop) || 0, hash: href, focus: e.detail === 0 });
       }, { signal: events.signal });
     });
 
@@ -258,7 +260,7 @@ function initBackToTop(signal: AbortSignal) {
 
   // Curvilinear Levitation (continuous float) on SVG
   if (svg && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    gsap.fromTo(svg,
+    const float = gsap.fromTo(svg,
       { y: -6 },
       {
         y: 6,
@@ -268,6 +270,9 @@ function initBackToTop(signal: AbortSignal) {
         repeat: -1,
       }
     );
+    const updateFloat = () => { float.paused(isAmbientPaused() || matchMedia('(prefers-reduced-motion: reduce)').matches); };
+    document.addEventListener('portfolio:motion-change', updateFloat, { signal });
+    updateFloat();
   }
 
   // ScrollTrigger to show/hide the button when scrolled past 100vh
@@ -294,7 +299,7 @@ function initBackToTop(signal: AbortSignal) {
     }
   });
 
-  btn.addEventListener('click', () => {
-    scrollTo(document.body, { duration: 1.5 });
+  btn.addEventListener('click', (event) => {
+    scrollTo(0, { duration: 1.5, hash: '#home', focus: event.detail === 0 });
   }, { signal });
 }

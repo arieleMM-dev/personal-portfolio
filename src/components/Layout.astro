@@ -23,9 +23,12 @@ interface Props {
 }
 
 const {
-  title = 'Portfolio',
+  title = 'Ariel Morillo — Backend y sistemas',
   description = 'Ariel Morillo — Ingeniería de software, desarrollo backend, APIs y experiencias web interactivas.',
 } = Astro.props;
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const shareImagePath = '/assets/portfolio/hero-refresh.jpg';
+const shareImage = Astro.site ? new URL(shareImagePath, Astro.site).href : shareImagePath;
 ---
 
 <!doctype html>
@@ -34,6 +37,22 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#030916" />
+    <meta name="color-scheme" content="dark" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ariel Morillo" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:locale:alternate" content="en_US" />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={shareImage} />
+    <meta property="og:image:alt" content="Océano digital y cubo interactivo del portafolio de Ariel Morillo" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={shareImage} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -44,11 +63,13 @@ const {
     <title>{title}</title>
   </head>
   <body>
+    <a class="skip-link" href="#main-content" data-skip-content data-i18n="common.skipContent">Saltar al contenido</a>
     <noscript><style>.preloader, .header--sticky { display: none !important; } .header { opacity: 1; visibility: visible; } .hero__letter, .hero__subtitle, .hero__dot { opacity: 1; transform: none; }</style></noscript>
     <Preloader />
     <ScrollTracker />
     <div class="layout">
-      <main class="layout__main">
+      <slot name="header" />
+      <main class="layout__main" id="main-content" tabindex="-1">
         <slot />
       </main>
     </div>
@@ -58,19 +79,21 @@ const {
       import { initLenis, startLenis } from '../scripts/lenis';
       import { initPreloader } from '../scripts/preloader/preloaderController';
       import { initHome } from '../scripts/home/homeAnimations';
+      import { initMotionPreference } from '../scripts/motion';
 
       let cleanupHome: (() => void) | undefined;
+      const cleanupMotion = initMotionPreference();
 
       initLenis({ stopped: true });
 
-      initPreloader(() => {
+      const cleanupPreloader = initPreloader(() => {
         startLenis();
         cleanupHome = initHome();
       });
 
       // A BFCache entry must remain resumable when the visitor presses Back.
       window.addEventListener('pagehide', (event) => {
-        if (!event.persisted) cleanupHome?.();
+        if (!event.persisted) { cleanupHome?.(); cleanupPreloader(); cleanupMotion(); }
       });
     </script>
   </body>

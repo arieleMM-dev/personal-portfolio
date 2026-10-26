@@ -1,12 +1,9 @@
 ---
 import { SITE } from '../data/site';
+import { translations as labels } from '../data/translations';
 
 const { nav, nameShort } = SITE;
 
-/** Capitalize first letter of each word */
-function capitalize(str: string) {
-  return str.replace(/\b\w/g, (c) => c.toUpperCase());
-}
 ---
 
 <header class="header px-4 sm:px-8 md:px-16 lg:px-24" data-header>
@@ -18,7 +15,7 @@ function capitalize(str: string) {
         nav.map((item) => (
           <li>
             <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link>
-              <span class="nav-text" data-i18n={`nav.${item.label.toLowerCase()}`}>{capitalize(item.label)}</span>
+              <span class="nav-text" data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
             </a>
           </li>
         ))
@@ -40,7 +37,7 @@ function capitalize(str: string) {
         nav.map((item) => (
           <li>
             <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link>
-              <span class="nav-text" data-i18n={`nav.${item.label.toLowerCase()}`}>{capitalize(item.label)}</span>
+              <span class="nav-text" data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
             </a>
           </li>
         ))
@@ -62,8 +59,11 @@ function capitalize(str: string) {
   const LANG_STORAGE_KEY = 'portfolio-lang';
   const toggles = document.querySelectorAll<HTMLButtonElement>('[data-lang-toggle]');
   
-  // Set initial state from localStorage or default to 'en'
-  const savedLang: Language = localStorage.getItem(LANG_STORAGE_KEY) === 'es' ? 'es' : 'en';
+  let savedLang: Language = navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en';
+  try {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY);
+    if (stored === 'es' || stored === 'en') savedLang = stored;
+  } catch { /* Browser language remains usable when storage is unavailable. */ }
   document.documentElement.setAttribute('lang', savedLang);
   
   function updateTranslations(lang: Language) {
@@ -83,6 +83,15 @@ function capitalize(str: string) {
     document.querySelectorAll<HTMLElement>('[data-i18n-aria-label]').forEach(el => {
       const key = el.dataset.i18nAriaLabel;
       if (key && dict[key]) el.setAttribute('aria-label', dict[key]);
+    });
+    document.title = dict['meta.title'];
+    document.querySelectorAll<HTMLMetaElement>('meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]').forEach(meta => { meta.content = dict['meta.description']; });
+    document.querySelectorAll<HTMLMetaElement>('meta[property="og:title"], meta[name="twitter:title"]').forEach(meta => { meta.content = dict['meta.title']; });
+    document.querySelector<HTMLMetaElement>('meta[property="og:locale"]')?.setAttribute('content', lang === 'es' ? 'es_ES' : 'en_US');
+    document.querySelector<HTMLMetaElement>('meta[property="og:locale:alternate"]')?.setAttribute('content', lang === 'es' ? 'en_US' : 'es_ES');
+    document.querySelectorAll<HTMLAnchorElement>('[data-scroll-tracker-link]').forEach(link => {
+      const navKey = `nav.${link.dataset.scrollTrackerLink}`;
+      if (dict[navKey]) link.setAttribute('aria-label', dict[navKey]);
     });
   }
 
@@ -109,7 +118,7 @@ function capitalize(str: string) {
       const newLang: Language = currentLang === 'en' ? 'es' : 'en';
       
       document.documentElement.setAttribute('lang', newLang);
-      localStorage.setItem(LANG_STORAGE_KEY, newLang);
+      try { localStorage.setItem(LANG_STORAGE_KEY, newLang); } catch { /* Language switching must still work. */ }
       updateToggleUI(newLang);
       updateTranslations(newLang);
       document.dispatchEvent(new CustomEvent('portfolio:language-change'));

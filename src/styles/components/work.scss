@@ -1,10 +1,10 @@
 @use '../variables' as *;
 .work {
   &__grid { display: grid; gap: clamp(4.5rem, 10vw, 8rem); }
-  &__project { display: grid; grid-template-columns: 1.25fr 1fr; gap: clamp(1.8rem, 4vw, 4rem); align-items: center; }
+  &__project { display: grid; grid-template-columns: 1.25fr 1fr; gap: clamp(1.8rem, 4vw, 4rem); align-items: center; padding-bottom: clamp(2rem, 4vw, 3.5rem); border-bottom: 1px solid rgba(110, 170, 221, 0.15); }
   &__stage { min-width: 0; position: relative; }
   &__stage::before { content: ''; position: absolute; inset: -15% 0; pointer-events: none; z-index: -1; background: radial-gradient(ellipse, rgba(22, 96, 161, 0.16), transparent 68%); }
-  &__visual { position: relative; width: 100%; aspect-ratio: 16 / 11; overflow: hidden; text-align: left; background: #061021; perspective: 900px; isolation: isolate; }
+  &__visual { position: relative; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; text-align: left; background: #040e1e; perspective: 900px; isolation: isolate; }
   &__parallax { position: absolute; inset: -5% 0; }
   &__media { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; }
   &__image { width: 100%; height: 100%; object-fit: contain; position: absolute; inset: 0; opacity: 1; transform: scale(1); transition: transform 1.2s $ease-out-expo; }
@@ -15,12 +15,12 @@
   &__project-info { min-width: 0; }
   &__project h3 { font-size: clamp(2rem, 3.6vw, 3.1rem); font-weight: 500; letter-spacing: -0.035em; line-height: 1.1; margin-block: 1.3rem 1rem; }
   &__project-info > p { font-size: 1.15rem; line-height: 1.65; color: #a0b9d5; margin-bottom: 1.5rem; }
-  &__project-info .work__location { font-family: $font-mono; font-size: 0.6rem; color: #84c9e4; margin-bottom: 1.4rem; }
+  &__project-info .work__location { font-family: $font-mono; font-size: 0.6875rem; color: #84c9e4; margin-bottom: 1.4rem; }
   &__project-info .tech-list { margin-bottom: 1.4rem; }
-  &__status { color: #8ecbdf !important; font-size: 0.55rem !important; }
+  &__status { color: #8ecbdf !important; font-size: 0.6875rem !important; }
   &__project--portfolio { grid-template-columns: 1fr 1.25fr; }
   &__project--portfolio &__stage { order: 2; }
-  &__project--portfolio &__visual { aspect-ratio: 16 / 11; }
+  &__project--portfolio &__visual { aspect-ratio: 16 / 10; }
   &__project--portfolio &__image { object-fit: cover; }
   &__upcoming-head { display: flex; justify-content: space-between; gap: 1rem; color: #819ab9; font-size: 0.9rem; margin-block: 5rem 1.2rem; border-top: 1px solid rgba(133, 173, 221, 0.18); padding-top: 1.5rem; }
   &__upcoming { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
@@ -63,8 +63,8 @@
   &[open] { animation: detail-reveal 0.3s ease both; }
   &__content { padding: clamp(1.2rem, 3vw, 2.5rem); }
   &__top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
-  &__close { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(141, 182, 222, 0.2); font-size: 1.1rem; }
-  &__close:hover { background: rgba(62, 169, 234, 0.12); }
+  &__close { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(141, 182, 222, 0.2); font-size: 1.1rem; }
+  &__close:hover, &__gallery-nav:hover { background: rgba(62, 169, 234, 0.12); }
   &__title { font-weight: 500; font-size: clamp(1.9rem, 3vw, 2.7rem); line-height: 1.15; letter-spacing: -0.025em; margin-bottom: 1rem; }
   &__short { font-size: 1.2rem; line-height: 1.6; color: #bdd0e5; }
   &__overview { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; margin-block: 1.5rem; }
@@ -84,7 +84,7 @@
   &__viewport.is-zoomed { touch-action: auto; }
   &__viewport.is-zoomed img { width: max(100%, 1200px); max-width: none; max-height: none; }
   &__gallery-progress { height: 1px; background: #19304a; margin-top: 1rem; }
-  &__gallery-progress span { display: block; height: 100%; background: #8adfff; transition: width 0.5s ease; }
+  &__gallery-progress span { display: block; height: 100%; background: #8adfff; transform-origin: left; transition: transform 0.5s ease; }
   &__gallery-tools { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 0.5rem; }
   &__gallery-tools .text-link { flex-shrink: 0; min-height: 44px; }
   #modal-gallery-error { color: #c7d7ec; margin-top: 1rem; }

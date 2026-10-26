@@ -1,5 +1,12 @@
 export const translations: Record<string, Record<string, string>> = {
   "en": {
+    "common.skipContent": "Skip to content",
+    "common.backTop": "Back to top",
+    "motion.pause": "Pause atmosphere",
+    "motion.resume": "Resume atmosphere",
+    "nav.sections": "Section navigation",
+    "meta.title": "Ariel Morillo — Backend & systems",
+    "meta.description": "Ariel Morillo's portfolio: backend development, software architecture and interactive projects.",
     "common.technologies": "Technologies",
     "common.expand": "Open",
     "common.collapse": "Close",
@@ -78,6 +85,13 @@ export const translations: Record<string, Record<string, string>> = {
     "work.gallery.error": "This image could not load. Try another screen."
   },
   "es": {
+    "common.skipContent": "Saltar al contenido",
+    "common.backTop": "Volver arriba",
+    "motion.pause": "Pausar ambiente",
+    "motion.resume": "Reanudar ambiente",
+    "nav.sections": "Navegación de secciones",
+    "meta.title": "Ariel Morillo — Backend y sistemas",
+    "meta.description": "Portafolio de Ariel Morillo: desarrollo backend, arquitectura de software y proyectos interactivos.",
     "common.technologies": "Tecnologías",
     "common.expand": "Abrir",
     "common.collapse": "Cerrar",

@@ -5,11 +5,11 @@
   &__column:first-child { padding-left: 0; }
   &__column:last-child { padding-right: 0; }
   &__column + &__column { border-left: 1px solid rgba(133, 173, 221, 0.16); }
-  &__col-title { font-weight: 500; font-size: clamp(1.6rem, 2.5vw, 1.95rem); margin-bottom: 0.8rem; letter-spacing: -0.015em; }
+  &__col-title { font-weight: 500; font-size: clamp(1.5rem, 2vw, 1.8rem); margin-bottom: 0.8rem; letter-spacing: -0.015em; text-wrap: balance; }
   &__col-desc { color: #9eb5d0; font-size: 1.1rem; line-height: 1.6; min-height: 105px; margin-bottom: 1.4rem; }
   .tech-list { margin-bottom: 1.8rem; }
   &__visual { position: relative; height: 225px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.8rem; perspective: 700px; }
-  &__visual::before { content: ''; position: absolute; width: 230px; height: 230px; background: radial-gradient(ellipse, rgba(32, 129, 219, 0.12), transparent 68%); }
+  &__visual::before { content: ''; position: absolute; width: 250px; height: 230px; background: radial-gradient(ellipse, rgba(32, 129, 219, 0.17), transparent 68%); }
   &__visual span { position: absolute; width: 112px; height: 76px; border: 1px solid rgba(114, 207, 255, calc(0.2 + var(--layer) * 0.12)); background: linear-gradient(135deg, rgba(45, 124, 207, 0.1), transparent); transform: translateY(calc(var(--layer) * -14px + 28px)) rotate(-27deg) skew(20deg); border-radius: 2px; transition: transform 1.2s $ease-out-expo, border-color 0.8s; }
   &__visual--0 span::after { content: ''; position: absolute; inset: 13px; border-top: 1px solid rgba(135, 226, 255, 0.35); border-right: 1px solid rgba(135, 226, 255, 0.15); }
   &__visual--1 span { width: calc(38px + var(--layer) * 29px); height: calc(38px + var(--layer) * 29px); transform: rotateX(30deg) rotateZ(45deg); border-radius: 50%; background: none; }

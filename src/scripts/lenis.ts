@@ -41,10 +41,20 @@ export function startLenis() {
   document.documentElement.classList.add('lenis-smooth');
 }
 
-export function scrollTo(target: string | number | HTMLElement, options?: { offset?: number; duration?: number }) {
+export function scrollTo(target: string | number | HTMLElement, options?: { offset?: number; duration?: number; hash?: string; focus?: boolean }) {
+  if (options?.hash && location.hash !== options.hash) history.pushState(null, '', options.hash);
   lenisInstance?.scrollTo(target, {
     offset: options?.offset ?? 0,
     duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : options?.duration ?? 1.8,
     immediate: matchMedia('(prefers-reduced-motion: reduce)').matches,
+    onComplete: () => {
+      if (!options?.focus) return;
+      const destination = target instanceof HTMLElement ? target : document.querySelector<HTMLElement>(typeof target === 'string' ? target : '#home');
+      if (destination) {
+        const focusTarget = destination.matches('section') ? destination.querySelector<HTMLElement>('h1, h2') ?? destination : destination;
+        if (!focusTarget.hasAttribute('tabindex')) focusTarget.tabIndex = -1;
+        focusTarget.focus({ preventScroll: true });
+      }
+    },
   });
 }

@@ -40,28 +40,18 @@ export function initScrollTracker() {
 
     // Smooth scroll via Lenis for click
     link.addEventListener('click', (e) => {
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       
       const sectionId = link.getAttribute('data-scroll-tracker-link');
       if (sectionId === 'home') {
-        scrollTo(0, { duration: 1.5 });
+        scrollTo(0, { duration: 1.5, hash: '#home', focus: e.detail === 0 });
         return;
       }
       
       if (!targetSection) return;
       
-      if (targetSection.id === 'expertise' || targetSection.hasAttribute('data-expertise')) {
-        const triggers = ScrollTrigger.getAll();
-        const sectionTrigger = triggers.find(t => t.trigger === targetSection && t.pin);
-        
-        if (sectionTrigger && sectionTrigger.end) {
-          const targetScroll = sectionTrigger.end - 20;
-          scrollTo(targetScroll, { duration: 1.5 });
-          return;
-        }
-      }
-      
-      scrollTo(targetSection, { duration: 1.5, offset: parseFloat(getComputedStyle(targetSection).paddingTop) || 0 });
+      scrollTo(targetSection, { duration: 1.5, offset: parseFloat(getComputedStyle(targetSection).paddingTop) || 0, hash: `#${sectionId}`, focus: e.detail === 0 });
     }, { signal: abort.signal });
   });
 

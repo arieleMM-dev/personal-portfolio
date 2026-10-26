@@ -1,4 +1,5 @@
 export const SITE = {
+  url: 'https://arielmorillo-dev.vercel.app',
   nameShort: 'ArielMorillo',
   nameHero: 'ARIEL MORILLO',
   subtitle: 'Software Engineer',

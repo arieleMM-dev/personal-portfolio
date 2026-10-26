@@ -1,6 +1,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { translations } from '../../data/translations';
+import { isAmbientPaused } from '../motion';
 
 // This avoids a plain address in the initial HTML, not extraction by advanced bots.
 function getContactEmail() {
@@ -32,7 +33,7 @@ export function initPortfolioInteractions() {
   const ambientElements = [...document.querySelectorAll<HTMLElement>('[data-architecture], [data-ambient-motion]')];
   const visibleElements = new Set<Element>();
   const updateAmbient = () => ambientElements.forEach(element => {
-    element.classList.toggle('is-visible', visibleElements.has(element) && !document.hidden && !reducedMotion.matches);
+    element.classList.toggle('is-visible', visibleElements.has(element) && !document.hidden && !reducedMotion.matches && !isAmbientPaused());
   });
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -44,6 +45,7 @@ export function initPortfolioInteractions() {
   ambientElements.forEach(element => observer.observe(element));
   document.addEventListener('visibilitychange', updateAmbient, { signal });
   reducedMotion.addEventListener('change', updateAmbient, { signal });
+  document.addEventListener('portfolio:motion-change', updateAmbient, { signal });
 
   const disclosureState = new Map<HTMLDetailsElement, boolean>();
   const updateDisclosureLabel = (details: HTMLDetailsElement, open: boolean) => {
@@ -100,7 +102,7 @@ export function initPortfolioInteractions() {
       const rotateX = gsap.quickTo(media, 'rotationX', { duration: 1, ease: 'power3.out' });
       const rotateY = gsap.quickTo(media, 'rotationY', { duration: 1, ease: 'power3.out' });
       visual.addEventListener('pointermove', event => {
-        if (event.pointerType !== 'mouse') return;
+        if (event.pointerType !== 'mouse' || isAmbientPaused()) return;
         const bounds = visual.getBoundingClientRect();
         const x = (event.clientX - bounds.left) / bounds.width * 2 - 1;
         const y = (event.clientY - bounds.top) / bounds.height * 2 - 1;

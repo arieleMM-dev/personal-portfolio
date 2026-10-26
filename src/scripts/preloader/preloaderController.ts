@@ -1,5 +1,6 @@
 import gsap from 'gsap';
 import { PreloaderWebGL } from './preloaderWebGL';
+import { isAmbientPaused } from '../motion';
 
 const COUNTER_DURATION = 6;
 const PHRASE_HOLD = 5.5;
@@ -66,21 +67,55 @@ export function initPreloader(onComplete: () => void) {
     return () => {};
   }
 
-  document.body.classList.add('is-loading');
+  const background = [...document.querySelectorAll<HTMLElement>('.layout, [data-scroll-tracker], [data-back-to-top]')];
+  function revealPage() {
+    const moveFocus = root!.contains(document.activeElement);
+    background.forEach(element => { element.inert = false; });
+    if (moveFocus) document.querySelector<HTMLElement>('#main-content')?.focus({ preventScroll: true });
+    root!.classList.add('is-hidden');
+    root!.setAttribute('aria-hidden', 'true');
+    root!.inert = true;
+    document.body.classList.remove('is-loading');
+    try { sessionStorage.setItem('portfolio-intro-seen', 'true'); } catch { /* Intro still works without storage. */ }
+  }
+  let seen = false;
+  try { seen = sessionStorage.getItem('portfolio-intro-seen') === 'true'; } catch { /* First-visit behavior is the fallback. */ }
+  if (seen || location.hash || isAmbientPaused() || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    revealPage();
+    onComplete();
+    return () => {};
+  }
 
-  const webgl = new PreloaderWebGL(canvas);
-  webgl.init();
+  document.body.classList.add('is-loading');
+  background.forEach(element => { element.inert = true; });
+
+  let webgl: PreloaderWebGL;
+  try {
+    webgl = new PreloaderWebGL(canvas);
+    webgl.init();
+  } catch {
+    revealPage();
+    onComplete();
+    return () => {};
+  }
 
   const counterState = { value: 0 };
   let fadeTriggered = false;
   let candleTween: { kill: () => void } | null = null;
+  const events = new AbortController();
+  let released = false;
+  function release() {
+    if (released) return;
+    released = true;
+    candleTween?.kill();
+    webgl.destroy();
+    events.abort();
+  }
 
   const tl = gsap.timeline({
     onComplete: () => {
-      if (candleTween) candleTween.kill();
-      webgl.destroy();
-      root.classList.add('is-hidden');
-      document.body.classList.remove('is-loading');
+      release();
+      revealPage();
       onComplete();
     },
   });
@@ -88,8 +123,9 @@ export function initPreloader(onComplete: () => void) {
   if (skipBtn) {
     skipBtn.addEventListener('click', () => {
       tl.progress(1); // Fast forward to the end
-    });
+    }, { signal: events.signal });
   }
+  document.querySelector('[data-skip-content]')?.addEventListener('click', () => tl.progress(1), { signal: events.signal });
 
   // ── Phase 1: 6s counter with marquee cylinder ──
   tl.to(counterState, {
@@ -180,7 +216,8 @@ export function initPreloader(onComplete: () => void) {
 
   return () => {
     tl.kill();
-    if (candleTween) candleTween.kill();
-    webgl.destroy();
+    release();
+    document.body.classList.remove('is-loading');
+    background.forEach(element => { element.inert = false; });
   };
 }

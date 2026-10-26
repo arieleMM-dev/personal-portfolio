@@ -7,6 +7,7 @@
   .section-kicker { justify-content: center; }
   .availability { margin-bottom: 1.5rem; }
   &__title { font-size: clamp(3.3rem, 6.3vw, 5.5rem); }
+  &__title > span { font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-weight: 400; font-size: 0.88em; color: #a9c8e4; }
   .section-copy { margin-inline: auto; max-width: 490px; }
   &__actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 1.5rem 2rem; margin-top: 2.5rem; }
   &__email { display: inline-flex; align-items: center; gap: 0.8rem; padding: 1rem 0.5rem; min-height: 52px; color: #c1d7ef; transition: color 0.4s; }

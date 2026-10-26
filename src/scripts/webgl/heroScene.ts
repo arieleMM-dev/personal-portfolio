@@ -11,6 +11,7 @@ import { HERO_PALETTE } from './hero/palette';
 import { getHeartbeat } from './hero/heartbeat';
 import { createDataParticles } from './hero/particles';
 import { createHeroCameraRig, getHeroObjectScale } from './hero/cameraRig';
+import { isAmbientPaused } from '../motion';
 
 export interface HeroSceneController {
   destroy(): void;
@@ -87,9 +88,11 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   let contextLost = false;
   let mobile = false;
   let needsFrame = true;
+  // Development-only sampling, after shader warm-up. No production telemetry.
+  let profile = import.meta.env.DEV ? { warmup: 20, intervals: [] as number[], submissions: [] as number[] } : null;
 
   function updateScene(delta: number): void {
-    const reduced = motionPreference.matches;
+    const reduced = motionPreference.matches || isAmbientPaused();
     if (!reduced) elapsed += delta;
     const heartbeat = getHeartbeat(elapsed);
     cameraRig.update(delta, pointer, reduced, mobile);
@@ -104,19 +107,38 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   function frame(timestamp: number): void {
     rafId = 0;
     if (destroyed || contextLost || document.hidden || !visible) return;
-    const delta = lastTimestamp === null ? 0 : Math.min((timestamp - lastTimestamp) / 1000, 0.05);
+    const frameInterval = lastTimestamp === null ? 0 : timestamp - lastTimestamp;
+    const delta = Math.min(frameInterval / 1000, 0.05);
     lastTimestamp = timestamp;
     updateScene(delta);
+    const submitStart = profile ? performance.now() : 0;
     composer.render(delta);
+    if (profile) {
+      if (profile.warmup > 0) profile.warmup--;
+      else if (delta > 0) {
+        profile.intervals.push(frameInterval);
+        profile.submissions.push(performance.now() - submitStart);
+        if (profile.intervals.length === 60) {
+          const median = (values: number[]) => Math.round(values.sort((a, b) => a - b)[30] * 100) / 100;
+          console.info('[Hero profile]', JSON.stringify({
+            frameIntervalP50Ms: median(profile.intervals),
+            cpuSubmitP50Ms: median(profile.submissions),
+            renderPixels: canvas.width * canvas.height,
+            pixelRatio: renderer.getPixelRatio(),
+          }));
+          profile = null;
+        }
+      }
+    }
     needsFrame = false;
     canvas.dataset.sceneReady = 'true';
-    if (!motionPreference.matches) rafId = requestAnimationFrame(frame);
+    if (!motionPreference.matches && !isAmbientPaused()) rafId = requestAnimationFrame(frame);
   }
 
   function schedule(): void {
     if (destroyed || contextLost || document.hidden || !visible || rafId) return;
-    video.setActive(!motionPreference.matches);
-    if (motionPreference.matches && !needsFrame) return;
+    video.setActive(!motionPreference.matches && !isAmbientPaused());
+    if ((motionPreference.matches || isAmbientPaused()) && !needsFrame) return;
     lastTimestamp = null;
     rafId = requestAnimationFrame(frame);
   }
@@ -152,7 +174,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   }
 
   function onMouseMove(event: MouseEvent): void {
-    if (motionPreference.matches || !visible) return;
+    if (motionPreference.matches || isAmbientPaused() || !visible) return;
     const bounds = canvas.getBoundingClientRect();
     if (event.clientX < bounds.left || event.clientX > bounds.right ||
         event.clientY < bounds.top || event.clientY > bounds.bottom) {
@@ -191,6 +213,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   document.documentElement.addEventListener('mouseleave', resetPointer);
   document.addEventListener('visibilitychange', onVisibility);
   motionPreference.addEventListener('change', onMotionChange);
+  document.addEventListener('portfolio:motion-change', onMotionChange);
   canvas.addEventListener('webglcontextlost', onContextLost);
   canvas.addEventListener('webglcontextrestored', onContextRestored);
   resize();
@@ -208,6 +231,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
       document.documentElement.removeEventListener('mouseleave', resetPointer);
       document.removeEventListener('visibilitychange', onVisibility);
       motionPreference.removeEventListener('change', onMotionChange);
+      document.removeEventListener('portfolio:motion-change', onMotionChange);
       canvas.removeEventListener('webglcontextlost', onContextLost);
       canvas.removeEventListener('webglcontextrestored', onContextRestored);
       video.dispose();

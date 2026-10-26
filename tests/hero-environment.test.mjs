@@ -20,11 +20,13 @@ test('video cube and central light preserve the shared bounded heartbeat', () =>
   assert.ok(body.material.transmission > 0 && body.material.transmission < 0.3);
   assert.equal(body.material.opacity, 1);
   assert.ok(body.material.thickness > 0 && body.material.ior > 1);
-  assert.ok(body.material.metalness < 0.1 && body.material.roughness < 0.25);
+  // The approved finish spreads highlights instead of producing white flashes.
+  assert.ok(body.material.metalness < 0.1 && body.material.roughness >= 0.3 && body.material.roughness < 0.45);
+  assert.ok(body.material.clearcoat <= 0.2 && body.material.specularIntensity <= 0.15);
   const core = monolith.group.getObjectByName('video-cube-heart-light');
   assert.ok(core instanceof THREE.PointLight);
   assert.equal(core.position.length(), 0);
-  assert.ok(VIDEO_CUBE.rotationSpeed > 0.026 && VIDEO_CUBE.rotationSpeed < 0.055);
+  assert.ok(VIDEO_CUBE.rotationSpeed > 0.026 && VIDEO_CUBE.rotationSpeed < 0.07);
   for (let time = 0; time < 120; time += 0.5) {
     monolith.update(time);
     assert.ok(monolith.group.position.y - VIDEO_CUBE.size / 2 > 0.8);

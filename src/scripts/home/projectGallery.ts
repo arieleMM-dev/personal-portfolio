@@ -52,7 +52,7 @@ export function initProjectGallery() {
     viewport.classList.add('is-loading');
     image.src = item.image;
     if (image.complete) settleImage();
-    progress.style.width = `${(index + 1) / activeProject.gallery.length * 100}%`;
+    progress.style.transform = `scaleX(${(index + 1) / activeProject.gallery.length})`;
     image.alt = description;
     setText('#modal-gallery-context-desc', description);
     setText('#modal-gallery-counter', `${String(index + 1).padStart(2, '0')} / ${String(activeProject.gallery.length).padStart(2, '0')}`);
@@ -89,6 +89,7 @@ export function initProjectGallery() {
     tags.replaceChildren(...activeProject.tags.map(text => {
       const li = document.createElement('li');
       const icon = document.createElement('span');
+      li.translate = false;
       icon.className = 'tech-icon';
       icon.setAttribute('aria-hidden', 'true');
       icon.style.setProperty('--tech-icon', `url('${technologyIcon(text)}')`);
@@ -125,6 +126,9 @@ export function initProjectGallery() {
         img.src = item.image;
         img.alt = '';
         img.loading = 'lazy';
+        img.width = 85;
+        img.height = 52;
+        img.decoding = 'async';
         thumb.append(img);
         thumb.setAttribute('aria-label', item.description[language()]);
         return thumb;

@@ -52,12 +52,12 @@ const upcoming = ['pos', 'helpdesk'] as const;
 
 <dialog class="work-modal" id="work-modal" aria-labelledby="modal-title" data-lenis-prevent>
   <div class="work-modal__content">
-    <div class="work-modal__top"><span class="micro-label" data-i18n="work.caseLabel">Proyecto en breve</span><button class="work-modal__close" type="button" data-modal-close aria-label="Cerrar proyecto" autofocus>✕</button></div>
+    <div class="work-modal__top"><span class="micro-label" data-i18n="work.caseLabel">Proyecto en breve</span><button class="work-modal__close" type="button" data-modal-close aria-label="Cerrar proyecto" autofocus><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     <div class="work-modal__body" id="modal-body">
       <h3 class="work-modal__title" id="modal-title"></h3>
       <p class="work-modal__short" id="modal-short"></p>
       <div class="work-modal__overview">
-        <button class="work-modal__cover" data-open-gallery type="button" aria-label="Explorar pantallas" data-i18n-aria-label="work.gallery"><img id="modal-cover" alt="" /><span aria-hidden="true">↗</span></button>
+        <button class="work-modal__cover" data-open-gallery type="button" aria-label="Explorar pantallas" data-i18n-aria-label="work.gallery"><img id="modal-cover" alt="" width="1440" height="900" decoding="async" /><span aria-hidden="true">↗</span></button>
         <div><h4 class="micro-label" data-i18n="work.decisions">Mi aportación</h4><ul id="modal-bullets"></ul></div>
       </div>
       <ul class="tech-list" id="modal-tags" aria-label="Tecnologías" data-i18n-aria-label="common.technologies"></ul>
@@ -67,7 +67,7 @@ const upcoming = ['pos', 'helpdesk'] as const;
       <div class="work-modal__gallery-toolbar"><button class="text-link" id="modal-gallery-back" type="button"><span aria-hidden="true">←</span><span data-i18n="work.back">Volver al resumen</span></button><span class="micro-label" id="modal-gallery-counter"></span></div>
       <div class="work-modal__gallery-main">
         <button class="work-modal__gallery-nav" id="modal-gallery-prev" type="button" aria-label="Previous image">←</button>
-        <div class="work-modal__viewport" id="modal-gallery-viewport" tabindex="0" role="region" aria-label="Imagen del proyecto"><img id="modal-gallery-main-img" alt="" /></div>
+        <div class="work-modal__viewport" id="modal-gallery-viewport" tabindex="0" role="region" aria-label="Imagen del proyecto"><img id="modal-gallery-main-img" alt="" width="1440" height="900" decoding="async" /></div>
         <button class="work-modal__gallery-nav" id="modal-gallery-next" type="button" aria-label="Next image">→</button>
       </div>
       <div class="work-modal__gallery-progress" aria-hidden="true"><span id="modal-gallery-progress"></span></div>

@@ -6,6 +6,20 @@
     position: relative;
     z-index: 10;
     background: transparent;
+    outline: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: max(38rem, 100svh) 0 0;
+      z-index: -1;
+      pointer-events: none;
+      mask-image: linear-gradient(transparent, #000 12rem, #000 calc(100% - 12rem), transparent);
+      background:
+        radial-gradient(ellipse at 88% 15%, rgba(19, 88, 153, 0.12), transparent 28%),
+        radial-gradient(ellipse at 8% 54%, rgba(12, 72, 128, 0.11), transparent 32%),
+        radial-gradient(ellipse at 68% 88%, rgba(18, 87, 139, 0.09), transparent 28%);
+    }
 
     >section {
       position: relative;
