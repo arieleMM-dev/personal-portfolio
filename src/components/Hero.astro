@@ -31,8 +31,15 @@ const letters = nameHero.split('');
     </svg>
     <span><span lang="en">Scroll to explore</span><span aria-hidden="true"> | </span><span lang="es">Desliza para explorar</span></span>
   </p>
+  <div class="hero__controls">
+  <button class="hero__motion hero__audio" type="button" data-audio-toggle aria-label="Activar audio" aria-pressed="false">
+    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l4-4v12l-4-4H3V8Z"/><g class="audio-waves"><path d="M13 7a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12"/></g><path class="audio-muted" d="m14 8 4 4m0-4-4 4"/></svg>
+    <span data-audio-label>Activar audio</span>
+  </button>
   <button class="hero__motion" type="button" data-motion-toggle aria-label="Pausar ambiente" aria-pressed="false">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><g class="motion-pause" stroke="currentColor" stroke-width="1.5"><path d="M5 3v10M11 3v10"/></g><path class="motion-play" d="m5 3 8 5-8 5V3Z" stroke="currentColor" stroke-linejoin="round"/></svg>
     <span data-motion-label>Pausar ambiente</span>
   </button>
+  </div>
+  <span class="sr-only" role="status" data-audio-status></span>
 </section>

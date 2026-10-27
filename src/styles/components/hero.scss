@@ -53,29 +53,39 @@
     text-shadow: 0 2px 24px rgba(1, 5, 16, 0.8);
   }
 
-  &__motion {
+  &__controls {
     position: absolute;
     right: max(1.25rem, env(safe-area-inset-right));
     bottom: max(3%, env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    @media (max-width: 1000px) { bottom: calc(5% + 2.7rem); }
+    @media (max-width: 380px) { gap: 0.5rem; right: 0.75rem; }
+  }
+
+  &__motion {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
     min-height: 44px;
-    padding: 0.4rem 1rem 0.4rem 0.45rem;
+    padding: 0.4rem 0.25rem;
     font-family: $font-mono;
     font-size: 0.6875rem;
     color: #c3d9ee;
-    border-radius: 999px;
-    background: rgba(8, 24, 43, 0.66);
-    box-shadow: inset 0 0 0 1px rgba(132, 207, 242, 0.12), 0 4px 20px rgba(0, 5, 16, 0.18);
-    transition: color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-    > svg { width: 28px; height: 28px; padding: 7px; border-radius: 50%; color: #8edfff; background: rgba(102, 217, 255, 0.09); flex-shrink: 0; }
+    text-shadow: 0 1px 12px #020510;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    > svg { width: 16px; height: 16px; color: #8edfff; flex-shrink: 0; transition: filter 0.3s ease; }
     .motion-play { display: none; }
     &[aria-pressed='true'] .motion-play { display: block; }
     &[aria-pressed='true'] .motion-pause { display: none; }
-    &:hover, &:focus-visible { color: #eaf8ff; background-color: rgba(15, 43, 65, 0.88); box-shadow: inset 0 0 0 1px rgba(132, 207, 242, 0.28), 0 0 24px rgba(61, 166, 217, 0.09); }
-    &[aria-pressed='true'] > svg { background: rgba(102, 217, 255, 0.16); }
-    @media (max-width: 600px) { bottom: calc(5% + 2.7rem); }
+    &:hover, &:focus-visible { color: #eaf8ff; text-shadow: 0 0 14px rgba(102, 217, 255, 0.35); > svg { filter: drop-shadow(0 0 4px rgba(102, 217, 255, 0.45)); } }
+    &:disabled { cursor: progress; }
+  }
+  &__audio {
+    .audio-waves { display: none; }
+    &[aria-pressed='true'] .audio-waves { display: block; }
+    &[aria-pressed='true'] .audio-muted { display: none; }
   }
 
   @media (max-width: 767px) {

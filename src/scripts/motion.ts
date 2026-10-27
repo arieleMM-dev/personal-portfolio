@@ -1,5 +1,4 @@
 import { translations } from '../data/translations.ts';
-import { createAmbientCue } from './ambientCue.ts';
 
 export function isAmbientPaused(): boolean {
   return document.documentElement.dataset.motion === 'paused';
@@ -8,7 +7,6 @@ export function isAmbientPaused(): boolean {
 /** One preference controls decorative motion without interrupting navigation. */
 export function initMotionPreference() {
   const abort = new AbortController();
-  const cue = createAmbientCue();
   const media = matchMedia('(prefers-reduced-motion: reduce)');
   const button = document.querySelector<HTMLButtonElement>('[data-motion-toggle]');
   try {
@@ -34,10 +32,9 @@ export function initMotionPreference() {
     document.documentElement.dataset.motion = isAmbientPaused() ? 'running' : 'paused';
     try { localStorage.setItem('portfolio-motion', document.documentElement.dataset.motion); } catch { /* Optional persistence. */ }
     notify();
-    void cue.play(isAmbientPaused());
   }, { signal: abort.signal });
   media.addEventListener('change', notify, { signal: abort.signal });
   document.addEventListener('portfolio:language-change', updateButton, { signal: abort.signal });
   updateButton();
-  return () => { abort.abort(); cue.destroy(); };
+  return () => abort.abort();
 }

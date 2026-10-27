@@ -80,8 +80,10 @@ const shareImage = Astro.site ? new URL(shareImagePath, Astro.site).href : share
       import { initPreloader } from '../scripts/preloader/preloaderController';
       import { initHome } from '../scripts/home/homeAnimations';
       import { initMotionPreference } from '../scripts/motion';
+      import { initHeroAudio } from '../scripts/heroAudio';
 
       let cleanupHome: (() => void) | undefined;
+      let cleanupAudio: (() => void) | undefined;
       const cleanupMotion = initMotionPreference();
 
       initLenis({ stopped: true });
@@ -89,11 +91,12 @@ const shareImage = Astro.site ? new URL(shareImagePath, Astro.site).href : share
       const cleanupPreloader = initPreloader(() => {
         startLenis();
         cleanupHome = initHome();
+        cleanupAudio = initHeroAudio();
       });
 
       // A BFCache entry must remain resumable when the visitor presses Back.
       window.addEventListener('pagehide', (event) => {
-        if (!event.persisted) { cleanupHome?.(); cleanupPreloader(); cleanupMotion(); }
+        if (!event.persisted) { cleanupHome?.(); cleanupPreloader(); cleanupMotion(); cleanupAudio?.(); }
       });
     </script>
   </body>
