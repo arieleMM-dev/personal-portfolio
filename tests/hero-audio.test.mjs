@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHeroSoundtrack } from '../src/scripts/heroSoundtrack.ts';
+import { AUDIO_FILES, prepareAudioSample } from '../src/scripts/audioSamples.ts';
+import { statSync } from 'node:fs';
 
 function audioEnvironment({ blocked = false } = {}) {
   const instances = [];
   const original = Object.getOwnPropertyDescriptor(globalThis, 'AudioContext');
+  const originalFetch = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+  const requests = [];
   const parameter = () => ({
     value: 0, events: [],
     cancelAndHoldAtTime(time) { this.events.push(['hold', time]); },
@@ -23,23 +27,36 @@ function audioEnvironment({ blocked = false } = {}) {
       this.nodes.push(node); return node;
     }
     source(properties = {}) {
-      const source = this.node({ ...properties, start() { this.started = true; }, stop() { this.stopped = true; } });
+      const source = this.node({ ...properties, start(...args) { this.started = true; this.starts = args; }, stop() { this.stopped = true; } });
       this.sources.push(source); return source;
     }
     createGain() { return this.node({ gain: parameter() }); }
     createDelay() { return this.node({ delayTime: parameter() }); }
     createBiquadFilter() { return this.node({ frequency: parameter(), Q: parameter() }); }
     createOscillator() { return this.source({ frequency: parameter(), detune: parameter() }); }
-    createBufferSource() { return this.source({ buffer: null }); }
+    createBufferSource() { return this.source({ buffer: null, playbackRate: parameter() }); }
     createBuffer(channels, length) {
       const data = Array.from({ length: channels }, () => new Float32Array(length));
-      return { length, numberOfChannels: channels, getChannelData: channel => data[channel] };
+      return { length, sampleRate: this.sampleRate, duration: length / this.sampleRate, numberOfChannels: channels, getChannelData: channel => data[channel] };
+    }
+    async decodeAudioData(data) {
+      const url = new TextDecoder().decode(data);
+      const buffer = this.createBuffer(1, url.includes('lesiakower') ? 600 : 1600);
+      buffer.getChannelData(0).fill(0.5, 100, buffer.length - 100);
+      buffer.url = url;
+      return buffer;
     }
   }
   Object.defineProperty(globalThis, 'AudioContext', { configurable: true, value: AudioContext });
-  return { instances, restore() {
+  Object.defineProperty(globalThis, 'fetch', { configurable: true, value: async url => {
+    requests.push(url);
+    return { ok: true, arrayBuffer: async () => new TextEncoder().encode(url).buffer };
+  } });
+  return { instances, requests, restore() {
     if (original) Object.defineProperty(globalThis, 'AudioContext', original);
     else delete globalThis.AudioContext;
+    if (originalFetch) Object.defineProperty(globalThis, 'fetch', originalFetch);
+    else delete globalThis.fetch;
   } };
 }
 
@@ -49,6 +66,7 @@ test('soundscape waits for consent, loops continuously and starts at zero volume
   try {
     await audio.setActive(true);
     assert.equal(env.instances.length, 0, 'scroll and visibility cannot create audio');
+    assert.equal(env.requests.length, 0, 'MP3 files are not fetched without consent');
     assert.equal(await audio.unlock(), true);
     const ctx = env.instances[0];
     assert.equal(ctx.nodes[0].gain.value, 0);
@@ -64,6 +82,7 @@ test('soundscape waits for consent, loops continuously and starts at zero volume
     assert.ok(samples.every(Number.isFinite));
     await audio.unlock();
     assert.equal(env.instances.length, 1, 'subsequent activation reuses the graph');
+    assert.equal(env.requests.length, 2, 'both local samples are cached after activation');
   } finally { audio.destroy(); env.restore(); }
 });
 
@@ -91,7 +110,7 @@ test('mute fades out and suspends audio; returning cancels a pending suspension'
   } finally { audio.destroy(); env.restore(); t.mock.timers.reset(); }
 });
 
-test('header and vertical navigation have distinct pitches; section breath takes priority', async () => {
+test('header uses a crystal partial and each vertical hover uses the chosen MP3', async () => {
   const env = audioEnvironment();
   const audio = createHeroSoundtrack();
   try {
@@ -101,12 +120,15 @@ test('header and vertical navigation have distinct pitches; section breath takes
     await audio.setActive(true);
     const ctx = env.instances[0];
     assert.equal(audio.playCue('header'), true);
-    const header = ctx.sources.at(-1);
-    assert.equal(header.frequency.events[0][1], 660);
-    assert.equal(audio.playCue('tracker'), false, 'fast transitions across controls do not stack');
+    const header = ctx.sources.at(-2);
+    assert.equal(header.frequency.events[0][1], 1174.66);
+    assert.ok(ctx.sources.at(-1).frequency.value > 3000, 'a quiet inharmonic partial adds the glass timbre');
+    assert.equal(audio.playCue('tracker'), true, 'different hover targets respond without a shared cooldown');
+    const firstTracker = ctx.sources.at(-1);
+    assert.ok(firstTracker.buffer.url.endsWith(AUDIO_FILES.tracker));
     ctx.currentTime += 0.3;
     assert.equal(audio.playCue('tracker'), true);
-    assert.equal(ctx.sources.at(-1).frequency.events[0][1], 220);
+    assert.notEqual(ctx.sources.at(-1), firstTracker, 'entering another node restarts the sample');
     assert.equal(audio.playCue('tracker'), false);
     assert.equal(audio.playCue('section'), true);
     const breath = ctx.sources.at(-1);
@@ -123,6 +145,36 @@ test('header and vertical navigation have distinct pitches; section breath takes
     assert.equal(ctx.sources.length, beforeMute, 'mute blocks all effects immediately');
     assert.ok(header.disconnected && breath.disconnected);
   } finally { audio.destroy(); env.restore(); }
+});
+
+test('Hero sample is softened, slowed slightly and cannot repeat during the same entrance', async () => {
+  const env = audioEnvironment();
+  const audio = createHeroSoundtrack('/portfolio/');
+  try {
+    await audio.unlock();
+    await audio.setActive(true);
+    const ctx = env.instances[0];
+    const count = ctx.nodes.length;
+    assert.equal(audio.playCue('intro'), true);
+    const sample = ctx.sources.at(-1);
+    assert.ok(sample.buffer.url.endsWith(AUDIO_FILES.intro));
+    assert.equal(sample.playbackRate.value, 0.92);
+    assert.equal(ctx.nodes[count + 1].frequency.events[0][1], 1800);
+    assert.ok(ctx.nodes[count].gain.events.some(([kind, value]) => kind === 'ramp' && value === 0.14));
+    assert.equal(audio.playCue('intro'), false);
+    assert.ok(env.requests.every(url => url.startsWith('/portfolio/assets/audio/')));
+  } finally { audio.destroy(); env.restore(); }
+});
+
+test('supplied MP3s exist and trimming removes padding without cutting the signal', () => {
+  for (const path of Object.values(AUDIO_FILES)) assert.ok(statSync(new URL(`../public/${path}`, import.meta.url)).size > 1000);
+  const data = new Float32Array(1000);
+  data.fill(0.25, 200, 500);
+  const buffer = { length: 1000, sampleRate: 1000, duration: 1, numberOfChannels: 1, getChannelData: () => data };
+  const sample = prepareAudioSample(buffer);
+  assert.ok(sample.offset < 0.2 && sample.offset > 0.18);
+  assert.ok(sample.offset + sample.duration > 0.5 && sample.offset + sample.duration < 0.6);
+  assert.ok(sample.gain <= 2, 'normalization never amplifies quiet noise without a bound');
 });
 
 test('disposing releases every audio node and prevents later playback', async () => {

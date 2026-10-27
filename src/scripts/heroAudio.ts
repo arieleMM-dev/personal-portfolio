@@ -8,10 +8,11 @@ export function initHeroAudio() {
   if (!hero || !button) return () => {};
   const abort = new AbortController();
   const { signal } = abort;
-  const soundtrack = createHeroSoundtrack();
+  const soundtrack = createHeroSoundtrack(import.meta.env.BASE_URL);
   let enabled = false;
   let pending = false;
   let heroVisible = false;
+  let introPending = true;
   const language = () => document.documentElement.lang === 'es' ? 'es' : 'en';
 
   function updateButton() {
@@ -23,14 +24,21 @@ export function initHeroAudio() {
     button!.setAttribute('aria-busy', String(pending));
     button!.disabled = pending;
   }
-  function reconcile(immediate = false) {
+  async function reconcile(immediate = false) {
     const active = enabled && !document.hidden && !isAmbientPaused();
-    void soundtrack.setActive(active, immediate);
+    await soundtrack.setActive(active, immediate);
+    if (signal.aborted) return;
     hero!.dataset.audio = enabled ? active ? 'playing' : 'waiting' : 'muted';
+    if (active && enabled && heroVisible && introPending && !document.hidden && !isAmbientPaused()) {
+      if (soundtrack.playCue('intro')) introPending = false;
+    }
   }
   const observer = new IntersectionObserver(([entry]) => {
-    heroVisible = entry.isIntersecting && entry.intersectionRatio > 0.08;
+    const entering = entry.isIntersecting && entry.intersectionRatio > 0.08;
+    if (entering && !heroVisible) introPending = true;
+    heroVisible = entering;
     button.classList.toggle('is-over-hero', heroVisible);
+    void reconcile();
   }, { threshold: [0, 0.08, 0.25] });
   observer.observe(hero);
   function cue(kind: SoundCue) {

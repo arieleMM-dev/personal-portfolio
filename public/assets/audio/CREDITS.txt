@@ -1,0 +1,11 @@
+Audio files supplied by the portfolio owner, preserved without re-encoding:
+
+lesiakower-minimalist-button-hover-sound-effect-399749.mp3
+Creator identified in supplied filename: Lesiakower
+Use: vertical section navigation hover.
+
+miraclei-sample_hover_subtle04_kofi_by_miraclei-364171.mp3
+Creator identified in supplied filename: Miraclei
+Use: softened Hero entrance cue.
+
+Gain, filtering and fades are applied during playback in the browser.

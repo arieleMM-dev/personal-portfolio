@@ -1,0 +1,13 @@
+[data-scramble-label] { display: inline-block; white-space: pre; }
+.header__nav-link [data-scramble-label], .hero__motion [data-scramble-label] { position: relative; }
+.nav-text[data-scramble-label] { transition: text-shadow 0.3s ease; }
+[data-scramble-label].is-scrambling { color: transparent !important; text-shadow: none !important; }
+.scramble-visual {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  white-space: pre;
+  color: var(--scramble-ink);
+  pointer-events: none;
+  user-select: none;
+}

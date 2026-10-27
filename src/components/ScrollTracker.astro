@@ -10,7 +10,7 @@ import { SITE } from '../data/site';
       <li class="scroll-tracker__node-item">
         <a href={section.href} class="scroll-tracker__link" data-scroll-tracker-link={section.href.replace('#', '')} aria-label={`Scroll to ${section.label}`}>
           <span class="scroll-tracker__node" aria-hidden="true"></span>
-          <span class="scroll-tracker__label text-lg font-heading" aria-hidden="true" data-i18n={`nav.${section.label.toLowerCase()}`}>{section.label}</span>
+          <span class="scroll-tracker__label text-lg font-heading" aria-hidden="true" data-scramble-label data-i18n={`nav.${section.label.toLowerCase()}`}>{section.label}</span>
         </a>
       </li>
     ))}

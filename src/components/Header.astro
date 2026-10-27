@@ -14,8 +14,8 @@ const { nav, nameShort } = SITE;
       {
         nav.map((item) => (
           <li>
-            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link>
-              <span class="nav-text" data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
+            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
+              <span class="nav-text" data-scramble-label data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
             </a>
           </li>
         ))
@@ -36,8 +36,8 @@ const { nav, nameShort } = SITE;
       {
         nav.map((item) => (
           <li>
-            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link>
-              <span class="nav-text" data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
+            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
+              <span class="nav-text" data-scramble-label data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
             </a>
           </li>
         ))

@@ -1,20 +1,28 @@
-export type SoundCue = 'header' | 'tracker' | 'section' | 'tower';
+import { AUDIO_FILES, loadAudioSample, type AudioSample } from './audioSamples.ts';
+
+export type SoundCue = 'header' | 'tracker' | 'section' | 'tower' | 'intro';
 const CUES = {
-  header: { duration: 0.24, attack: 0.035, peak: 0.02, from: 660, to: 550, cooldown: 0.18 },
-  tracker: { duration: 0.42, attack: 0.065, peak: 0.028, from: 220, to: 293.66, cooldown: 0.3 },
+  header: { duration: 0.24, attack: 0.008, peak: 0.075, from: 1174.66, to: 1174.66, cooldown: 0.05 },
+  tracker: { duration: 0.42, attack: 0.004, peak: 0.14, from: 0, to: 0, cooldown: 0.05 },
   section: { duration: 1.1, attack: 0.13, peak: 0.2, from: 720, to: 190, cooldown: 1.25 },
   tower: { duration: 1.45, attack: 0.32, peak: 0.035, from: 146.83, to: 220, cooldown: 2 },
+  intro: { duration: 2, attack: 0.12, peak: 0.07, from: 0, to: 0, cooldown: 2 },
 } as const;
+type Voice = { release(): void; dispose(): void };
 
 /** Quiet portfolio-wide bed and four distinct, consent-gated sound gestures. */
-export function createHeroSoundtrack() {
+export function createHeroSoundtrack(baseUrl = '/') {
   let context: AudioContext | undefined;
   let master: GainNode | undefined;
   let effects: GainNode | undefined;
   let airBuffer: AudioBuffer | undefined;
   let audible = false;
-  const voices = new Map<SoundCue, { release(): void; dispose(): void }>();
-  const lastCue: Record<SoundCue, number> = { header: -1000, tracker: -1000, section: -1000, tower: -1000 };
+  const voices = new Set<Voice>();
+  const latestVoice = new Map<SoundCue, Voice>();
+  const samples = new Map<'tracker' | 'intro', AudioSample>();
+  const loading = new AbortController();
+  let samplesReady: Promise<void> | undefined;
+  const lastCue: Record<SoundCue, number> = { header: -1000, tracker: -1000, section: -1000, tower: -1000, intro: -1000 };
   const nodes = new Set<AudioNode>();
   const sources = new Set<AudioScheduledSourceNode>();
   let idleTimer: ReturnType<typeof setTimeout> | undefined;
@@ -106,6 +114,16 @@ export function createHeroSoundtrack() {
         build(context);
       }
       await context.resume();
+      if (disposed) return false;
+      samplesReady ??= Promise.allSettled(Object.entries(AUDIO_FILES).map(async ([kind, path]) => {
+        const sample = await loadAudioSample(context!, `${baseUrl}${path}`, loading.signal);
+        if (!disposed) samples.set(kind as 'tracker' | 'intro', sample);
+      })).then(results => {
+        if (!disposed) results.forEach(result => {
+          if (result.status === 'rejected') console.warn('Portfolio audio sample could not load.', result.reason);
+        });
+      });
+      await samplesReady;
       return !disposed && context.state === 'running';
     } catch { return false; }
   }
@@ -138,33 +156,52 @@ export function createHeroSoundtrack() {
     const ctx = context;
     const now = ctx.currentTime;
     const profile = CUES[kind];
-    if (voices.has(kind) || now - lastCue[kind] < profile.cooldown) return false;
-    // A navigation breath takes priority; never queue a tower/hover to play late.
-    if (kind !== 'section' && now - lastCue.section < (kind === 'tower' ? 1.1 : 0.35)) return false;
-    if ((kind === 'header' || kind === 'tracker') && now - Math.max(lastCue.header, lastCue.tracker) < 0.14) return false;
+    const hover = kind === 'header' || kind === 'tracker';
+    if ((!hover && latestVoice.has(kind)) || now - lastCue[kind] < profile.cooldown) return false;
+    if (kind === 'tower' && now - lastCue.section < 1.1) return false;
+    const sample = kind === 'tracker' || kind === 'intro' ? samples.get(kind) : undefined;
+    if ((kind === 'tracker' || kind === 'intro') && !sample) return false;
+    if (hover) latestVoice.get(kind)?.release();
+    const rate = kind === 'intro' ? 0.92 : 1;
+    const duration = sample ? Math.min(sample.duration / rate, kind === 'intro' ? 5 : 2) : profile.duration;
     const envelope = ctx.createGain();
     const filter = ctx.createBiquadFilter();
     filter.type = kind === 'section' ? 'bandpass' : 'lowpass';
     filter.Q.value = 0.45;
-    filter.frequency.setValueAtTime(kind === 'section' ? profile.from : 1400, now);
+    filter.frequency.setValueAtTime(kind === 'section' ? profile.from : kind === 'header' ? 3800 : kind === 'intro' ? 1800 : 10000, now);
     if (kind === 'section') filter.frequency.exponentialRampToValueAtTime(profile.to, now + 0.85);
-    const source = kind === 'section' ? ctx.createBufferSource() : ctx.createOscillator();
-    if ('buffer' in source) source.buffer = airBuffer!;
+    const source = kind === 'section' || sample ? ctx.createBufferSource() : ctx.createOscillator();
+    if ('buffer' in source) { source.buffer = sample?.buffer ?? airBuffer!; source.playbackRate.value = rate; }
     else {
       source.type = 'sine';
       source.frequency.setValueAtTime(profile.from, now);
       source.frequency.exponentialRampToValueAtTime(profile.to, now + profile.duration * 0.7);
     }
     source.connect(filter);
+    const harmonic = kind === 'header' ? ctx.createOscillator() : undefined;
+    const harmonicGain = harmonic ? ctx.createGain() : undefined;
+    if (harmonic && harmonicGain) {
+      harmonic.frequency.value = profile.from * 2.756;
+      harmonicGain.gain.value = 0.17;
+      harmonic.connect(harmonicGain); harmonicGain.connect(filter);
+      harmonic.start(now); harmonic.stop(now + duration + 0.02);
+    }
     filter.connect(envelope);
     envelope.connect(effects);
     envelope.gain.setValueAtTime(0, now);
-    envelope.gain.linearRampToValueAtTime(profile.peak, now + profile.attack);
-    envelope.gain.exponentialRampToValueAtTime(0.00001, now + profile.duration - 0.04);
-    envelope.gain.linearRampToValueAtTime(0, now + profile.duration);
+    const attack = Math.min(profile.attack, duration * 0.2);
+    const peak = profile.peak * (sample?.gain ?? 1);
+    envelope.gain.linearRampToValueAtTime(peak, now + attack);
+    if (sample) {
+      const release = Math.min(kind === 'intro' ? 0.3 : 0.025, duration * 0.3);
+      envelope.gain.setValueAtTime(peak, now + duration - release);
+    } else envelope.gain.exponentialRampToValueAtTime(0.00001, now + duration - 0.04);
+    envelope.gain.linearRampToValueAtTime(0, now + duration);
     const cleanup = () => {
       source.disconnect(); filter.disconnect(); envelope.disconnect();
-      if (voices.get(kind) === voice) voices.delete(kind);
+      harmonic?.disconnect(); harmonicGain?.disconnect();
+      voices.delete(voice);
+      if (latestVoice.get(kind) === voice) latestVoice.delete(kind);
     };
     let ended = false;
     const voice = {
@@ -173,19 +210,21 @@ export function createHeroSoundtrack() {
         envelope.gain.cancelAndHoldAtTime(ctx.currentTime);
         envelope.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.06);
         source.stop(ctx.currentTime + 0.07);
+        harmonic?.stop(ctx.currentTime + 0.07);
       },
       dispose() {
         if (ended) return;
         ended = true;
-        source.stop(); cleanup();
+        source.stop(); harmonic?.stop(); cleanup();
       },
     };
     source.onended = () => { if (!ended) { ended = true; cleanup(); } };
-    voices.set(kind, voice);
+    voices.add(voice);
+    latestVoice.set(kind, voice);
     lastCue[kind] = now;
-    if ('buffer' in source) source.start(now, 1 + Math.random() * 4);
+    if ('buffer' in source) source.start(now, sample?.offset ?? 1 + Math.random() * 4);
     else source.start(now);
-    source.stop(now + profile.duration + 0.02);
+    source.stop(now + duration + 0.02);
     return true;
   }
 
@@ -199,6 +238,7 @@ export function createHeroSoundtrack() {
       audible = false;
       revision++;
       clearTimeout(idleTimer);
+      loading.abort();
       voices.forEach(voice => voice.dispose());
       sources.forEach(source => source.stop());
       nodes.forEach(node => node.disconnect());
