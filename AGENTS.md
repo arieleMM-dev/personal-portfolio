@@ -74,6 +74,7 @@
 - Conservar la identidad azul medianoche/cian, los espacios abiertos y la tipografía aprobada. Evitar convertir las secciones en una colección de tarjetas genéricas.
 - Preservar la composición, vídeo acuoso, cámara, reflejos suaves y velocidad de giro aprobados del Hero salvo petición del usuario.
 - Mantener las animaciones elegantes, reversibles donde corresponde y compatibles con movimiento reducido y pausa manual.
+- Audio: ambiente original muy tenue en todo el portafolio, activado por el visitante; control fijo de activar/silenciar sin marco ni tarjeta. Diferenciar el sonido del menú superior y los nodos laterales, usar un soplido suave al cambiar de sección y sincronizar los pulsos con el evento real de las torres. El silencio bloquea todas las capas sonoras.
 - Probar móvil, teclado, navegación lateral, selector de idioma y galería al modificar sus interacciones.
 - No inventar experiencia, métricas, nivel de dominio, enlaces personales ni resultados comerciales. Mantener el correo fuera del texto público, conforme a la preferencia del usuario.
 - Los iconos de tecnologías son SVG locales con atribución en public/assets/technologies.

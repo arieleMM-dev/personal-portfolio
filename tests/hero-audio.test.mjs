@@ -9,6 +9,8 @@ function audioEnvironment({ blocked = false } = {}) {
     value: 0, events: [],
     cancelAndHoldAtTime(time) { this.events.push(['hold', time]); },
     linearRampToValueAtTime(value, time) { this.events.push(['ramp', value, time]); },
+    setValueAtTime(value, time) { this.events.push(['set', value, time]); },
+    exponentialRampToValueAtTime(value, time) { this.events.push(['exponential', value, time]); },
   });
   class AudioContext {
     state = 'suspended'; currentTime = 10; sampleRate = 1000; destination = {}; nodes = []; sources = [];
@@ -28,7 +30,7 @@ function audioEnvironment({ blocked = false } = {}) {
     createDelay() { return this.node({ delayTime: parameter() }); }
     createBiquadFilter() { return this.node({ frequency: parameter(), Q: parameter() }); }
     createOscillator() { return this.source({ frequency: parameter(), detune: parameter() }); }
-    createBufferSource() { return this.source(); }
+    createBufferSource() { return this.source({ buffer: null }); }
     createBuffer(channels, length) {
       const data = Array.from({ length: channels }, () => new Float32Array(length));
       return { length, numberOfChannels: channels, getChannelData: channel => data[channel] };
@@ -73,9 +75,9 @@ test('mute fades out and suspends audio; returning cancels a pending suspension'
     await audio.unlock();
     const ctx = env.instances[0];
     await audio.setActive(true);
-    assert.deepEqual(ctx.nodes[0].gain.events.at(-1), ['ramp', 0.65, 11.8]);
+    assert.deepEqual(ctx.nodes[0].gain.events.at(-1), ['ramp', 0.38, 12.4]);
     await audio.setActive(false);
-    assert.deepEqual(ctx.nodes[0].gain.events.at(-1), ['ramp', 0, 11.1]);
+    assert.deepEqual(ctx.nodes[0].gain.events.at(-1), ['ramp', 0, 10.8]);
     t.mock.timers.tick(1200);
     assert.equal(ctx.state, 'suspended');
     await audio.setActive(true);
@@ -87,6 +89,40 @@ test('mute fades out and suspends audio; returning cancels a pending suspension'
     await audio.setActive(false, true);
     assert.equal(ctx.state, 'suspended', 'background tabs stop immediately');
   } finally { audio.destroy(); env.restore(); t.mock.timers.reset(); }
+});
+
+test('header and vertical navigation have distinct pitches; section breath takes priority', async () => {
+  const env = audioEnvironment();
+  const audio = createHeroSoundtrack();
+  try {
+    assert.equal(audio.playCue('header'), false);
+    await audio.unlock();
+    assert.equal(audio.playCue('header'), false, 'unlock alone cannot enable effects');
+    await audio.setActive(true);
+    const ctx = env.instances[0];
+    assert.equal(audio.playCue('header'), true);
+    const header = ctx.sources.at(-1);
+    assert.equal(header.frequency.events[0][1], 660);
+    assert.equal(audio.playCue('tracker'), false, 'fast transitions across controls do not stack');
+    ctx.currentTime += 0.3;
+    assert.equal(audio.playCue('tracker'), true);
+    assert.equal(ctx.sources.at(-1).frequency.events[0][1], 220);
+    assert.equal(audio.playCue('tracker'), false);
+    assert.equal(audio.playCue('section'), true);
+    const breath = ctx.sources.at(-1);
+    assert.ok(breath.buffer, 'the transition uses filtered air rather than a beep');
+    assert.notEqual(breath.loop, true);
+    assert.equal(audio.playCue('tower'), false, 'a simultaneous tower cannot compete with navigation');
+    ctx.currentTime += 1.2;
+    assert.equal(audio.playCue('tower'), true);
+    assert.equal(ctx.sources.at(-1).frequency.events[0][1], 146.83);
+    const beforeMute = ctx.sources.length;
+    await audio.setActive(false, true);
+    assert.equal(audio.playCue('tower'), false);
+    assert.equal(audio.playCue('section'), false);
+    assert.equal(ctx.sources.length, beforeMute, 'mute blocks all effects immediately');
+    assert.ok(header.disconnected && breath.disconnected);
+  } finally { audio.destroy(); env.restore(); }
 });
 
 test('disposing releases every audio node and prevents later playback', async () => {

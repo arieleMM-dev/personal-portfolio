@@ -11,15 +11,20 @@ export function initScrollTracker() {
   const links = document.querySelectorAll<HTMLAnchorElement>('[data-scroll-tracker-link]');
   const abort = new AbortController();
   const triggers: ScrollTrigger[] = [];
+  let currentSection: string | undefined;
   function activateLink(activeLink: HTMLAnchorElement) {
+    const id = activeLink.dataset.scrollTrackerLink;
+    if (!id || id === currentSection) return;
+    const previous = currentSection;
+    currentSection = id;
     links.forEach(l => { l.classList.remove('is-active'); l.removeAttribute('aria-current'); });
     activeLink.classList.add('is-active');
     activeLink.setAttribute('aria-current', 'location');
-    const id = activeLink.dataset.scrollTrackerLink;
     document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]').forEach(link => {
       if (link.getAttribute('href') === `#${id}`) link.setAttribute('aria-current', 'location');
       else link.removeAttribute('aria-current');
     });
+    if (previous) document.dispatchEvent(new CustomEvent('portfolio:section-change', { detail: { id, previous } }));
   }
 
   // Bind sections to their respective tracker links

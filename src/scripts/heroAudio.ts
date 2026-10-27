@@ -1,6 +1,6 @@
 import { translations } from '../data/translations.ts';
 import { isAmbientPaused } from './motion.ts';
-import { createHeroSoundtrack } from './heroSoundtrack.ts';
+import { createHeroSoundtrack, type SoundCue } from './heroSoundtrack.ts';
 
 export function initHeroAudio() {
   const hero = document.querySelector<HTMLElement>('[data-hero]');
@@ -11,7 +11,7 @@ export function initHeroAudio() {
   const soundtrack = createHeroSoundtrack();
   let enabled = false;
   let pending = false;
-  let visible = false;
+  let heroVisible = false;
   const language = () => document.documentElement.lang === 'es' ? 'es' : 'en';
 
   function updateButton() {
@@ -24,15 +24,33 @@ export function initHeroAudio() {
     button!.disabled = pending;
   }
   function reconcile(immediate = false) {
-    const active = enabled && visible && !document.hidden && !isAmbientPaused();
+    const active = enabled && !document.hidden && !isAmbientPaused();
     void soundtrack.setActive(active, immediate);
     hero!.dataset.audio = enabled ? active ? 'playing' : 'waiting' : 'muted';
   }
   const observer = new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting && entry.intersectionRatio > 0.08;
-    reconcile();
+    heroVisible = entry.isIntersecting && entry.intersectionRatio > 0.08;
+    button.classList.toggle('is-over-hero', heroVisible);
   }, { threshold: [0, 0.08, 0.25] });
   observer.observe(hero);
+  function cue(kind: SoundCue) {
+    if (enabled && !document.hidden && !isAmbientPaused()) soundtrack.playCue(kind);
+  }
+  const navigation = '[data-nav-link], [data-scroll-tracker-link]';
+  document.addEventListener('pointerover', event => {
+    if (event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
+    const link = event.target.closest(navigation);
+    if (!link || (event.relatedTarget instanceof Node && link.contains(event.relatedTarget))) return;
+    cue(link.hasAttribute('data-scroll-tracker-link') ? 'tracker' : 'header');
+  }, { signal, passive: true });
+  document.addEventListener('focusin', event => {
+    if (!(event.target instanceof Element) || !event.target.matches(`${navigation}`) || !event.target.matches(':focus-visible')) return;
+    cue(event.target.hasAttribute('data-scroll-tracker-link') ? 'tracker' : 'header');
+  }, { signal });
+  document.addEventListener('portfolio:section-change', () => cue('section'), { signal });
+  document.addEventListener('portfolio:tower-pulse', () => {
+    if (heroVisible) cue('tower');
+  }, { signal });
   button.addEventListener('click', async () => {
     const status = hero.querySelector<HTMLElement>('[data-audio-status]');
     if (status) status.textContent = '';
@@ -54,6 +72,7 @@ export function initHeroAudio() {
   window.addEventListener('pagehide', () => { void soundtrack.setActive(false, true); }, { signal });
   window.addEventListener('pageshow', () => reconcile(), { signal });
   updateButton();
+  button.hidden = false;
   reconcile();
-  return () => { abort.abort(); observer.disconnect(); soundtrack.destroy(); };
+  return () => { abort.abort(); observer.disconnect(); soundtrack.destroy(); button.hidden = true; };
 }

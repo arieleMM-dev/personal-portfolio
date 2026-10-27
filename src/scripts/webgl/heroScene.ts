@@ -99,7 +99,8 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     cube.update(elapsed, heartbeat, reduced);
     cube.updateInteraction(delta, pointer, pointerPresent, camera, reduced);
     cube.setVideoState(video.ready, video.aspect);
-    city.update(elapsed, heartbeat, reduced);
+    const launchedTower = city.update(elapsed, heartbeat, reduced);
+    if (launchedTower >= 0) document.dispatchEvent(new CustomEvent('portfolio:tower-pulse'));
     environment.update(elapsed, heartbeat);
     particles.update(elapsed);
   }

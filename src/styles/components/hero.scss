@@ -174,3 +174,16 @@
     }
   }
 }
+
+// A single, unframed audio control follows the visitor through every section.
+.portfolio-audio {
+  position: fixed;
+  z-index: 50;
+  left: max(1.5rem, env(safe-area-inset-left));
+  bottom: max(2rem, env(safe-area-inset-bottom));
+  transition: color 0.3s ease, text-shadow 0.3s ease, bottom 0.45s ease;
+  @media (max-width: 1000px) {
+    left: max(0.75rem, env(safe-area-inset-left));
+    &.is-over-hero { bottom: calc(5% + 2.7rem); }
+  }
+}

@@ -158,6 +158,26 @@ test('tower and ray instances share start times; matrices never upload during an
   assert.equal(city.rays.material.uniforms.uEventsEnabled.value, 0);
 });
 
+test('a tower reports one launch for sound sync and never reports a reset or silent frame', () => {
+  const city = createCityscape(new THREE.Color(HERO_PALETTE.fog), seededRandom());
+  const starts = city.buildings.geometry.getAttribute('aBurstStart');
+  let launches = 0;
+  let previous = -10;
+  for (let frame = 0; frame < 45 * 60; frame++) {
+    const time = frame / 60;
+    const tower = city.update(time, getHeartbeat(time));
+    if (tower >= 0) {
+      launches++;
+      assert.ok(time - previous >= TOWER_BURST.minInterval - 0.02);
+      assert.ok(time - starts.getX(tower) < 0.04, 'audio uses the actual visual launch, not another timer');
+      previous = time;
+    }
+  }
+  assert.ok(launches > 2);
+  assert.equal(city.update(45, 1, true), -1, 'reduced motion and pause never produce sound launches');
+  assert.equal(city.update(45, 1, true), -1);
+});
+
 test('burst cadence is independent of frame rate', () => {
   const events = [30, 60, 144].map((fps) => {
     const scheduler = createTowerBurstScheduler(84, seededRandom());

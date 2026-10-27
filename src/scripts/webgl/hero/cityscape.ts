@@ -184,6 +184,7 @@ export function createCityscape(fogColor: THREE.Color, random: () => number = Ma
       const state = scheduler.update(time, heartbeat, !reducedMotion);
       if (state.changed) starts.needsUpdate = true;
       rays.visible = !reducedMotion && state.activeCount > 0;
+      return state.launched;
     },
   };
 }

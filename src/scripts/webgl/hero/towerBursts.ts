@@ -30,13 +30,14 @@ export function createTowerBurstScheduler(count: number, random: () => number = 
   let nextTime = nextHeartbeatCrest(1 + random() * 2);
   let lastTower = -1;
   let wasEnabled = true;
-  const state = { changed: false, activeCount: 0 };
+  const state = { changed: false, activeCount: 0, launched: -1 };
 
   return {
     starts,
     setEligible(indices: readonly number[]) { eligible = [...indices]; },
     update(time: number, heartbeat: number, enabled = true) {
       state.changed = false;
+      state.launched = -1;
       state.activeCount = 0;
       if (!enabled) {
         if (wasEnabled) { starts.fill(-1000); state.changed = true; }
@@ -60,6 +61,7 @@ export function createTowerBurstScheduler(count: number, random: () => number = 
         if (candidates.length > 0) {
           const index = candidates[Math.floor(random() * candidates.length)];
           starts[index] = nextTime;
+          state.launched = index;
           lastTower = index;
           state.changed = true;
           state.activeCount++;

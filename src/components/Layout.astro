@@ -16,6 +16,7 @@ import '../styles/components/scroll-tracker.scss';
 import Preloader from './Preloader.astro';
 import BackToTop from './BackToTop.astro';
 import ScrollTracker from './ScrollTracker.astro';
+import AudioToggle from './AudioToggle.astro';
 
 interface Props {
   title?: string;
@@ -74,6 +75,7 @@ const shareImage = Astro.site ? new URL(shareImagePath, Astro.site).href : share
       </main>
     </div>
     <BackToTop />
+    <AudioToggle />
 
     <script>
       import { initLenis, startLenis } from '../scripts/lenis';
