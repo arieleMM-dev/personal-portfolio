@@ -80,3 +80,4 @@
 - No inventar experiencia, métricas, nivel de dominio, enlaces personales ni resultados comerciales. Mantener el correo fuera del texto público, conforme a la preferencia del usuario.
 - Los iconos de tecnologías son SVG locales con atribución en public/assets/technologies.
 - Conservar cambios del usuario. README.md e INSTALACION.md proceden del starter y no se sobrescriben incidentalmente.
+- Experiencias web: accesos en el encabezado, su versión fija y contacto hacia `/experiencias/`. Por ahora solo existe una entrada provisional cálida, aislada de los estilos y WebGL del portafolio y excluida de indexación. La galería de cal/piedra y su recorrido 3D por scroll requieren definir todavía la dirección artística. Conservar ES/EN y el regreso al portafolio; transición nativa entre documentos con alternativa sin animación.

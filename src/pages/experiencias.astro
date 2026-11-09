@@ -1,0 +1,94 @@
+---
+import { experiences } from '../data/experiences';
+import '../styles/experiences-entrance.scss';
+import '../styles/page-transitions.css';
+
+const copy = experiences.es;
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={copy.description} />
+    <meta name="robots" content="noindex, follow" />
+    <meta name="theme-color" content="#eae6dc" />
+    <meta name="color-scheme" content="light" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600&display=swap" rel="stylesheet" />
+    <title>{copy.title}</title>
+    <script is:inline>
+      // Resolve the saved locale before the entrance is painted.
+      try {
+        const language = localStorage.getItem('portfolio-lang');
+        document.documentElement.lang = language === 'es' || language === 'en' ? language : navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en';
+      } catch { document.documentElement.lang = navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en'; }
+    </script>
+  </head>
+  <body>
+    <a class="entrance__skip" href="#entrance-content" data-entrance-copy="skip">{copy.skip}</a>
+    <header class="entrance__header">
+      <a class="entrance__back" href={import.meta.env.BASE_URL}><span aria-hidden="true">←</span><span data-entrance-copy="back">{copy.back}</span></a>
+      <button class="entrance__language" type="button" data-entrance-language aria-label={copy.language} hidden>
+        <span data-language="en">EN</span><span aria-hidden="true">/</span><span data-language="es">ES</span>
+      </button>
+    </header>
+    <main id="entrance-content" class="entrance" tabindex="-1">
+      <div class="entrance__room" aria-hidden="true">
+        <div class="entrance__opening"><div class="entrance__light"></div></div>
+        <div class="entrance__floor"></div>
+      </div>
+      <div class="entrance__content">
+        <p class="entrance__label" data-entrance-copy="label">{copy.label}</p>
+        <h1 data-entrance-copy="heading">{copy.heading}</h1>
+        <p class="entrance__introduction" data-entrance-copy="introduction">{copy.introduction}</p>
+      </div>
+      <aside class="entrance__notice">
+        <p data-entrance-copy="status">{copy.status}</p>
+        <p data-entrance-copy="note">{copy.note}</p>
+      </aside>
+    </main>
+    <script>
+      import { experiences } from '../data/experiences';
+
+      const toggle = document.querySelector<HTMLButtonElement>('[data-entrance-language]');
+      function applyLanguage() {
+        const lang = document.documentElement.lang === 'es' ? 'es' : 'en';
+        const copy = experiences[lang];
+        document.querySelectorAll<HTMLElement>('[data-entrance-copy]').forEach(element => {
+          const key = element.dataset.entranceCopy as keyof typeof copy;
+          if (key in copy) element.textContent = copy[key];
+        });
+        document.title = copy.title;
+        document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', copy.description);
+        toggle?.setAttribute('aria-label', copy.language);
+        toggle?.querySelectorAll<HTMLElement>('[data-language]').forEach(label => {
+          label.classList.toggle('is-active', label.dataset.language === lang);
+        });
+      }
+      applyLanguage();
+      window.addEventListener('pageshow', event => {
+        if (!event.persisted) return;
+        try {
+          const lang = localStorage.getItem('portfolio-lang');
+          if (lang === 'es' || lang === 'en') document.documentElement.lang = lang;
+        } catch { /* Preserve the current locale. */ }
+        applyLanguage();
+      });
+      if (toggle) {
+        toggle.hidden = false;
+        toggle.addEventListener('click', () => {
+          const lang = document.documentElement.lang === 'es' ? 'en' : 'es';
+          document.documentElement.lang = lang;
+          try { localStorage.setItem('portfolio-lang', lang); } catch { /* Locale remains usable without storage. */ }
+          applyLanguage();
+        });
+      }
+    </script>
+  </body>
+</html>

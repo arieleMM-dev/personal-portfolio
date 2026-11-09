@@ -1,5 +1,7 @@
 export const translations: Record<string, Record<string, string>> = {
   "en": {
+    "experiences.link": "Web experiences",
+    "experiences.contactPrompt": "Looking for a website for your brand or business?",
     "common.skipContent": "Skip to content",
     "common.backTop": "Back to top",
     "motion.pause": "Pause atmosphere",
@@ -89,6 +91,8 @@ export const translations: Record<string, Record<string, string>> = {
     "work.gallery.error": "This image could not load. Try another screen."
   },
   "es": {
+    "experiences.link": "Experiencias web",
+    "experiences.contactPrompt": "¿Buscas una web para tu marca o negocio?",
     "common.skipContent": "Saltar al contenido",
     "common.backTop": "Volver arriba",
     "motion.pause": "Pausar ambiente",

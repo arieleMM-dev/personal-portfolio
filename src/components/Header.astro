@@ -1,13 +1,17 @@
 ---
 import { SITE } from '../data/site';
 import { translations as labels } from '../data/translations';
+import ExperiencesLink from './ExperiencesLink.astro';
 
 const { nav, nameShort } = SITE;
 
 ---
 
 <header class="header px-4 sm:px-8 md:px-16 lg:px-24" data-header>
-  <a href="#home" class="header__brand text-3xl font-bold uppercase tracking-widest font-heading" data-nav-link>{nameShort}</a>
+  <div class="header__identity">
+    <a href="#home" class="header__brand text-3xl font-bold uppercase tracking-widest font-heading" data-nav-link>{nameShort}</a>
+    <ExperiencesLink />
+  </div>
 
   <nav aria-label="Principal" class="header__nav-wrapper">
     <ul class="header__nav">
@@ -31,6 +35,7 @@ const { nav, nameShort } = SITE;
 </header>
 
 <header class="header header--sticky px-4 sm:px-8 md:px-16 lg:px-24" data-header-sticky aria-hidden="true" inert>
+  <ExperiencesLink />
   <nav aria-label="Principal fijo" class="header__nav-wrapper">
     <ul class="header__nav">
       {
@@ -111,6 +116,19 @@ const { nav, nameShort } = SITE;
   
   updateToggleUI(savedLang);
   updateTranslations(savedLang);
+
+  // The other area can change locale while this document is in the back/forward cache.
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted) return;
+    try {
+      const lang = localStorage.getItem(LANG_STORAGE_KEY);
+      if ((lang !== 'es' && lang !== 'en') || lang === document.documentElement.lang) return;
+      document.documentElement.lang = lang;
+      updateToggleUI(lang);
+      updateTranslations(lang);
+      document.dispatchEvent(new CustomEvent('portfolio:language-change'));
+    } catch { /* The current locale remains usable without storage. */ }
+  });
 
   toggles.forEach(toggle => {
     toggle.addEventListener('click', () => {

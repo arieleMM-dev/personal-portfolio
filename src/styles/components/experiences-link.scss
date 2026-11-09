@@ -1,0 +1,35 @@
+@use '../variables' as *;
+
+.experiences-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 44px;
+  padding-block: 0.5rem;
+  color: #d8d3c7;
+  font-family: $font-mono;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+
+  [data-scramble-label] { position: relative; }
+  &__arrow { display: inline-block; color: #a8c9dc; transition: transform 0.4s $ease-out-expo, color 0.3s; }
+  &:hover, &:focus-visible {
+    color: #fff6e5;
+    .experiences-link__arrow { transform: translateX(4px); color: #fff6e5; }
+  }
+  &--contact { font-size: 0.875rem; }
+}
+
+.contact__experiences {
+  margin: 3.5rem auto 0;
+  max-width: 30rem;
+  color: #a7b9cd;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 540px) {
+  .experiences-link--header { font-size: 0.625rem; gap: 0.6rem; }
+}
