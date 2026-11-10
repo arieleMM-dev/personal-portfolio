@@ -35,6 +35,11 @@ export function initMotionPreference() {
   }, { signal: abort.signal });
   media.addEventListener('change', notify, { signal: abort.signal });
   document.addEventListener('portfolio:language-change', updateButton, { signal: abort.signal });
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted) return;
+    try { document.documentElement.dataset.motion = localStorage.getItem('portfolio-motion') === 'paused' ? 'paused' : 'running'; } catch { /* Preserve current preference. */ }
+    notify();
+  }, { signal: abort.signal });
   updateButton();
   return () => abort.abort();
 }

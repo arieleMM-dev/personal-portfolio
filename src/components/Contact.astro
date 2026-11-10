@@ -1,6 +1,5 @@
 ---
 import { contactLinks } from '../data/contact';
-import ExperiencesLink from './ExperiencesLink.astro';
 ---
 <footer class="contact portfolio-section" id="contact" data-contact aria-labelledby="contact-title">
   <div class="contact__horizon" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -24,10 +23,6 @@ import ExperiencesLink from './ExperiencesLink.astro';
         </a>
       ))}
     </nav>
-    <div class="contact__experiences">
-      <p data-i18n="experiences.contactPrompt">¿Buscas una web para tu marca o negocio?</p>
-      <ExperiencesLink placement="contact" />
-    </div>
     <noscript><p class="section-copy" data-i18n="contact.noScript">Activa JavaScript para usar los botones de correo.</p></noscript>
   </div>
 </footer>

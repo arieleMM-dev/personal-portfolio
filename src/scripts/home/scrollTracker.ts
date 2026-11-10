@@ -21,7 +21,7 @@ export function initScrollTracker() {
     activeLink.classList.add('is-active');
     activeLink.setAttribute('aria-current', 'location');
     document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]').forEach(link => {
-      if (link.getAttribute('href') === `#${id}`) link.setAttribute('aria-current', 'location');
+      if (link.dataset.navSection === id || link.getAttribute('href') === `#${id}`) link.setAttribute('aria-current', 'location');
       else link.removeAttribute('aria-current');
     });
     if (previous) document.dispatchEvent(new CustomEvent('portfolio:section-change', { detail: { id, previous } }));

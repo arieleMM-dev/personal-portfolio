@@ -9,6 +9,7 @@ export const SITE = {
     { label: 'EXPERTISE', href: '#expertise' },
     { label: 'WORK', href: '#work' },
     { label: 'EXPERIENCE', href: '#experience' },
+    { label: 'WEB-EXPERIENCES', href: '#web-experiences' },
     { label: 'CONTACT', href: '#contact' },
   ],
 } as const;

@@ -1,0 +1,16 @@
+---
+import { translations } from '../data/translations';
+const copy = translations.es;
+---
+
+<section class="gallery-chapter portfolio-section" id="web-experiences" aria-labelledby="gallery-chapter-title">
+  <div class="gallery-chapter__intro" data-reveal>
+    <h2 class="gallery-chapter__title section-title" id="gallery-chapter-title" data-i18n="experiences.chapterTitle">Otra forma<br /><span>de construir.</span></h2>
+    <p class="gallery-chapter__story" data-i18n="experiences.chapterStory">{copy['experiences.chapterStory']}</p>
+    <p class="gallery-chapter__invitation" data-i18n="experiences.chapterInvitation">{copy['experiences.chapterInvitation']}</p>
+  </div>
+  <a class="gallery-chapter__entry" href={`${import.meta.env.BASE_URL}experiencias/`} data-gallery-entry data-nav-link aria-label={copy['experiences.explore']} data-i18n-aria-label="experiences.explore" data-reveal>
+    <span class="gallery-chapter__action-label" data-i18n="experiences.explore">{copy['experiences.explore']}</span>
+    <span class="gallery-chapter__arrow" aria-hidden="true">→</span>
+  </a>
+</section>

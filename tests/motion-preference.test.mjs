@@ -14,10 +14,11 @@ function environment(storage) {
     documentElement: { dataset: {}, lang: 'es' },
     querySelector() { return button; },
   });
-  const values = { document, localStorage: storage, matchMedia: () => media };
+  const window = new EventTarget();
+  const values = { document, window, localStorage: storage, matchMedia: () => media };
   const originals = new Map(Object.keys(values).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
   Object.entries(values).forEach(([key, value]) => Object.defineProperty(globalThis, key, { configurable: true, value }));
-  return { button, media, document, label, restore() {
+  return { button, media, document, window, label, restore() {
     originals.forEach((descriptor, key) => {
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);
       else delete globalThis[key];
@@ -60,5 +61,22 @@ test('blocked storage does not prevent pausing or updating the control', () => {
     assert.equal(isAmbientPaused(), true);
     assert.equal(env.button.attributes.get('aria-pressed'), 'true');
     assert.equal(env.label.textContent, 'Reanudar ambiente');
+  } finally { destroy?.(); env.restore(); }
+});
+
+test('returning from the gallery restores its motion preference and releases the history listener', () => {
+  const data = new Map([['portfolio-motion', 'running']]);
+  const env = environment({ getItem: key => data.get(key), setItem: (key,value) => data.set(key,value) });
+  let destroy;
+  try {
+    destroy = initMotionPreference();
+    data.set('portfolio-motion', 'paused');
+    env.window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: true }));
+    assert.equal(isAmbientPaused(), true);
+    assert.equal(env.label.textContent, 'Reanudar ambiente');
+    destroy();
+    data.set('portfolio-motion', 'running');
+    env.window.dispatchEvent(Object.assign(new Event('pageshow'), { persisted: true }));
+    assert.equal(isAmbientPaused(), true);
   } finally { destroy?.(); env.restore(); }
 });

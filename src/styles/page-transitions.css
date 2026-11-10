@@ -2,10 +2,12 @@
 @view-transition { navigation: auto; }
 
 ::view-transition-old(root) {
-  animation: portfolio-depart 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: portfolio-depart 1300ms cubic-bezier(0.4, 0, 0.6, 1) both;
+  mix-blend-mode: normal;
 }
 ::view-transition-new(root) {
-  animation: portfolio-arrive 850ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: portfolio-arrive 1300ms cubic-bezier(0.4, 0, 0.6, 1) both;
+  mix-blend-mode: normal;
 }
 @keyframes portfolio-depart { to { opacity: 0; } }
 @keyframes portfolio-arrive { from { opacity: 0; } to { opacity: 1; } }

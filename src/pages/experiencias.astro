@@ -1,14 +1,14 @@
 ---
-import { experiences } from '../data/experiences';
+import { experiences, galleryWorks } from '../data/experiences';
 import '../styles/experiences-entrance.scss';
 import '../styles/page-transitions.css';
-
 const copy = experiences.es;
+const base = import.meta.env.BASE_URL;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="es" data-webgl="loading">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,13 +17,13 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
     <meta name="theme-color" content="#eae6dc" />
     <meta name="color-scheme" content="light" />
     {canonical && <link rel="canonical" href={canonical} />}
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
     <title>{copy.title}</title>
     <script is:inline>
-      // Resolve the saved locale before the entrance is painted.
+      document.documentElement.dataset.stage = 'door';
       try {
         const language = localStorage.getItem('portfolio-lang');
         document.documentElement.lang = language === 'es' || language === 'en' ? language : navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en';
@@ -31,64 +31,88 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
     </script>
   </head>
   <body>
-    <a class="entrance__skip" href="#entrance-content" data-entrance-copy="skip">{copy.skip}</a>
-    <header class="entrance__header">
-      <a class="entrance__back" href={import.meta.env.BASE_URL}><span aria-hidden="true">←</span><span data-entrance-copy="back">{copy.back}</span></a>
-      <button class="entrance__language" type="button" data-entrance-language aria-label={copy.language} hidden>
-        <span data-language="en">EN</span><span aria-hidden="true">/</span><span data-language="es">ES</span>
-      </button>
+    <a class="experience-skip" href="#collection" data-direct-enter data-gallery-copy="skip">{copy.skip}</a>
+    <div class="experience-scene" aria-hidden="true"><canvas data-experience-canvas></canvas></div>
+    <div class="experience-veil" data-experience-veil aria-hidden="true"></div>
+    <header class="experience-header">
+      <a href={`${base}#web-experiences`} class="experience-back"><span aria-hidden="true">←</span><span data-gallery-copy="back">{copy.back}</span></a>
+      <span class="experience-signature">Ariel Morillo</span>
+      <button type="button" class="experience-language" data-gallery-language aria-label={copy.language} hidden><span data-language="en">EN</span><span aria-hidden="true">/</span><span data-language="es">ES</span></button>
     </header>
-    <main id="entrance-content" class="entrance" tabindex="-1">
-      <div class="entrance__room" aria-hidden="true">
-        <div class="entrance__opening"><div class="entrance__light"></div></div>
-        <div class="entrance__floor"></div>
-      </div>
-      <div class="entrance__content">
-        <p class="entrance__label" data-entrance-copy="label">{copy.label}</p>
-        <h1 data-entrance-copy="heading">{copy.heading}</h1>
-        <p class="entrance__introduction" data-entrance-copy="introduction">{copy.introduction}</p>
-      </div>
-      <aside class="entrance__notice">
-        <p data-entrance-copy="status">{copy.status}</p>
-        <p data-entrance-copy="note">{copy.note}</p>
-      </aside>
-    </main>
-    <script>
-      import { experiences } from '../data/experiences';
+    <main>
+      <section class="threshold" data-threshold aria-labelledby="threshold-title">
+        <div class="threshold__fallback" aria-hidden="true"><span></span></div>
+        <div class="threshold__copy">
+          <p class="experience-label" data-gallery-copy="label">{copy.label}</p>
+          <h1 id="threshold-title" data-gallery-copy="heading">{copy.heading}</h1>
+          <p class="threshold__introduction" data-gallery-copy="introduction">{copy.introduction}</p>
+        </div>
+        <div class="threshold__actions">
+          <a href="#collection" class="threshold__enter" data-enter-door><span data-gallery-copy="enter">{copy.enter}</span><span aria-hidden="true">→</span></a>
+          <a href="#collection" class="threshold__direct" data-direct-enter data-gallery-copy="direct">{copy.direct}</a>
+        </div>
+        <p class="threshold__loading" data-scene-loading role="status" data-gallery-copy="loading">{copy.loading}</p>
+      </section>
 
-      const toggle = document.querySelector<HTMLButtonElement>('[data-entrance-language]');
-      function applyLanguage() {
-        const lang = document.documentElement.lang === 'es' ? 'es' : 'en';
-        const copy = experiences[lang];
-        document.querySelectorAll<HTMLElement>('[data-entrance-copy]').forEach(element => {
-          const key = element.dataset.entranceCopy as keyof typeof copy;
-          if (key in copy) element.textContent = copy[key];
-        });
-        document.title = copy.title;
-        document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', copy.description);
-        toggle?.setAttribute('aria-label', copy.language);
-        toggle?.querySelectorAll<HTMLElement>('[data-language]').forEach(label => {
-          label.classList.toggle('is-active', label.dataset.language === lang);
-        });
-      }
-      applyLanguage();
-      window.addEventListener('pageshow', event => {
-        if (!event.persisted) return;
-        try {
-          const lang = localStorage.getItem('portfolio-lang');
-          if (lang === 'es' || lang === 'en') document.documentElement.lang = lang;
-        } catch { /* Preserve the current locale. */ }
-        applyLanguage();
-      });
-      if (toggle) {
-        toggle.hidden = false;
-        toggle.addEventListener('click', () => {
-          const lang = document.documentElement.lang === 'es' ? 'en' : 'es';
-          document.documentElement.lang = lang;
-          try { localStorage.setItem('portfolio-lang', lang); } catch { /* Locale remains usable without storage. */ }
-          applyLanguage();
-        });
-      }
+      <section id="collection" class="gallery-journey" data-gallery-journey aria-label={copy.label}>
+        <div class="gallery-intro" data-gallery-intro>
+          <p class="experience-label" data-gallery-copy="label">{copy.label}</p>
+          <h2 data-gallery-copy="collectionTitle">{copy.collectionTitle}</h2>
+          <p data-gallery-copy="collectionIntro">{copy.collectionIntro}</p>
+          <span class="gallery-scroll" data-gallery-copy="scroll">{copy.scroll}</span>
+        </div>
+        <div class="gallery-fallback">
+          <p class="experience-label" data-gallery-copy="fallback">{copy.fallback}</p>
+          {galleryWorks.map((work,index)=>(
+            <article class="fallback-work" id={`obra-${work.id}`}>
+              <div class="fallback-work__art" style={`--study-tone:${work.color}`} aria-hidden="true"><span>{work.number}</span></div>
+              <p class="experience-label"><span data-gallery-copy="prototype">{copy.prototype}</span> {work.number}</p>
+              <h3 data-work-title={index}>{work.title.es}</h3>
+              <p data-work-description={index}>{work.description.es}</p>
+              <a href={`${base}experiencias/pruebas/${work.id}/`} class="gallery-open" data-work-open={index} data-gallery-copy="open">{copy.open}</a>
+            </article>
+          ))}
+        </div>
+      </section>
+      <footer class="gallery-ending" data-gallery-ending aria-labelledby="gallery-ending-title">
+        <p class="experience-label" data-gallery-copy="label">{copy.label}</p>
+        <h2 id="gallery-ending-title" data-gallery-copy="endTitle">{copy.endTitle}</h2>
+        <p data-gallery-copy="endBody">{copy.endBody}</p>
+        <a class="gallery-contact" href={`${base}#contact`}><span data-gallery-copy="contact">{copy.contact}</span><span aria-hidden="true">→</span></a>
+        <button type="button" class="gallery-replay" data-gallery-replay data-gallery-copy="replay" hidden>{copy.replay}</button>
+      </footer>
+    </main>
+
+    <nav class="gallery-index" data-gallery-index aria-label={copy.navigation} hidden>
+      {galleryWorks.map((work,index)=>(<button type="button" data-go-work={index}><span class="gallery-index__number" aria-hidden="true">{work.number}</span><span data-work-title={index}>{work.title.es}</span></button>))}
+    </nav>
+    <div class="gallery-details" data-gallery-details hidden>
+      {galleryWorks.map((work,index)=>(
+        <article data-current-work={index} hidden>
+          <p class="experience-label"><span data-gallery-copy="prototype">{copy.prototype}</span> · {work.number} / 03</p>
+          <h2 data-work-title={index}>{work.title.es}</h2>
+          <p data-work-description={index}>{work.description.es}</p>
+          <a class="gallery-open" href={`${base}experiencias/pruebas/${work.id}/`} data-work-open={index}><span data-gallery-copy="open">{copy.open}</span><span aria-hidden="true">↗</span></a>
+        </article>
+      ))}
+    </div>
+    <p class="gallery-status" data-gallery-status role="status" aria-live="polite" aria-atomic="true"></p>
+    <div class="experience-controls">
+      <button type="button" class="experience-motion" data-gallery-motion aria-pressed="false" hidden><span aria-hidden="true" data-motion-icon>Ⅱ</span><span data-motion-label>{copy.pause}</span></button>
+      <button type="button" class="experience-sound" data-gallery-sound aria-pressed="false" hidden><span class="experience-sound__waves" aria-hidden="true"><i></i><i></i><i></i></span><span data-sound-label>{copy.soundStart}</span></button>
+    </div>
+
+    <dialog class="experience-preview" data-experience-preview aria-labelledby="experience-preview-title">
+      <header class="experience-preview__header">
+        <div><span class="experience-label" data-gallery-copy="prototype">{copy.prototype}</span><h2 id="experience-preview-title" data-preview-title>Umbral</h2></div>
+        <button type="button" data-preview-close><span aria-hidden="true">←</span><span data-gallery-copy="close">{copy.close}</span></button>
+      </header>
+      <iframe data-preview-frame title={copy.preview} src="about:blank"></iframe>
+      <a class="experience-preview__external" data-preview-external href={`${base}experiencias/pruebas/umbral/`} target="_blank" rel="noopener noreferrer"><span data-gallery-copy="newTab">{copy.newTab}</span><span aria-hidden="true">↗</span></a>
+    </dialog>
+    <script>
+      import { initExperienceGallery } from '../scripts/gallery/controller';
+      initExperienceGallery();
     </script>
   </body>
 </html>

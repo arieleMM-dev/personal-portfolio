@@ -1,0 +1,37 @@
+@use '../variables' as *;
+
+.gallery-chapter {
+  padding-block: clamp(5rem, 10vw, 9rem);
+
+  &__intro { max-width: 49rem; }
+  &__title { font-size: clamp(3.2rem, 6.5vw, 5.8rem); letter-spacing: -0.045em; }
+  &__title > span { color: #d1c7b6; }
+  &__story { max-width: 57ch; margin-top: 2rem; font-size: clamp(1.1rem, 1.65vw, 1.3rem); line-height: 1.7; color: #c3d0df; text-wrap: pretty; }
+  &__invitation { max-width: 51ch; margin-top: 1.4rem; font-size: clamp(1rem, 1.4vw, 1.125rem); line-height: 1.7; color: #a8b6c8; text-wrap: pretty; }
+  &__entry {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(1.4rem, 4vw, 3.5rem);
+    min-height: 76px;
+    max-width: 100%;
+    margin-top: 2.8rem;
+    padding: 1.1rem 1.6rem;
+    border: 1px solid #d6c7ac66;
+    border-radius: 2px;
+    color: #ede3d2;
+    background: #d6c7ac08;
+    transition: border-color 0.5s, background 0.5s, color 0.5s;
+  }
+  &__entry:hover, &__entry:focus-visible { border-color: #e9d8bdb3; background: #d6c7ac14; color: #fff4e2; }
+  &__entry:focus-visible { outline: 2px solid #e9d8ba; outline-offset: 6px; }
+  &__action-label { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(1.25rem, 2.2vw, 1.7rem); font-style: italic; font-weight: 400; line-height: 1.4; text-wrap: balance; }
+  &__arrow { flex-shrink: 0; font-size: 1.6rem; transition: transform 0.5s $ease-out-expo; }
+  &__entry:hover &__arrow, &__entry:focus-visible &__arrow { transform: translateX(4px); }
+
+  @media (max-width: 600px) {
+    &__entry { padding: 0.9rem 1.1rem; gap: 1.15rem; min-height: 68px; }
+    &__action-label { font-size: 1.2rem; }
+  }
+}
+html[data-motion='paused'] .gallery-chapter__arrow { transition: none; transform: none; }

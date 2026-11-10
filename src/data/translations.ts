@@ -1,7 +1,11 @@
 export const translations: Record<string, Record<string, string>> = {
   "en": {
-    "experiences.link": "Web experiences",
-    "experiences.contactPrompt": "Looking for a website for your brand or business?",
+    "experiences.chapterTitle": "Another way<br /><span>to build.</span>",
+    "experiences.chapterStory": "Alongside systems and their architecture, I'm exploring how a thoughtful use of movement, interaction and space can turn a website into a feeling that can be shared with people.",
+    "experiences.chapterInvitation": "This space is intended to exhibit experiences, a collection to feel.",
+    "experiences.explore": "Explore web experiences",
+    "nav.web-experiences": "Web experiences",
+    "nav.gallery": "Web gallery",
     "common.skipContent": "Skip to content",
     "common.backTop": "Back to top",
     "motion.pause": "Pause atmosphere",
@@ -91,8 +95,12 @@ export const translations: Record<string, Record<string, string>> = {
     "work.gallery.error": "This image could not load. Try another screen."
   },
   "es": {
-    "experiences.link": "Experiencias web",
-    "experiences.contactPrompt": "¿Buscas una web para tu marca o negocio?",
+    "experiences.chapterTitle": "Otra forma<br /><span>de construir.</span>",
+    "experiences.chapterStory": "Además de los sistemas y su arquitectura, estoy explorando cómo un buen manejo del movimiento, la interacción y el espacio pueden transformar una página web en un sentimiento que se pueda compartir con la gente.",
+    "experiences.chapterInvitation": "Este espacio esta pensado para exhibir algunas  experiencias ,una colección para sentir.",
+    "experiences.explore": "Explorar experiencias web",
+    "nav.web-experiences": "Experiencias web",
+    "nav.gallery": "Galería web",
     "common.skipContent": "Saltar al contenido",
     "common.backTop": "Volver arriba",
     "motion.pause": "Pausar ambiente",

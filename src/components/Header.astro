@@ -1,24 +1,20 @@
 ---
 import { SITE } from '../data/site';
 import { translations as labels } from '../data/translations';
-import ExperiencesLink from './ExperiencesLink.astro';
 
 const { nav, nameShort } = SITE;
 
 ---
 
 <header class="header px-4 sm:px-8 md:px-16 lg:px-24" data-header>
-  <div class="header__identity">
-    <a href="#home" class="header__brand text-3xl font-bold uppercase tracking-widest font-heading" data-nav-link>{nameShort}</a>
-    <ExperiencesLink />
-  </div>
+  <a href="#home" class="header__brand text-3xl font-bold uppercase tracking-widest font-heading" data-nav-link>{nameShort}</a>
 
   <nav aria-label="Principal" class="header__nav-wrapper">
     <ul class="header__nav">
       {
         nav.map((item) => (
           <li>
-            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
+            <a href={item.href === '#web-experiences' ? `${import.meta.env.BASE_URL}experiencias/` : item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-nav-section={item.href.slice(1)} aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
               <span class="nav-text" data-scramble-label data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
             </a>
           </li>
@@ -35,13 +31,12 @@ const { nav, nameShort } = SITE;
 </header>
 
 <header class="header header--sticky px-4 sm:px-8 md:px-16 lg:px-24" data-header-sticky aria-hidden="true" inert>
-  <ExperiencesLink />
   <nav aria-label="Principal fijo" class="header__nav-wrapper">
     <ul class="header__nav">
       {
         nav.map((item) => (
           <li>
-            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
+            <a href={item.href === '#web-experiences' ? `${import.meta.env.BASE_URL}experiencias/` : item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-nav-section={item.href.slice(1)} aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
               <span class="nav-text" data-scramble-label data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
             </a>
           </li>
@@ -63,6 +58,13 @@ const { nav, nameShort } = SITE;
 
   const LANG_STORAGE_KEY = 'portfolio-lang';
   const toggles = document.querySelectorAll<HTMLButtonElement>('[data-lang-toggle]');
+  const stickyHeader = document.querySelector<HTMLElement>('[data-header-sticky]');
+  // Menus can wrap differently with viewport size, zoom and locale.
+  const headerSize = new ResizeObserver(() => {
+    if (stickyHeader) document.documentElement.style.setProperty('--header-clearance', `${stickyHeader.offsetHeight + 24}px`);
+  });
+  if (stickyHeader) headerSize.observe(stickyHeader);
+  window.addEventListener('pagehide', event => { if (!event.persisted) headerSize.disconnect(); });
   
   let savedLang: Language = navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en';
   try {
