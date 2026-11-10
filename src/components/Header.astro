@@ -14,7 +14,7 @@ const { nav, nameShort } = SITE;
       {
         nav.map((item) => (
           <li>
-            <a href={item.href === '#web-experiences' ? `${import.meta.env.BASE_URL}experiencias/` : item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-nav-section={item.href.slice(1)} aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
+            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-nav-section={item.href.slice(1)} aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
               <span class="nav-text" data-scramble-label data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
             </a>
           </li>
@@ -36,7 +36,7 @@ const { nav, nameShort } = SITE;
       {
         nav.map((item) => (
           <li>
-            <a href={item.href === '#web-experiences' ? `${import.meta.env.BASE_URL}experiencias/` : item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-nav-section={item.href.slice(1)} aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
+            <a href={item.href} class="header__nav-link text-base lg:text-lg" data-nav-link data-nav-section={item.href.slice(1)} aria-label={labels.es[`nav.${item.label.toLowerCase()}`]} data-i18n-aria-label={`nav.${item.label.toLowerCase()}`}>
               <span class="nav-text" data-scramble-label data-i18n={`nav.${item.label.toLowerCase()}`}>{labels.es[`nav.${item.label.toLowerCase()}`]}</span>
             </a>
           </li>
