@@ -21,8 +21,8 @@ export function createOceanDoor(resources: GalleryResources, normals: THREE.Text
         float cloudMask=smoothstep(.44,.76,cloud)*smoothstep(.02,.25,h);
         sky=mix(sky,vec3(.95,.93,.875),cloudMask*.62);
         float sunset=exp(-pow((h-.22)*3.8,2.))*(.55+.45*d.x);
-        sky=mix(sky,vec3(.89,.73,.70),sunset*(.045+cloudMask*.085));
-        sky=mix(sky,vec3(.9,.88,.82),exp(-abs(d.y)*13.)*.75);
+        sky=mix(sky,vec3(.94,.61,.69),sunset*(.32+cloudMask*.35));
+        sky=mix(sky,vec3(.94,.79,.78),exp(-abs(d.y)*13.)*.75);
         gl_FragColor=vec4(sky,1.);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
@@ -37,14 +37,24 @@ export function createOceanDoor(resources: GalleryResources, normals: THREE.Text
   resources.material(water.material);
   water.rotation.x=-Math.PI/2;
   water.material.uniforms.size.value=7;
-  // Traveling wind ripples perturb the reflected sky and door without making the sea choppy.
+  // Fixed texture coordinates remove Water's default current. Standing ripples
+  // oscillate locally, with no horizontal transport of the surface pattern.
+  water.material.fragmentShader=water.material.fragmentShader.replace(
+    /vec4 getNoise\( vec2 uv \) \{[\s\S]*?\n\s*\}/,
+    `vec4 getNoise(vec2 uv) {
+      vec4 fine=texture2D(normalSampler,uv/103.0)+texture2D(normalSampler,uv/107.0);
+      vec4 broad=texture2D(normalSampler,uv/vec2(8907.0,9803.0))+texture2D(normalSampler,uv/vec2(1091.0,1027.0));
+      return (fine+broad)*.5-1.0;
+    }`,
+  );
   water.material.fragmentShader=water.material.fragmentShader.replace(
     'vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );',
-    `vec2 windSlope=vec2(
-      .028*cos(dot(worldPosition.xz,vec2(.72,.31))-time*.8),
-      .022*cos(dot(worldPosition.xz,vec2(-.28,.93))-time*.57)
-    );
-    vec3 surfaceNormal=normalize(noise.xzy*vec3(.28,1.,.28)+vec3(windSlope.x,0.,windSlope.y));`,
+    `vec2 p=worldPosition.xz;
+    vec2 directionA=normalize(vec2(.72,.31)),directionB=normalize(vec2(-.28,.93));
+    vec2 windSlope=directionA*.035*cos(dot(p,directionA)*.85)*sin(time*1.1)
+      +directionB*.03*cos(dot(p,directionB)*1.13)*sin(time*.83+1.4);
+    float shimmer=.86+.14*sin(time*1.35+sin(p.x*.21)*cos(p.y*.19));
+    vec3 surfaceNormal=normalize(noise.xzy*vec3(.28*shimmer,1.,.28*shimmer)+vec3(windSlope.x,0.,windSlope.y));`,
   );
   group.add(water);
   const door = new THREE.Group();group.add(door);
