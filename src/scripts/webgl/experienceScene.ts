@@ -52,7 +52,7 @@ export async function createExperienceScene(canvas:HTMLCanvasElement, signal:Abo
       desired.set(motion?pointerX*.18*(1-advance):0,1.55+(motion?pointerY*.07*(1-advance):0),THREE.MathUtils.lerp(9.2*narrow,-1.3,advance));
       look.set(0,1.6,-4);
       ocean.hinge.rotation.y=-THREE.MathUtils.smoothstep(doorProgress,0,.65)*1.52;
-      ocean.water.material.uniforms.time.value=elapsed*.45;
+      ocean.water.material.uniforms.time.value=elapsed;
       if(doorProgress>0&&doorProgress<1)renderer.shadowMap.needsUpdate=true;
     }else{
       const pose=getGalleryPose(progress,width/height);desired.set(pose.x,pose.y,pose.z);look.set(pose.lookX,pose.lookY,pose.lookZ);

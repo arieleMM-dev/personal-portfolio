@@ -3,6 +3,7 @@ import { Water } from 'three/addons/objects/Water.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { GalleryResources } from './resources';
 import { createDoorPaintTexture } from './surfaces';
+import { applyLakeSurface } from './lakeSurface';
 
 export function createOceanDoor(resources: GalleryResources, normals: THREE.Texture) {
   const group = new THREE.Group();
@@ -29,33 +30,25 @@ export function createOceanDoor(resources: GalleryResources, normals: THREE.Text
       }`,
   })));
   group.add(sky);
-  const water = new Water(resources.geometry(new THREE.PlaneGeometry(1400,1400)), {
+  // A detailed patch around the visitor, with its outer edge extended to the
+  // horizon. All displacement runs on the GPU; no per-frame vertex uploads.
+  const surface=resources.geometry(new THREE.PlaneGeometry(100,100,192,192));
+  const positions=surface.getAttribute('position');
+  for(let i=0;i<positions.count;i++) {
+    const x=positions.getX(i),y=positions.getY(i);
+    if(Math.abs(x)>49.99)positions.setX(i,Math.sign(x)*700);
+    if(Math.abs(y)>49.99)positions.setY(i,Math.sign(y)*700);
+  }
+  positions.needsUpdate=true;surface.computeBoundingSphere();
+  const water = new Water(surface, {
     textureWidth:512, textureHeight:512, waterNormals:normals,
     sunDirection:new THREE.Vector3(-0.5,0.45,-0.9).normalize(), sunColor:0xe6ddc4,
-    waterColor:0x8ba5a6, distortionScale:0.48, fog:true, clipBias:0.003,
+    waterColor:0x8ba5a6, distortionScale:0.78, fog:true, clipBias:0.003,
   });
   resources.material(water.material);
   water.rotation.x=-Math.PI/2;
   water.material.uniforms.size.value=7;
-  // Fixed texture coordinates remove Water's default current. Standing ripples
-  // oscillate locally, with no horizontal transport of the surface pattern.
-  water.material.fragmentShader=water.material.fragmentShader.replace(
-    /vec4 getNoise\( vec2 uv \) \{[\s\S]*?\n\s*\}/,
-    `vec4 getNoise(vec2 uv) {
-      vec4 fine=texture2D(normalSampler,uv/103.0)+texture2D(normalSampler,uv/107.0);
-      vec4 broad=texture2D(normalSampler,uv/vec2(8907.0,9803.0))+texture2D(normalSampler,uv/vec2(1091.0,1027.0));
-      return (fine+broad)*.5-1.0;
-    }`,
-  );
-  water.material.fragmentShader=water.material.fragmentShader.replace(
-    'vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );',
-    `vec2 p=worldPosition.xz;
-    vec2 directionA=normalize(vec2(.72,.31)),directionB=normalize(vec2(-.28,.93));
-    vec2 windSlope=directionA*.035*cos(dot(p,directionA)*.85)*sin(time*1.1)
-      +directionB*.03*cos(dot(p,directionB)*1.13)*sin(time*.83+1.4);
-    float shimmer=.86+.14*sin(time*1.35+sin(p.x*.21)*cos(p.y*.19));
-    vec3 surfaceNormal=normalize(noise.xzy*vec3(.28*shimmer,1.,.28*shimmer)+vec3(windSlope.x,0.,windSlope.y));`,
-  );
+  applyLakeSurface(water.material);
   group.add(water);
   const door = new THREE.Group();group.add(door);
   resources.box(door,2.42,0.13,0.85,0,0.075,0.03,resources.stone);
