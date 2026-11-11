@@ -1,75 +1,66 @@
-/** Original, quiet water/wind texture. Created only after explicit sound activation. */
-export function createGalleryAmbience(createContext:()=>AudioContext=()=>new AudioContext()) {
-  let context:AudioContext|undefined;
-  let master:GainNode|undefined;
-  let source:AudioBufferSourceNode|undefined;
-  const nodes:AudioNode[]=[];
-  let enabled=false, active=true, disposed=false;
-  let suspension:ReturnType<typeof setTimeout>|undefined;
+export const GALLERY_AMBIENCE_FILE='assets/audio/lachm-sound-ambience-sonido-ambiente-23-14211.mp3';
+export const GALLERY_AMBIENCE_GAIN=.12;
+interface AmbienceEnvironment {createContext?:()=>AudioContext;createMedia?:()=>HTMLAudioElement;}
 
-  function prepare() {
-    context=createContext();
-    master=context.createGain();master.gain.value=0;master.connect(context.destination);
-    const highpass=context.createBiquadFilter();highpass.type='highpass';highpass.frequency.value=130;highpass.Q.value=.5;
-    const lowpass=context.createBiquadFilter();lowpass.type='lowpass';lowpass.frequency.value=1150;lowpass.Q.value=.35;
-    const buffer=context.createBuffer(2,context.sampleRate*18,context.sampleRate);
-    for(let channel=0;channel<2;channel++) {
-      const samples=buffer.getChannelData(channel);let drift=0;
-      for(let i=0;i<samples.length;i++) {
-        const noise=Math.random()*2-1;
-        drift=drift*.985+noise*.065;
-        const phase=i/samples.length*Math.PI*2;
-        const swell=.72+.16*Math.sin(phase*3+channel*.7)+.12*Math.sin(phase*5);
-        const edge=Math.min(1,i/(context.sampleRate*.35),(samples.length-1-i)/(context.sampleRate*.35));
-        samples[i]=(drift*.8+noise*.025)*swell*edge;
-      }
-    }
-    source=context.createBufferSource();source.buffer=buffer;source.loop=true;
-    source.connect(highpass);highpass.connect(lowpass);lowpass.connect(master);
-    nodes.push(source,highpass,lowpass,master);source.start();
-  }
+/** The selected local recording streams only after explicit sound activation. */
+export function createGalleryAmbience(baseUrl='/',environment:AmbienceEnvironment={}) {
+  let context:AudioContext|undefined,master:GainNode|undefined,source:MediaElementAudioSourceNode|undefined;
+  let media:HTMLAudioElement|undefined;
+  let enabled=false,active=true,disposed=false,request=0;
+  let suspension:ReturnType<typeof setTimeout>|undefined;
   function clearSuspension(){clearTimeout(suspension);suspension=undefined;}
-  function fade(audible:boolean,immediate=false) {
-    if(!context||!master||disposed)return;
-    clearSuspension();
-    const now=context.currentTime;
-    master.gain.cancelAndHoldAtTime(now);
-    if(immediate)master.gain.setValueAtTime(audible?.18:0,now);
-    else master.gain.linearRampToValueAtTime(audible?.18:0,now+(audible?2.8:.8));
-    if(!audible) {
-      const suspend=()=>{if(!disposed&&(!enabled||!active))void context?.suspend().catch(()=>{});};
-      if(immediate)suspend();else suspension=setTimeout(suspend,850);
-    }
+  function prepare(){
+    context=environment.createContext?.()??new AudioContext();
+    media=environment.createMedia?.()??new Audio();
+    media.preload='none';media.loop=true;media.volume=1;
+    media.src=`${baseUrl.replace(/\/?$/,'/')}${GALLERY_AMBIENCE_FILE}`;
+    master=context.createGain();master.gain.value=0;master.connect(context.destination);
+    source=context.createMediaElementSource(media);source.connect(master);
   }
-  async function resume() {
-    if(!context||disposed)return false;
-    clearSuspension();
+  function stop(){
+    if(disposed||enabled&&active)return;
+    media?.pause();void context?.suspend().catch(()=>{});
+  }
+  function fade(audible:boolean,immediate=false){
+    if(!context||!master||disposed)return;
+    clearSuspension();const now=context.currentTime;
+    master.gain.cancelAndHoldAtTime(now);
+    if(immediate)master.gain.setValueAtTime(audible?GALLERY_AMBIENCE_GAIN:0,now);
+    else master.gain.linearRampToValueAtTime(audible?GALLERY_AMBIENCE_GAIN:0,now+(audible?2.2:.65));
+    if(!audible){if(immediate)stop();else suspension=setTimeout(stop,700);}
+  }
+  async function resume(){
+    if(!context||!media||disposed)return false;
+    const pending=++request;clearSuspension();
     try {
-      await context.resume();
+      // Both calls occur in the visitor's activation event, before awaiting.
+      await Promise.all([context.resume(),media.play()]);
       if(disposed)return false;
-      fade(enabled&&active);
-      return enabled;
-    }catch{enabled=false;fade(false,true);return false;}
+      if(pending!==request)return enabled;
+      fade(enabled&&active);return enabled;
+    }catch{
+      if(disposed||pending!==request)return enabled&&!disposed;
+      enabled=false;fade(false,true);return false;
+    }
   }
   return {
-    async setEnabled(value:boolean):Promise<boolean> {
+    async setEnabled(value:boolean):Promise<boolean>{
       if(disposed)return false;
       enabled=value;
-      if(!value){fade(false);return false;}
-      try{if(!context)prepare();}catch{enabled=false;return false;}
+      if(!value){++request;fade(false);return false;}
+      try{if(!context)prepare();}catch{enabled=false;media?.pause();return false;}
       if(!active){fade(false,true);return true;}
       return resume();
     },
-    setActive(value:boolean,immediate=false) {
-      active=value;
-      if(!context||disposed)return;
-      if(enabled&&active)void resume();else fade(false,immediate);
+    setActive(value:boolean,immediate=false){
+      active=value;if(!context||disposed)return;
+      if(enabled&&active)void resume();else{++request;fade(false,immediate);}
     },
-    destroy() {
+    destroy(){
       if(disposed)return;
-      disposed=true;enabled=false;clearSuspension();source?.stop();
-      nodes.forEach(node=>node.disconnect());
-      if(context)void context.close().catch(()=>{});
+      disposed=true;enabled=false;++request;clearSuspension();
+      media?.pause();media?.removeAttribute('src');media?.load();
+      source?.disconnect();master?.disconnect();void context?.close().catch(()=>{});
     },
   };
 }

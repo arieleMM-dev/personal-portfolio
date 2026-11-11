@@ -4,13 +4,27 @@ const copy = translations.es;
 ---
 
 <section class="gallery-chapter portfolio-section" id="web-experiences" aria-labelledby="gallery-chapter-title">
-  <div class="gallery-chapter__intro" data-reveal>
+  <div class="gallery-chapter__content">
+    <div class="gallery-chapter__intro" data-reveal>
     <h2 class="gallery-chapter__title section-title" id="gallery-chapter-title" data-i18n="experiences.chapterTitle">Otra forma<br /><span>de construir.</span></h2>
     <p class="gallery-chapter__story" data-i18n="experiences.chapterStory">{copy['experiences.chapterStory']}</p>
     <p class="gallery-chapter__invitation" data-i18n="experiences.chapterInvitation">{copy['experiences.chapterInvitation']}</p>
   </div>
-  <a class="gallery-chapter__entry" href={`${import.meta.env.BASE_URL}experiencias/`} data-gallery-entry data-nav-link aria-label={copy['experiences.explore']} data-i18n-aria-label="experiences.explore" data-reveal>
-    <span class="gallery-chapter__action-label" data-i18n="experiences.explore">{copy['experiences.explore']}</span>
-    <span class="gallery-chapter__arrow" aria-hidden="true">→</span>
+  <a class="gallery-chapter__entry" href={`${import.meta.env.BASE_URL}experiencias/`} data-gallery-entry data-nav-link aria-label={copy['experiences.explore']} data-i18n-aria-label="experiences.explore">
+    <span class="gallery-chapter__button-body">
+      <svg class="gallery-chapter__ink" viewBox="0 0 760 180" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <path class="gallery-chapter__ink-top" pathLength="1" d="M31 112C-12 40 183 9 373 18C565 24 746 49 730 91" />
+        <path class="gallery-chapter__ink-bottom" pathLength="1" d="M727 72C791 135 570 177 360 160C162 146 49 141 30 111" />
+        <path class="gallery-chapter__ink-sweep" pathLength="1" d="M83 125C263 167 504 149 682 114" />
+      </svg>
+      <span class="gallery-chapter__action-label" data-invitation-label data-i18n="experiences.explore" aria-hidden="true">{copy['experiences.explore']}</span>
+      <span class="gallery-chapter__arrow" aria-hidden="true">↗</span>
+    </span>
   </a>
+  </div>
 </section>
+<script>
+  import { initGalleryInvitation } from '../scripts/home/galleryInvitation';
+  const invitation=document.querySelector<HTMLAnchorElement>('[data-gallery-entry]');
+  if(invitation)initGalleryInvitation(invitation);
+</script>

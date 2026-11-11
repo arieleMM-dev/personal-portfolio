@@ -1,0 +1,25 @@
+.gallery-transition { position: fixed; inset: 0; z-index: 1000; pointer-events: none; }
+.gallery-transition > svg { position: absolute; width: 0; height: 0; overflow: hidden; }
+.gallery-transition__white { position: absolute; inset: 0; background: #fff; opacity: 0; visibility: hidden; }
+html[data-gallery-arrival] { background: #fff; }
+html[data-gallery-arrival] .gallery-transition__white { opacity: 1; visibility: visible; pointer-events: auto; }
+html[data-gallery-departure] .gallery-transition__white { visibility: visible; pointer-events: auto; }
+html[data-gallery-arrival] body > :not(.gallery-transition):not(script):not(style) { filter: blur(var(--gallery-arrival-blur,0px)); }
+html[data-gallery-departure='enter']::view-transition-old(root) {
+  animation: gallery-liquid-stretch 1100ms cubic-bezier(.45,0,.65,1) both;
+  filter: url('#gallery-liquid-filter'); transform-origin: var(--gallery-transition-origin,50% 50%);
+}
+html[data-gallery-departure='enter']::view-transition-new(root) { animation: gallery-liquid-white 1100ms ease-in both; }
+html[data-gallery-departure='return']::view-transition-old(root) {
+  animation: gallery-liquid-contract 1100ms cubic-bezier(.45,0,.65,1) both;
+  filter: url('#gallery-liquid-filter'); transform-origin: var(--gallery-transition-origin,50% 50%);
+}
+html[data-gallery-departure='return']::view-transition-new(root) { animation: gallery-liquid-white 1100ms ease-in both; }
+@keyframes gallery-liquid-stretch { from { transform: scale(1); } to { transform: scale(1.035,1.16); } }
+@keyframes gallery-liquid-contract { from { transform: scale(1); } to { transform: scale(.966,.862); } }
+@keyframes gallery-liquid-white { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  html[data-gallery-arrival] body > :not(.gallery-transition) { filter: none; }
+  .gallery-transition { display: none; }
+}
+html[data-motion='paused']::view-transition-old(root),html[data-motion='paused']::view-transition-new(root) { animation: none !important; filter: none !important; }

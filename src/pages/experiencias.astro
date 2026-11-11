@@ -2,6 +2,7 @@
 import { experiences, galleryWorks } from '../data/experiences';
 import '../styles/experiences-entrance.scss';
 import '../styles/page-transitions.css';
+import GalleryTransition from '../components/GalleryTransition.astro';
 const copy = experiences.es;
 const base = import.meta.env.BASE_URL;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
@@ -31,11 +32,11 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
     </script>
   </head>
   <body>
-    <a class="experience-skip" href="#collection" data-direct-enter data-gallery-copy="skip">{copy.skip}</a>
+    <GalleryTransition />
     <div class="experience-scene" aria-hidden="true"><canvas data-experience-canvas></canvas></div>
     <div class="experience-veil" data-experience-veil aria-hidden="true"></div>
     <header class="experience-header">
-      <a href={`${base}#web-experiences`} class="experience-back"><span aria-hidden="true">←</span><span data-gallery-copy="back">{copy.back}</span></a>
+      <a href={`${base}#web-experiences`} class="experience-back" data-gallery-return><span aria-hidden="true">←</span><span data-gallery-copy="back">{copy.back}</span></a>
       <span class="experience-signature">Ariel Morillo</span>
       <button type="button" class="experience-language" data-gallery-language aria-label={copy.language} hidden><span data-language="en">EN</span><span aria-hidden="true">/</span><span data-language="es">ES</span></button>
     </header>
@@ -49,7 +50,6 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
         </div>
         <div class="threshold__actions">
           <a href="#collection" class="threshold__enter" data-enter-door><span data-gallery-copy="enter">{copy.enter}</span><span aria-hidden="true">→</span></a>
-          <a href="#collection" class="threshold__direct" data-direct-enter data-gallery-copy="direct">{copy.direct}</a>
         </div>
         <p class="threshold__loading" data-scene-loading role="status" data-gallery-copy="loading">{copy.loading}</p>
       </section>
@@ -98,7 +98,6 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
     </div>
     <p class="gallery-status" data-gallery-status role="status" aria-live="polite" aria-atomic="true"></p>
     <div class="experience-controls">
-      <button type="button" class="experience-motion" data-gallery-motion aria-pressed="false" hidden><span aria-hidden="true" data-motion-icon>Ⅱ</span><span data-motion-label>{copy.pause}</span></button>
       <button type="button" class="experience-sound" data-gallery-sound aria-pressed="false" hidden><span class="experience-sound__waves" aria-hidden="true"><i></i><i></i><i></i></span><span data-sound-label>{copy.soundStart}</span></button>
     </div>
 

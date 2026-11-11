@@ -21,9 +21,8 @@ export function initExperienceGallery() {
   const initialIndex=getGalleryHashIndex(location.hash);
   const restoreGallery=['#galeria','#collection','#final'].includes(location.hash)||initialIndex>=0;
   const restoreFinal=location.hash==='#final';
-  const motionButton=document.querySelector<HTMLButtonElement>('[data-gallery-motion]')!;
   const soundButton=document.querySelector<HTMLButtonElement>('[data-gallery-sound]')!;
-  const ambience=createGalleryAmbience();
+  const ambience=createGalleryAmbience(import.meta.env.BASE_URL);
   let soundEnabled=false, soundStarted=false, soundRequest=0;
   const languageButton=document.querySelector<HTMLButtonElement>('[data-gallery-language]')!;
   const veil=document.querySelector<HTMLElement>('[data-experience-veil]')!;
@@ -59,11 +58,6 @@ export function initExperienceGallery() {
   }
   function syncMotion(){
     root.dataset.motion=paused?'paused':'running';
-    const copy=experiences[language()];
-    motionButton.querySelector<HTMLElement>('[data-motion-label]')!.textContent=paused?copy.resume:copy.pause;
-    motionButton.querySelector<HTMLElement>('[data-motion-icon]')!.textContent=paused?'▷':'Ⅱ';
-    motionButton.setAttribute('aria-label',paused?copy.resume:copy.pause);
-    motionButton.setAttribute('aria-pressed',String(paused));motionButton.hidden=reduced.matches;
     syncActivity();
   }
   function applyLanguage(){
@@ -193,9 +187,9 @@ export function initExperienceGallery() {
     root.dataset.previewOpen='true';lenis.stop();dialog!.showModal();syncActivity();updateJourney();
     dialog!.querySelector<HTMLButtonElement>('[data-preview-close]')!.focus();
   }
-  document.querySelectorAll<HTMLAnchorElement>('[data-enter-door], [data-direct-enter]').forEach(link=>link.addEventListener('click',event=>{
+  document.querySelectorAll<HTMLAnchorElement>('[data-enter-door]').forEach(link=>link.addEventListener('click',event=>{
     if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-    event.preventDefault();enter(link.hasAttribute('data-direct-enter'));
+    event.preventDefault();enter();
   },{signal}));
   const doorLink=document.querySelector<HTMLElement>('[data-enter-door]')!;
   doorLink.addEventListener('pointerenter',()=>scene?.setHover(true),{signal});
@@ -222,10 +216,6 @@ export function initExperienceGallery() {
     };
     if(!canMove()){reset();return;}
     replay=gsap.timeline({onComplete:()=>{replay=undefined;}}).to(veil,{opacity:1,duration:.55,ease:'sine.inOut'}).call(reset).to(veil,{opacity:0,duration:.85,ease:'sine.inOut'});
-  },{signal});
-  motionButton.addEventListener('click',()=>{
-    paused=!paused;try{localStorage.setItem('portfolio-motion',paused?'paused':'running');}catch{/* Optional persistence. */}
-    syncMotion();
   },{signal});
   soundButton.addEventListener('click',()=>{
     soundEnabled=!soundEnabled;const requestedEnabled=soundEnabled,request=++soundRequest;syncSound();

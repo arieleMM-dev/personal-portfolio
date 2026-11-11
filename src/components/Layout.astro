@@ -20,6 +20,7 @@ import Preloader from './Preloader.astro';
 import BackToTop from './BackToTop.astro';
 import ScrollTracker from './ScrollTracker.astro';
 import AudioToggle from './AudioToggle.astro';
+import GalleryTransition from './GalleryTransition.astro';
 
 interface Props {
   title?: string;
@@ -67,6 +68,7 @@ const shareImage = Astro.site ? new URL(shareImagePath, Astro.site).href : share
     <title>{title}</title>
   </head>
   <body>
+    <GalleryTransition />
     <a class="skip-link" href="#main-content" data-skip-content data-i18n="common.skipContent">Saltar al contenido</a>
     <noscript><style>.preloader, .header--sticky { display: none !important; } .header { opacity: 1; visibility: visible; } .hero__letter, .hero__subtitle, .hero__dot { opacity: 1; transform: none; }</style></noscript>
     <Preloader />
@@ -100,6 +102,7 @@ const shareImage = Astro.site ? new URL(shareImagePath, Astro.site).href : share
         cleanupHome = initHome();
         cleanupAudio = initHeroAudio();
         cleanupScramble = initTextScramble();
+        document.documentElement.dataset.portfolioReady = 'true';
       });
 
       // A BFCache entry must remain resumable when the visitor presses Back.
