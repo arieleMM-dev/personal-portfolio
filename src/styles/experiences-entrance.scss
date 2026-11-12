@@ -74,6 +74,14 @@ html[data-webgl='ready'] .threshold__fallback { opacity: 0; }
 .gallery-contact { display: inline-flex; align-items: center; gap: 2rem; min-height: 52px; padding: .5rem .25rem; border-bottom: 1px solid #69746b; font-family: 'Playfair Display',Georgia,serif; font-style: italic; font-size: 1.3rem; }
 .gallery-replay { min-height: 44px; padding: .5rem; font-size: .8rem; }
 .gallery-status { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.experience-header,.gallery-details,.gallery-intro,.gallery-index,.experience-controls { transition: color 2s ease; }
+html[data-stage='gallery'][data-gallery-light='night']:not([data-finale='true']) {
+  .experience-header,.gallery-details,.gallery-intro,.gallery-index,.experience-controls {
+    color: #f3eee3; text-shadow: 0 1px 10px #10172266;
+  }
+  .experience-header { background: linear-gradient(#10172266,#10172200); }
+  .gallery-open { border-color: #e8e1d299; }
+}
 
 html.has-experience-js[data-stage='door'] .gallery-journey,
 html.has-experience-js[data-stage='door'] .gallery-ending { display: none; }

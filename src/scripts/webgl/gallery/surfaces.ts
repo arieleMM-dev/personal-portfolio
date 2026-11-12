@@ -44,27 +44,35 @@ export function createStudyTexture(index: number) {
   const canvas = document.createElement('canvas');
   canvas.width = 1024; canvas.height = 800;
   const ctx = canvas.getContext('2d')!;
-  ctx.fillStyle = ['#e6ddca', '#e5e5db', '#e4e9e6'][index]; ctx.fillRect(0, 0, 1024, 800);
-  if (index === 0) {
+  const variant=index%3;
+  const background=ctx.createLinearGradient(0,0,1024,800);
+  background.addColorStop(0,'#f0f0e9');background.addColorStop(1,'#c8cdc9');
+  ctx.fillStyle=background;ctx.fillRect(0,0,1024,800);
+  ctx.save();ctx.translate(512,400);ctx.rotate(index>2?(index%2?-.14:.12):0);ctx.scale(index>2?.86:1,index>2?.86:1);ctx.translate(-512,-400);
+  ctx.shadowColor='#18201b40';ctx.shadowBlur=30;ctx.shadowOffsetX=18;ctx.shadowOffsetY=23;
+  if (variant === 0) {
     for (let i = 5; i >= 0; i--) {
-      ctx.fillStyle = ['#353c38','#7c8173','#a9aa92','#c4b79c','#d3c5a7','#b6a284'][i];
+      const shade=ctx.createLinearGradient(260,120,760,690);
+      const tones=['#39413f','#69736c','#929c92','#c3c8bc','#d5d9cc','#9da79c'];
+      shade.addColorStop(0,'#eceee2');shade.addColorStop(.37,tones[i]);shade.addColorStop(.76,'#525f57');shade.addColorStop(1,tones[i]);ctx.fillStyle=shade;
       ctx.beginPath(); ctx.ellipse(512, 395, 145+i*37, 185+i*29, -0.2, 0, Math.PI*2); ctx.fill();
     }
-    ctx.fillStyle = '#dcd4c1'; ctx.fillRect(467, 330, 96, 270);
-  } else if (index === 1) {
+    ctx.fillStyle = '#dde0d4'; ctx.fillRect(467, 330, 96, 270);
+  } else if (variant === 1) {
     ctx.save(); ctx.translate(510,400); ctx.rotate(-0.1);
-    ctx.fillStyle='#b8b7a4'; ctx.fillRect(-240,-240,375,490);
-    ctx.fillStyle='#555f56'; ctx.beginPath();ctx.moveTo(135,-240);ctx.lineTo(260,-130);ctx.lineTo(260,285);ctx.lineTo(135,250);ctx.fill();
-    ctx.fillStyle='#d4d1bc';ctx.beginPath();ctx.moveTo(-240,-240);ctx.lineTo(-80,-310);ctx.lineTo(260,-130);ctx.lineTo(135,-240);ctx.fill();ctx.restore();
+    const face=ctx.createLinearGradient(-220,-200,180,200);face.addColorStop(0,'#e6e8de');face.addColorStop(1,'#9aa597');ctx.fillStyle=face;ctx.fillRect(-240,-240,375,490);
+    ctx.fillStyle='#4f5b54'; ctx.beginPath();ctx.moveTo(135,-240);ctx.lineTo(260,-130);ctx.lineTo(260,285);ctx.lineTo(135,250);ctx.fill();
+    ctx.fillStyle='#d5dccc';ctx.beginPath();ctx.moveTo(-240,-240);ctx.lineTo(-80,-310);ctx.lineTo(260,-130);ctx.lineTo(135,-240);ctx.fill();ctx.restore();
   } else {
     ctx.lineWidth = 2.7;
     for (let i=0;i<27;i++) {
-      ctx.strokeStyle = i%4===0?'#697f8a':'#929f9d';
+      ctx.strokeStyle = i%4===0?'#4f615c':'#88988d';
       ctx.beginPath();ctx.moveTo(90, 145+i*19);
       ctx.bezierCurveTo(350,30+i*23,615,780-i*17,940,145+i*19);ctx.stroke();
     }
-    ctx.fillStyle='#b7aa91'; ctx.beginPath();ctx.arc(680,260,64,0,Math.PI*2);ctx.fill();
+    const sphere=ctx.createRadialGradient(660,240,4,680,260,69);sphere.addColorStop(0,'#e4e8dc');sphere.addColorStop(.7,'#9fae9d');sphere.addColorStop(1,'#52635a');ctx.fillStyle=sphere;ctx.beginPath();ctx.arc(680,260,64,0,Math.PI*2);ctx.fill();
   }
+  ctx.restore();
   // Fine, fixed paper grain rather than animated noise.
   let seed = 8 + index;
   for (let i=0;i<17000;i++) {

@@ -1,53 +1,97 @@
 import * as THREE from 'three';
+import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import { GalleryResources } from './resources';
 import { createStudyTexture } from './surfaces';
-import { WORK_X } from '../../gallery/journey';
+import { createInteriorMaterials, createPolishedFloor } from './interiorSurfaces';
+import { createGalleryLighting } from './lighting';
+import { createGalleryExterior, coordinateGalleryReflections, applyWindowWaterLight } from './exteriorLake';
+import { GALLERY_ROOM, WORK_LAYOUT, HANGING_STUDIES } from '../../gallery/layout';
 
-export function createGalleryRoom(resources: GalleryResources) {
-  const group = new THREE.Group();
-  const fixtures = new THREE.Group();group.add(fixtures);
-  const {plaster,stone}=resources;
-  resources.box(group,20,0.2,27,0,-0.1,1,stone);
-  resources.box(group,20,6.5,0.25,0,3.25,-9);
-  resources.box(group,0.28,6.5,26,-10,3.25,1);
-  resources.box(group,0.28,6.5,26,10,3.25,1);
-  resources.box(group,7.25,0.24,25,-6.4,6.45,1);
-  resources.box(group,7.25,0.24,25,6.4,6.45,1);
-  resources.box(group,5.5,0.24,2.5,0,6.45,-7.75);
-  resources.box(group,5.5,0.24,2.5,0,6.45,12.25);
-  const daylight=resources.material(new THREE.MeshBasicMaterial({color:0xf6f3e8}));
-  const window=new THREE.Mesh(resources.geometry(new THREE.PlaneGeometry(5.3,17.5)),daylight);
-  window.rotation.x=Math.PI/2;window.position.set(0,6.7,1.5);group.add(window);
-  for(const z of [-5.5,-1,3.5,8])resources.box(group,5.5,0.08,0.09,0,6.55,z,plaster);
-  const rail=resources.material(new THREE.MeshStandardMaterial({color:0x7e8079,roughness:0.6,metalness:0.15}));
-  for(const x of [-5.4,5.4])resources.box(fixtures,0.045,0.06,19,x,6.04,0,rail);
-  const frameMaterial=resources.material(new THREE.MeshStandardMaterial({color:0x8a8476,roughness:0.63,metalness:0.1}));
+export function createGalleryRoom(resources: GalleryResources,normals:THREE.Texture) {
+  RectAreaLightUniformsLib.init();
+  const group=new THREE.Group();group.name='Daylight exhibition';
+  const fixtures=new THREE.Group();group.add(fixtures);
+  const {plaster,floor}=createInteriorMaterials(resources);
+  const waterLight=applyWindowWaterLight(plaster);
+  const {halfWidth:w,height:h,back,front}=GALLERY_ROOM;
+  const depth=front-back,center=(front+back)/2;
+  resources.box(group,w*2,.24,depth,0,-.12,center,floor);
+  resources.box(group,w*2,h,.25,0,h/2,back,plaster);
+  resources.box(group,.25,h,depth,-w,h/2,center,plaster);
+  resources.box(group,w*2,.22,depth,0,h+.11,center,plaster);
+  const reflection=createPolishedFloor(resources,w*2,depth);
+  reflection.reflector.position.z=center;group.add(reflection.reflector);
+
+  const aluminium=resources.material(new THREE.MeshStandardMaterial({color:0x8c9697,roughness:.42,metalness:.62}));
+  const charcoal=resources.material(new THREE.MeshStandardMaterial({color:0x434a4a,roughness:.48,metalness:.35}));
+  const paper=resources.material(new THREE.MeshStandardMaterial({color:0xf0f0e9,roughness:.92}));
+  const wire=resources.material(new THREE.MeshStandardMaterial({color:0x9a9e9b,roughness:.62,metalness:.5}));
+  const exterior=createGalleryExterior(resources,normals);group.add(exterior.group);
+  const releaseReflections=coordinateGalleryReflections(reflection.reflector,exterior.water);
+
+  // Full-height glazing on the right: sunlight really passes through the openings.
+  resources.box(group,.3,.8,depth,w+.05,-.4,center,plaster);
+  resources.box(group,.4,.35,depth,w,.175,center,plaster);
+  resources.box(group,.4,.3,depth,w,h-.15,center,plaster);
+  for(let z=back;z<=front;z+=5.5)resources.box(group,.25,h,.085,w,h/2,z,aluminium);
+  for(const y of [3.3,6.6])resources.box(group,.16,.075,depth,w,y,center,aluminium);
+  // Recessed ceiling light and slender rails preserve the photograph's vertical rhythm.
+  const ceilingLight=resources.material(new THREE.MeshBasicMaterial({color:0xf3f5ee}));
+  for(const x of [-8,2.5]){
+    resources.box(group,.28,.035,depth-4,x,h-.045,center,ceilingLight).castShadow=false;
+    for(const side of [-1,1])resources.box(group,.025,.055,depth-4,x+side*.17,h-.05,center,plaster);
+  }
+  for(const x of [-10,-5,0,5,10]){
+    resources.box(fixtures,.045,.06,depth-3,x,h-.22,center,aluminium);
+    for(const z of [-20,-10,0,10,20]){
+      const lamp=new THREE.Mesh(resources.geometry(new THREE.CylinderGeometry(.065,.065,.26,10)),aluminium);
+      lamp.rotation.z=.36;lamp.position.set(x,h-.47,z);fixtures.add(lamp);
+      const lens=new THREE.Mesh(resources.geometry(new THREE.CircleGeometry(.055,10)),ceilingLight);
+      lens.rotation.x=-Math.PI/2;lens.position.set(x+.045,h-.61,z);fixtures.add(lens);
+    }
+  }
+  // Thin perimeter shadow gaps and large concrete joints provide scale cues.
+  const joint=resources.material(new THREE.MeshStandardMaterial({color:0x7f8985,roughness:.9}));
+  resources.box(group,w*2,.035,.02,0,.018,back+.14,joint);
+  resources.box(group,.02,.035,depth,-w+.14,.018,center,joint);
+  for(let x=-8;x<=8;x+=4){const seam=resources.box(group,.008,.002,depth,x,.002,center,joint);seam.castShadow=false;}
+  for(let z=back+4;z<front;z+=6){const seam=resources.box(group,w*2,.002,.008,0,.002,z,joint);seam.castShadow=false;}
+
+  const cableGeometry=resources.geometry(new THREE.CylinderGeometry(.006,.006,1,5));
   const targets:THREE.Object3D[]=[];
-  WORK_X.forEach((x,index)=>{
-    const frame=new THREE.Group();frame.position.set(x,3.05,-8.72);group.add(frame);
-    const outer=resources.box(frame,3.45,2.86,0.13,0,0,0,frameMaterial);
-    outer.userData.workIndex=index;targets.push(outer);
-    resources.box(frame,3.31,2.72,0.04,0,0,0.08,plaster);
-    const texture=resources.texture(createStudyTexture(index));
-    const material=resources.material(new THREE.MeshStandardMaterial({map:texture,roughness:0.93,metalness:0}));
-    const picture=new THREE.Mesh(resources.geometry(new THREE.PlaneGeometry(3.08,2.4)),material);
-    picture.position.z=0.108;picture.userData.workIndex=index;frame.add(picture);targets.push(picture);
-    resources.box(group,0.27,0.1,0.015,x+1.6,1.41,-8.84,frameMaterial);
-    const lamp=new THREE.Mesh(resources.geometry(new THREE.CylinderGeometry(.08,.08,.24,12)),rail);
-    lamp.rotation.x=Math.PI/4;lamp.position.set(x,5.9,-5.8);fixtures.add(lamp);
-    const spot=new THREE.SpotLight(0xfff8e7,18,13,0.4,0.85,2);spot.position.copy(lamp.position);
-    spot.target.position.set(x,3,-8.7);group.add(spot,spot.target);
-  });
-  // Quiet bench and a slightly darker skirting give the open room a human scale.
-  resources.box(group,3.6,0.14,0.9,0,0.62,1.4,stone);
-  for(const x of [-1.3,1.3])resources.box(group,0.17,0.55,0.64,x,0.28,1.4,stone);
-  resources.box(group,19.8,0.06,0.05,0,0.03,-8.83,stone);
-  group.add(new THREE.HemisphereLight(0xfffcf4,0xc7cac3,1.8));
-  group.add(new THREE.AmbientLight(0xffffff,0.7));
-  const sun=new THREE.DirectionalLight(0xfffdf7,2.2);sun.position.set(-3,10,4);sun.target.position.set(0,1,-5);
-  sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
-  Object.assign(sun.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:0.5,far:35});
-  sun.shadow.normalBias=0.04;sun.shadow.bias=-0.0002;sun.shadow.radius=6;
-  group.add(sun,sun.target);
-  return {group,targets,fixtures,destroy(){sun.shadow.map?.dispose();}};
+  function hang(item:{x:number;y:number;z:number;width:number;height:number;yaw?:number},art:number,workIndex?:number){
+    const frame=new THREE.Group();frame.position.set(item.x,item.y,item.z);frame.rotation.y=item.yaw??0;group.add(frame);
+    const {width:fw,height:fh}=item;
+    const backing=resources.box(frame,fw-.035,fh-.035,.065,0,0,0,paper);
+    for(const side of [-1,1]){
+      resources.box(frame,.035,fh,.105,side*(fw-.035)/2,0,.015,charcoal);
+      resources.box(frame,fw,.035,.105,0,side*(fh-.035)/2,.015,charcoal);
+      const local=new THREE.Vector3(side*(fw*.36),fh/2,0).applyAxisAngle(new THREE.Vector3(0,1,0),frame.rotation.y);
+      const length=h-(item.y+fh/2)-.12;
+      const cable=new THREE.Mesh(cableGeometry,wire);cable.scale.y=length;
+      cable.position.set(item.x+local.x,item.y+fh/2+length/2,item.z+local.z);fixtures.add(cable);
+      resources.box(fixtures,.08,.025,.08,cable.position.x,h-.12,cable.position.z,aluminium);
+    }
+    const texture=resources.texture(createStudyTexture(art));texture.anisotropy=4;
+    const material=resources.material(new THREE.MeshStandardMaterial({map:texture,roughness:.88,metalness:0}));
+    const picture=new THREE.Mesh(resources.geometry(new THREE.PlaneGeometry(fw-.3,fh-.3)),material);
+    picture.position.z=.055;picture.castShadow=picture.receiveShadow=true;frame.add(picture);
+    if(workIndex!==undefined){
+      for(const surface of [backing,picture]){surface.userData.workIndex=workIndex;targets.push(surface);}
+    }
+  }
+  WORK_LAYOUT.forEach((work,index)=>hang(work,index,index));
+  HANGING_STUDIES.forEach((work,index)=>hang(work,index+5));
+
+  const lighting=createGalleryLighting(exterior.skyMaterial,ceilingLight);group.add(lighting.group);
+  return {
+    group,targets,
+    update(seconds:number){const state=lighting.update(seconds);exterior.update(seconds,state.day);waterLight.update(seconds,state.day);return state;},
+    resize(width:number,height:number){
+      reflection.resize(width,height);
+      lighting.resize(width);
+      exterior.resize(width);
+    },
+    destroy(){releaseReflections();exterior.destroy();reflection.destroy();lighting.destroy();},
+  };
 }

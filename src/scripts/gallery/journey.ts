@@ -1,26 +1,31 @@
-export const WORK_X = [-5.4, 0, 5.4] as const;
+import { WORK_LAYOUT } from './layout.ts';
 export const WORK_STOPS = [0.24, 0.54, 0.83] as const;
-export const GALLERY_FOV = 46;
+export const GALLERY_FOV = 52;
 export type GalleryPose = { x: number; y: number; z: number; lookX: number; lookY: number; lookZ: number };
 const clamp = (value: number, low = 0, high = 1) => Math.min(high, Math.max(low, value));
-const smooth = (value: number) => { const t = clamp(value); return t * t * (3 - 2 * t); };
+const smooth = (value: number) => { const t = clamp(value); return t * t * t * (t * (t * 6 - 15) + 10); };
 
 /** Long dwell intervals between short, reversible travels; no scroll snapping. */
 export function getGalleryPose(progress: number, aspect: number): GalleryPose {
   const p = clamp(progress);
-  const distance = Math.max(6.2, 3.7 / (2 * Math.tan(GALLERY_FOV * Math.PI / 360) * Math.max(0.3, aspect)));
-  const intro: GalleryPose = { x: 0, y: 1.8, z: 7.8, lookX: 0, lookY: 2.9, lookZ: -8.7 };
-  const work = (index: number): GalleryPose => ({ x: WORK_X[index], y: 2.8, z: -8.6 + distance, lookX: WORK_X[index], lookY: 3.05, lookZ: -8.7 });
-  const lerp = (a: GalleryPose, b: GalleryPose, t: number): GalleryPose => {
+  const intro: GalleryPose = { x: 0, y: 3.25, z: 16 + clamp((.9-aspect)*12,0,8), lookX: 0, lookY: 4.1, lookZ: -12 };
+  const work = (index: number): GalleryPose => {
+    const frame=WORK_LAYOUT[index];
+    const tangent=Math.tan(GALLERY_FOV*Math.PI/360);
+    const distance=Math.max(frame.height/(2*tangent*.6),frame.width/(2*tangent*Math.max(.3,aspect)*.72));
+    return { x: frame.x, y: frame.y-.35, z: frame.z+distance, lookX: frame.x, lookY: frame.y-.35, lookZ: frame.z };
+  };
+  const lerp = (a: GalleryPose, b: GalleryPose, t: number, retreat=0): GalleryPose => {
     const amount = smooth(t);
-    return { x: a.x + (b.x-a.x)*amount, y: a.y + (b.y-a.y)*amount, z: a.z + (b.z-a.z)*amount,
+    return { x: a.x + (b.x-a.x)*amount, y: a.y + (b.y-a.y)*amount, z: a.z + (b.z-a.z)*amount + Math.sin(amount*Math.PI)**2*retreat,
       lookX: a.lookX + (b.lookX-a.lookX)*amount, lookY: a.lookY + (b.lookY-a.lookY)*amount, lookZ: a.lookZ + (b.lookZ-a.lookZ)*amount };
   };
-  if (p < 0.18) return lerp(intro, work(0), p / 0.18);
+  if (p < .06) return intro;
+  if (p < 0.18) return lerp(intro, work(0), (p-.06) / .12);
   if (p < 0.33) return work(0);
-  if (p < 0.47) return lerp(work(0), work(1), (p-0.33)/0.14);
+  if (p < 0.47) return lerp(work(0), work(1), (p-0.33)/0.14,4.5);
   if (p < 0.63) return work(1);
-  if (p < 0.77) return lerp(work(1), work(2), (p-0.63)/0.14);
+  if (p < 0.77) return lerp(work(1), work(2), (p-0.63)/0.14,4.5);
   if (p < 0.91) return work(2);
   return lerp(work(2), intro, (p-0.91)/0.09);
 }
