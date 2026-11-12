@@ -60,14 +60,12 @@ function artistBrush(defs: SVGDefsElement, id: string) {
 export function initGalleryInvitation(link: HTMLAnchorElement) {
   const label = link.querySelector<HTMLElement>('[data-invitation-label]');
   const body = link.querySelector<HTMLElement>('.gallery-chapter__button-body');
-  const arrow = link.querySelector<HTMLElement>('.gallery-chapter__arrow');
   if (!label || !body) return;
   const abort = new AbortController(), { signal } = abort;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const canMove = () => !reduced.matches && document.documentElement.dataset.motion !== 'paused';
   const moveX = gsap.quickTo(body, 'x', { duration: .65, ease: 'power3.out' });
   const moveY = gsap.quickTo(body, 'y', { duration: .65, ease: 'power3.out' });
-  const contours = link.querySelectorAll<SVGPathElement>('.gallery-chapter__ink-top,.gallery-chapter__ink-bottom');
   const maskId = `invitation-ink-${++invitationId}`;
   let writing: gsap.core.Timeline | undefined;
   let sheet: SVGSVGElement | undefined;
@@ -78,7 +76,6 @@ export function initGalleryInvitation(link: HTMLAnchorElement) {
 
   function resetPointer() {
     moveX(0); moveY(0);
-    link.style.removeProperty('--invite-glow-x'); link.style.removeProperty('--invite-glow-y');
     if (!canMove()) { gsap.killTweensOf(body); gsap.set(body, { x: 0, y: 0 }); }
   }
 
@@ -86,8 +83,6 @@ export function initGalleryInvitation(link: HTMLAnchorElement) {
     writing?.kill(); writing = undefined;
     link.dataset.inkState = 'ready';
     played = true;
-    gsap.set(contours, { clearProps: 'all' });
-    if (arrow) gsap.set(arrow, { clearProps: 'opacity,transform' });
     sheet?.remove(); sheet = undefined; pen = undefined; letters = [];
   }
 
@@ -158,8 +153,6 @@ export function initGalleryInvitation(link: HTMLAnchorElement) {
     sheet.append(pen);
     link.dataset.inkState = 'pending';
     played = false;
-    gsap.set(contours, { strokeDashoffset: 1, opacity: 0 });
-    if (arrow) gsap.set(arrow, { opacity: 0, x: -7 });
     if (visible) write();
   }
 
@@ -231,40 +224,19 @@ export function initGalleryInvitation(link: HTMLAnchorElement) {
       if (index % 5 === 0 || index === total - 1) splash(cursor + duration * .65, box.x + box.width * .8, box.y + box.height * .65, index);
       cursor += duration + (index === 6 || index === 18 ? .14 : .008);
     });
-    // The wrist lifts between the lettering and two generous finishing gestures.
+    // A final flick releases ink without drawing a frame around the lettering.
     const last = letters[letters.length - 1];
     const endPoint = last.path.getPointAtLength(last.path.getTotalLength());
-    let previousPoint = { x: last.box.x + endPoint.x * last.box.width, y: last.box.y + endPoint.y * last.box.height };
-    contours.forEach((contour, index) => {
-      const length = contour.getTotalLength();
-      const from = { ...previousPoint };
-      const point = contour.getPointAtLength(0);
-      const target = { x: point.x / 760 * measuredWidth, y: point.y / 180 * measuredHeight };
-      const lift = { value: 0 };
-      writing!.to(lift, { value: 1, duration: .28, ease: 'sine.inOut', onUpdate() {
-        const t = lift.value;
-        placeBrush(from.x + (target.x - from.x) * t, from.y + (target.y - from.y) * t - Math.sin(t * Math.PI) * 36, 30 - t * 18, .85);
-      } }, cursor);
-      cursor += .28;
-      const stroke = { value: 0 };
-      writing!.fromTo(contour, { strokeDashoffset: 1, strokeWidth: 3.5, opacity: .8 }, { strokeDashoffset: 0, strokeWidth: .85, opacity: .65, duration: .7, ease: 'power2.inOut' }, cursor);
-      writing!.to(stroke, { value: 1, duration: .7, ease: 'power2.inOut', onUpdate() {
-        const p = contour.getPointAtLength(stroke.value * length);
-        placeBrush(p.x / 760 * measuredWidth, p.y / 180 * measuredHeight, 12 + Math.sin(stroke.value * Math.PI * 2) * 28, 1.1);
-      } }, cursor);
-      const flourishSplash = contour.getPointAtLength(length * .86);
-      splash(cursor + .48, flourishSplash.x / 760 * measuredWidth, flourishSplash.y / 180 * measuredHeight, index + 30);
-      const end = contour.getPointAtLength(length);
-      previousPoint = { x: end.x / 760 * measuredWidth, y: end.y / 180 * measuredHeight };
-      cursor += .7;
-    });
+    const previousPoint = { x: last.box.x + endPoint.x * last.box.width, y: last.box.y + endPoint.y * last.box.height };
+    splash(cursor + .04, previousPoint.x, previousPoint.y - 3, 31);
     const departure = { value: 0 };
-    writing.to(departure, { value: 1, duration: .45, ease: 'power2.in', onUpdate() {
+    writing.to(departure, { value: 1, duration: .65, ease: 'sine.inOut', onUpdate() {
       const t = departure.value;
-      placeBrush(previousPoint.x + t * 60, previousPoint.y - t * 70, 20 + t * 35, 1 - t * .2);
+      placeBrush(previousPoint.x + t * 22 + Math.sin(t * Math.PI) * 12,
+        previousPoint.y - t * 62 - Math.sin(t * Math.PI) * 16,
+        20 + Math.sin(t * Math.PI) * 34 - t * 18, 1 - t * .24);
     } }, cursor);
-    writing.to(penTip, { opacity: 0, duration: .4 }, cursor + .04);
-    if (arrow) writing.to(arrow, { opacity: 1, x: 0, duration: .5, ease: 'power2.out' }, cursor - .2);
+    writing.to(penTip, { opacity: 0, duration: .4 }, cursor + .25);
   }
 
   function scheduleLayout() {
@@ -297,8 +269,6 @@ export function initGalleryInvitation(link: HTMLAnchorElement) {
     const x = Math.max(-1, Math.min(1, (event.clientX - box.left) / box.width * 2 - 1));
     const y = Math.max(-1, Math.min(1, (event.clientY - box.top) / box.height * 2 - 1));
     moveX(x * 6); moveY(y * 4);
-    link.style.setProperty('--invite-glow-x', `${(x + 1) * 50}%`);
-    link.style.setProperty('--invite-glow-y', `${(y + 1) * 50}%`);
   }, { signal, passive: true });
   link.addEventListener('pointerleave', resetPointer, { signal });
   link.addEventListener('blur', resetPointer, { signal });

@@ -1,5 +1,3 @@
-@use '../variables' as *;
-
 .gallery-chapter {
   display: block;
   margin-inline: auto;
@@ -12,10 +10,10 @@
   &__title > span { color: #d1c7b6; }
   &__story { max-width: 58ch; margin: 2rem auto 0; font-size: clamp(1.05rem,1.5vw,1.2rem); line-height: 1.75; color: #c3d0df; text-wrap: pretty; }
   &__invitation { max-width: 48ch; margin: 1.4rem auto 0; font-size: clamp(1rem,1.25vw,1.1rem); line-height: 1.7; color: #a8b6c8; text-wrap: pretty; }
-  &__entry { position: relative; display: inline-flex; align-items: center; justify-content: center; width: min(100%,760px); min-height: 180px; max-width: 100%; margin-top: clamp(1rem,2.5vw,2rem); padding: 0; border: 0; color: #eee3d0; background: transparent; text-decoration: none; isolation: isolate; }
-  &__entry:focus-visible { outline: 1px solid #b8dded; outline-offset: 8px; border-radius: 50%; }
-  &__button-body { position: relative; display: flex; align-items: center; justify-content: center; gap: clamp(.8rem,2vw,1.8rem); width: 100%; min-height: 180px; padding: 2.3rem 2rem; }
-  &__button-body::before { content: ''; position: absolute; inset: 7% 3%; z-index: -1; pointer-events: none; border-radius: 50%; background: radial-gradient(ellipse at var(--invite-glow-x,50%) var(--invite-glow-y,50%),#f4e3bd19, #94dfff05 48%, transparent 72%); opacity: .25; filter: blur(8px); transition: opacity .7s ease; }
+  &__entry { position: relative; display: inline-flex; align-items: center; justify-content: center; width: min(100%,760px); min-height: 180px; max-width: 100%; margin-top: clamp(1rem,2.5vw,2rem); padding: 0; border: 0; color: #eee3d0; background: transparent; text-decoration: none; }
+  &__entry:focus-visible { outline: none; }
+  &__entry:focus-visible &__action-label { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; }
+  &__button-body { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 180px; padding: 2.3rem 2rem; }
   &__action-label { position: relative; font-family: 'Playfair Display',Georgia,serif; font-size: clamp(1.85rem,3.55vw,3.1rem); font-style: italic; font-weight: 400; line-height: 1.3; letter-spacing: -.025em; text-wrap: balance; transition: color .6s ease,text-shadow .6s ease; }
   &__action-label .invitation-word { display: inline-block; white-space: nowrap; }
   &__action-label .invitation-letter { display: inline-block; }
@@ -24,31 +22,20 @@
   &__entry[data-ink-state='pending'] &__action-label,
   &__entry[data-ink-state='writing'] &__action-label { opacity: 0; }
   &__entry[data-ink-state='writing'] &__handwriting { opacity: 1; }
-  &__entry[data-ink-state='ready'] &__ink-top,
-  &__entry[data-ink-state='ready'] &__ink-bottom { stroke-dashoffset: 0; opacity: .5; }
-  &__entry[data-ink-state='writing'] &__ink-top,
-  &__entry[data-ink-state='writing'] &__ink-bottom { transition: none; }
-  &__arrow { flex-shrink: 0; font-size: clamp(1.7rem,3vw,2.8rem); font-family: 'Playfair Display',Georgia,serif; font-style: italic; transition: transform .7s $ease-out-expo,color .6s; }
-  &__ink { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; fill: none; stroke-linecap: round; }
-  &__ink-top,&__ink-bottom { stroke-width: .85; vector-effect: non-scaling-stroke; stroke-dasharray: 1; transition: stroke-dashoffset 1.15s cubic-bezier(.2,.7,.2,1),opacity .8s; }
-  &__ink-top { stroke: #cbbd9e; stroke-dashoffset: .78; opacity: .38; }
-  &__ink-bottom { stroke: #9fc2cb; stroke-dashoffset: .68; opacity: .4; }
-  &__ink-sweep { stroke: #f2e1bf; stroke-width: 1.1; vector-effect: non-scaling-stroke; stroke-dasharray: .19 .81; stroke-dashoffset: 1; opacity: 0; }
-  &__entry:is(:hover,:focus-visible) &__button-body::before { opacity: 1; }
+  &__entry[data-ink-state='ready'] &__action-label { animation: invitation-ink-settle 1.2s ease-out; }
   &__entry:is(:hover,:focus-visible) &__action-label { color: #fff2d8; text-shadow: 0 0 24px #ead5a62b; }
-  &__entry:is(:hover,:focus-visible) &__arrow { transform: translate(5px,-5px) rotate(6deg); color: #fff2d8; }
-  &__entry:is(:hover,:focus-visible) &__ink-top,&__entry:is(:hover,:focus-visible) &__ink-bottom { stroke-dashoffset: 0; opacity: .85; }
-  &__entry[data-ink-state='ready']:is(:hover,:focus-visible) &__ink-sweep { opacity: .65; stroke-dashoffset: 0; transition: stroke-dashoffset 1.1s ease,opacity .7s ease; }
 
   @media (max-width:600px) {
     &__title { font-size: clamp(2.8rem,11vw,3.6rem); }
     &__story { font-size: 1.05rem; }
     &__entry { min-height: 180px; margin-top: 2rem; }
-    &__button-body { padding: 2rem 1.25rem; gap: .65rem; }
+    &__button-body { padding: 2rem 1.25rem; }
     &__action-label { font-size: clamp(1.7rem,7.6vw,2.25rem); max-width: 83%; }
-    &__arrow { font-size: 1.9rem; }
-    &__ink-top,&__ink-bottom { stroke-width: .7; }
   }
+}
+@keyframes invitation-ink-settle {
+  from { text-shadow: 0 0 14px #f8dfb47a, 0 1px 1px #fff1d638; }
+  to { text-shadow: 0 0 0 #f8dfb400, 0 0 0 #fff1d600; }
 }
 @media (prefers-reduced-motion:reduce) {
   .gallery-chapter__entry * { animation: none !important; transition: none !important; }
