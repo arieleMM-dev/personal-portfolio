@@ -1,0 +1,39 @@
+---
+import { translations } from '../data/translations';
+import SystemGlyph from './SystemGlyph.astro';
+interface Props { kind: 'backend' | 'testing' | 'architecture' }
+const { kind } = Astro.props;
+const copy = translations.es;
+---
+<div class={`knowledge-visual knowledge-visual--${kind}`} data-ambient-motion aria-hidden="true">
+  <span class="knowledge-visual__eyeline" data-i18n={`knowledge.${kind}.caption`}>{copy[`knowledge.${kind}.caption`]}</span>
+  {kind === 'backend' && <>
+    <div class="visual-plinth"></div>
+    <div class="demo-browser">
+      <div class="demo-toolbar"><i></i><i></i><i></i><span>app.local / records</span></div>
+      <div class="demo-desktop"><aside><b>◈</b><i></i><i></i><i></i><i></i></aside><div class="demo-workspace"><span>WEB / PC</span><strong data-i18n="visual.records">Registro de campo</strong><div class="demo-summary"><SystemGlyph kind="data" /><div><small data-i18n="visual.connected">Información conectada</small><b data-i18n="visual.updated">Actualizada</b></div></div><div class="demo-record"><i>✓</i><span data-i18n="visual.received">Entrada recibida</span><b></b></div><div class="demo-record"><i>✓</i><span data-i18n="visual.validated">Datos validados</span><b></b></div><div class="demo-chart">{[35,64,43,86,62,96,75].map((height,i)=><i style={`--bar:${height}%;--delay:${i*-.4}s`}></i>)}</div></div></div>
+      <div class="demo-laptop-base"></div>
+    </div>
+    <div class="demo-phone"><div class="demo-phone__island"></div><span data-i18n="visual.mobile">MÓVIL / APP</span><strong data-i18n="visual.newRecord">Nuevo registro</strong><div class="demo-phone__image"><SystemGlyph kind="data" /></div><div class="demo-phone__field"></div><div class="demo-phone__field demo-phone__field--short"></div><b data-i18n="visual.send">Enviar</b><div class="demo-phone__nav"><i></i><i></i><i></i></div></div>
+    <div class="visual-notice"><span class="visual-notice__icon">✓</span><div><strong data-i18n="visual.saved">Registro guardado</strong><small>201 Created · API</small></div></div>
+    <div class="api-medallion"><SystemGlyph kind="api" /><span>Node.js</span></div>
+    <svg class="knowledge-visual__connections" viewBox="0 0 400 420" fill="none"><path d="M70 315Q35 200 180 120T320 240"/><path class="knowledge-packet" d="M70 315Q35 200 180 120T320 240"/></svg>
+    <div class="knowledge-visual__foot"><span data-i18n="visual.backend.flow">App → backend → respuesta</span><i></i></div>
+  </>}
+  {kind === 'testing' && <>
+    <div class="visual-plinth"></div><div class="data-sheet data-sheet--back"></div><div class="data-sheet data-sheet--middle"></div>
+    <div class="data-console"><div class="demo-toolbar"><i></i><i></i><i></i><span>database / records</span></div><div class="data-console__title"><SystemGlyph kind="data" /><strong data-i18n="visual.organized">Datos organizados</strong><span>SQL</span></div><div class="data-table"><div><b>id</b><b>owner_id</b><b>status</b></div>{['A','B','C'].map((row,i)=><div><span>{`0${i+1}`}</span><span>{`field_${row.toLowerCase()}`}</span><i>✓</i></div>)}</div><div class="data-query"><span>SELECT</span> * <span>FROM</span> records<br /><span>WHERE</span> status = <b>'valid'</b>;</div></div>
+    <div class="relation-card"><span>JSON / DOCUMENT</span><code>{'{'}<br />&nbsp; id: <b>"record"</b>,<br />&nbsp; owner: <b>"field_a"</b><br />{'}'}</code><i data-i18n="visual.linked">Relaciones claras</i></div>
+    <div class="test-report"><div><img src="/assets/technologies/vitest.svg" alt="" width="23" height="23" /><strong data-i18n="knowledge.testing.cases">Comprobar cada caso</strong></div><span><i>✓</i><span data-i18n="knowledge.testing.valid">Entrada válida</span><b></b></span><span><i>✓</i><span data-i18n="knowledge.testing.invalid">Entrada incorrecta</span><b></b></span><span><i>✓</i><span data-i18n="knowledge.testing.edge">Caso límite</span><b></b></span><div class="test-report__result"><i></i><small data-i18n="visual.verified">Comportamiento verificado</small></div></div>
+    <svg class="knowledge-visual__connections" viewBox="0 0 400 420" fill="none"><path d="M70 280Q150 390 300 240"/><path class="knowledge-packet" d="M70 280Q150 390 300 240"/></svg>
+    <div class="knowledge-visual__foot"><span data-i18n="visual.testing.flow">Guardar · relacionar · comprobar</span><i></i></div>
+  </>}
+  {kind === 'architecture' && <>
+    <div class="visual-plinth"></div>
+    <div class="system-folders">{['interface','domain','persistence'].map((layer,i)=><div class={`system-folder system-folder--${i}`} style={`--layer:${i}`}><div class="system-folder__tab"></div><SystemGlyph kind={(['client','logic','data'] as const)[i]} /><div><small>{['HTTP / REST','BUSINESS RULES','SQL / DOCUMENTS'][i]}</small><strong data-i18n={`knowledge.layer.${layer}`}>{copy[`knowledge.layer.${layer}`]}</strong><span><i></i><i></i><i></i></span></div><b>↗</b></div>)}</div>
+    <div class="system-package"><SystemGlyph kind="deploy" /><span>app</span><i></i></div>
+    <div class="delivery-chain">{['git','docker','githubactions'].map((icon,i)=><span><img src={`/assets/technologies/${icon}.svg`} alt="" width="24" height="24" /><span>{['Git','Docker','CI'][i]}</span>{i<2&&<i>→</i>}</span>)}</div>
+    <div class="visual-notice visual-notice--architecture"><span class="visual-notice__icon">✓</span><div><strong data-i18n="visual.modules">Cada pieza, su responsabilidad</strong><small>module → system</small></div></div>
+    <div class="knowledge-visual__foot"><span data-i18n="knowledge.architecture.boundaries">Responsabilidades y límites claros</span><i></i></div>
+  </>}
+</div>

@@ -1,0 +1,17 @@
+---
+interface Props { kind: 'screen' | 'phone' | 'server' | 'check' | 'arrow' | 'package' | 'key' | 'file' | 'link' | 'filter' | 'branch' }
+const { kind } = Astro.props;
+---
+<svg class="about-scene-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {kind === 'screen' && <><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-6-4-1 4m5-4 1 4M6 7h7m-7 4h4"/></>}
+  {kind === 'phone' && <><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4m-3 14h2"/></>}
+  {kind === 'server' && <><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01m5-11h5m-5 11h5M12 10v4"/></>}
+  {kind === 'check' && <path d="m5 12 4 4L19 6"/>}
+  {kind === 'arrow' && <path d="M4 12h16m-6-6 6 6-6 6"/>}
+  {kind === 'package' && <><path d="m12 2 9 5v10l-9 5-9-5V7Zm-9 5 9 5 9-5m-9 5v10M7.5 4.5l9 5"/></>}
+  {kind === 'key' && <><circle cx="8" cy="8" r="5"/><path d="m12 12 9 9m-5-5 3-3m-6 6 3-3"/></>}
+  {kind === 'file' && <><path d="M14 2H5v20h14V7ZM14 2v5h5M8 12h8m-8 4h6"/></>}
+  {kind === 'link' && <><path d="m10 13 4-4m-6 7-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" transform="translate(1 1)"/></>}
+  {kind === 'filter' && <path d="M3 4h18l-7 8v7l-4 2v-9Z"/>}
+  {kind === 'branch' && <><rect x="2" y="8" width="6" height="8" rx="2"/><rect x="16" y="2" width="6" height="6" rx="2"/><rect x="16" y="16" width="6" height="6" rx="2"/><path d="M8 12h4V5h4m-4 7v7h4"/></>}
+</svg>

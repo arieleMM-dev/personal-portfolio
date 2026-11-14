@@ -15,6 +15,7 @@ import { isAmbientPaused } from '../motion';
 
 export interface HeroSceneController {
   destroy(): void;
+  setScrollProgress(progress: number): void;
 }
 
 /** Browser-only entry point. No DOM text, layout or navigation is owned here. */
@@ -88,6 +89,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   let contextLost = false;
   let mobile = false;
   let needsFrame = true;
+  let scrollProgress = 0;
   // Development-only sampling, after shader warm-up. No production telemetry.
   let profile = import.meta.env.DEV ? { warmup: 20, intervals: [] as number[], submissions: [] as number[] } : null;
 
@@ -97,6 +99,9 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
     const heartbeat = getHeartbeat(elapsed);
     cameraRig.update(delta, pointer, reduced, mobile);
     cube.update(elapsed, heartbeat, reduced);
+    // The cube retreats into the ocean as its visual vocabulary becomes the system chapter.
+    cube.group.position.z = focusZ - (reduced ? 0 : scrollProgress * 8);
+    cube.group.rotation.y += reduced ? 0 : scrollProgress * 0.6;
     cube.updateInteraction(delta, pointer, pointerPresent, camera, reduced);
     cube.setVideoState(video.ready, video.aspect);
     const launchedTower = city.update(elapsed, heartbeat, reduced);
@@ -220,6 +225,7 @@ export async function initHeroScene(canvas: HTMLCanvasElement): Promise<HeroScen
   resize();
 
   return {
+    setScrollProgress(progress) { scrollProgress = THREE.MathUtils.clamp(progress, 0, 1); },
     destroy() {
       if (destroyed) return;
       destroyed = true;

@@ -1,0 +1,12 @@
+---
+interface Props { kind: 'client' | 'api' | 'logic' | 'data' | 'test' | 'deploy' }
+const { kind } = Astro.props;
+---
+<svg class="system-glyph" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {kind === 'client' && <><path d="M12 12L49 6V40L12 47Z M16 16L45 11V36L16 42Z M12 47L3 52L39 60L59 46L49 40 M3 52L39 56L59 43 M39 56V60"/><path d="M20 24L27 28L22 34 M33 22L39 25L34 31"/></>}
+  {kind === 'api' && <><path d="M9 16L32 5L55 16V48L32 60L9 48Z M9 16L32 29L55 16 M32 29V60 M9 27L32 40L55 27 M9 38L32 51L55 38"/><path d="M16 22L23 26 M16 33L23 37 M16 44L23 48 M40 30L47 26 M40 41L47 37 M40 52L47 48"/></>}
+  {kind === 'logic' && <><path d="M32 5L57 28L32 53L7 28Z M32 15L46 28L32 42L18 28Z M32 53V61 M3 28H7 M57 28H61"/><path d="M26 28L30 32L38 23"/></>}
+  {kind === 'data' && <><ellipse cx="32" cy="13" rx="23" ry="9"/><path d="M9 13V49C9 61 55 61 55 49V13 M9 25C9 37 55 37 55 25 M9 37C9 49 55 49 55 37"/><path d="M17 26L21 28 M17 38L21 40 M17 50L21 52"/></>}
+  {kind === 'test' && <><path d="M13 8H51V57H13Z M21 18H42 M21 27H37 M22 42L29 49L43 34"/><path d="M8 13H13 M8 23H13 M8 33H13 M8 43H13 M8 53H13"/></>}
+  {kind === 'deploy' && <><path d="M32 6L55 18V46L32 58L9 46V18Z M9 18L32 31L55 18 M32 31V58 M21 12L44 24V39 M20 38L27 42"/><path d="M38 8L47 3L56 8 M47 3V16"/></>}
+</svg>

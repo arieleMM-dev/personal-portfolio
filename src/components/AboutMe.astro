@@ -1,6 +1,8 @@
 ---
 import { translations } from '../data/translations';
-const stages = ['api', 'logic', 'data'];
+import AboutProcess from './AboutProcess.astro';
+import SystemGlyph from './SystemGlyph.astro';
+const stages = ['api', 'logic', 'data'] as const;
 ---
 <section class="about portfolio-section" id="about" data-about aria-labelledby="about-title">
   <div class="section-head" data-reveal>
@@ -17,35 +19,26 @@ const stages = ['api', 'logic', 'data'];
       </div>
       <a class="availability" href="#contact" data-nav-link><span class="status-dot" aria-hidden="true"></span><span data-i18n="common.available">Disponible para nuevos retos</span><span aria-hidden="true">↗</span></a>
     </div>
+  </div>
     <div class="architecture" data-reveal data-architecture data-active-stage="api">
       <div class="panel-meta"><span class="micro-label" data-i18n="about.system">Cómo pienso un sistema</span><span aria-hidden="true">REQUEST → RESPONSE</span></div>
-      <div class="architecture__diagram" aria-hidden="true">
-        <svg class="architecture__network" viewBox="0 0 440 280" fill="none">
-          <defs><radialGradient id="system-glow"><stop stop-color="#38bfff" stop-opacity=".18"/><stop offset="1" stop-color="#38bfff" stop-opacity="0"/></radialGradient></defs>
-          <ellipse cx="220" cy="140" rx="170" ry="130" fill="url(#system-glow)"/>
-          <g class="architecture__routes" stroke="currentColor"><path d="M40 140H110L160 90H220M110 140L160 190H220M220 90H280L330 140H400M220 190H280L330 140"/><path d="M160 90V190M280 90V190" stroke-dasharray="3 8"/></g>
-          <g class="architecture__satellites" stroke="currentColor"><circle cx="110" cy="140" r="9"/><circle cx="330" cy="140" r="9"/><circle cx="160" cy="90" r="5"/><circle cx="160" cy="190" r="5"/><circle cx="280" cy="90" r="5"/><circle cx="280" cy="190" r="5"/></g>
-          <g class="architecture__model architecture__model--api"><path d="M220 78L274 109V171L220 202L166 171V109Z"/><path d="M220 78V140M166 109L220 140L274 109M220 140V202"/><path class="architecture__signal" d="M40 140H110L160 90H220V140L274 109L330 140H400"/></g>
-          <g class="architecture__model architecture__model--logic"><path d="M220 74L286 140L220 206L154 140Z"/><path d="M220 96L264 140L220 184L176 140Z"/><circle cx="220" cy="140" r="14"/><path class="architecture__signal" d="M40 140H154L220 74L286 140H400"/></g>
-          <g class="architecture__model architecture__model--data"><ellipse cx="220" cy="100" rx="53" ry="19"/><path d="M167 100V179C167 205 273 205 273 179V100M167 126C167 152 273 152 273 126M167 153C167 179 273 179 273 153"/><path class="architecture__signal" d="M40 140H110L160 190H220M220 90H280L330 140H400"/></g>
-        </svg>
-        <span class="architecture__axis">INPUT</span><span class="architecture__axis">OUTPUT</span>
+      <div class="architecture__scenes">
+        {stages.map((stage, i) => (
+          <div id={`architecture-${stage}`} data-architecture-panel={stage} hidden={i !== 0}>
+            <AboutProcess stage={stage as "api" | "logic" | "data"} />
+          </div>
+        ))}
       </div>
       <div class="architecture__steps" role="group" aria-label="Capas del sistema" data-i18n-aria-label="about.system">
         {stages.map((stage, i) => (
           <button type="button" class:list={['architecture__step', { 'is-active': i === 0 }]} data-architecture-stage={stage} aria-pressed={i === 0 ? 'true' : 'false'} aria-controls={`architecture-${stage}`}>
-            <span data-i18n={`about.${stage}.label`}>{translations.es[`about.${stage}.label`]}</span>
+            <span class="architecture__card-icon" aria-hidden="true"><SystemGlyph kind={stage} /></span>
+            <span class="architecture__card-copy"><strong data-i18n={`about.${stage}.label`}>{translations.es[`about.${stage}.label`]}</strong><span data-i18n={`explorer.${stage}.summary`}>{translations.es[`explorer.${stage}.summary`]}</span></span>
+            <span class="architecture__card-action" aria-hidden="true">↗</span>
+            <span class="architecture__timer" aria-hidden="true"><span data-stage-progress></span></span>
           </button>
         ))}
       </div>
-      <div class="architecture__descriptions" aria-live="polite">
-        {stages.map((stage, i) => (
-          <div id={`architecture-${stage}`} data-architecture-panel={stage} hidden={i !== 0}>
-            <p data-i18n={`about.${stage}.desc`}>{translations.es[`about.${stage}.desc`]}</p>
-          </div>
-        ))}
-      </div>
-      <p class="architecture__hint micro-label" data-i18n="about.hint">Explora cada capa del sistema</p>
+      <div class="architecture__controls"><p class="architecture__hint" data-i18n="about.hint">Explora cada capa del sistema</p><button type="button" class="architecture__toggle" data-architecture-toggle aria-pressed="false"><span data-cycle-label data-i18n="explorer.pause">Pausar recorrido</span><span aria-hidden="true">Ⅱ</span></button></div>
     </div>
-  </div>
 </section>

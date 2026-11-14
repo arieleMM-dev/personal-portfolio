@@ -13,7 +13,8 @@ const upcoming = ['pos', 'helpdesk'] as const;
   <div class="work__grid" id="work-grid">
     {featured.map(id => (
       <article class={`work__project work__project--${id}`} data-project={id}>
-        <div class="work__stage" data-reveal>
+        <div class="work__stage" data-project-stage>
+          <div class="work__stage-coordinates" aria-hidden="true"><span data-i18n={`work.${id}.title`}>{projects[id].displayTitle.es}</span><span>{id === 'jirah' ? 'OFFLINE ↔ ONLINE' : 'WEBGL'}</span></div>
           <button class="work__visual" type="button" data-project-open={id} data-project-visual aria-haspopup="dialog" aria-label={`Explorar ${projects[id].displayTitle.es}`} data-i18n-aria-label={`work.${id}.open`}>
             <div class="work__parallax" data-project-parallax>
               <div class="work__media" data-project-media>
@@ -23,6 +24,10 @@ const upcoming = ['pos', 'helpdesk'] as const;
             <span class="work__visual-action"><span data-i18n="work.viewProject">Explorar proyecto</span><span aria-hidden="true">↗</span></span>
           </button>
         </div>
+        {id === 'jirah' && <div class="work__workflow" data-ambient-motion>
+          <span class="work__workflow-rail" aria-hidden="true"></span>
+          {['capture', 'local', 'sync'].map(step => <div><i aria-hidden="true"></i><span data-i18n={`work.flow.${step}`}>{step === 'capture' ? 'Registro en campo' : step === 'local' ? 'Guardado local' : 'Sincronización'}</span></div>)}
+        </div>}
         <div class="work__project-info" data-reveal>
           <div class="panel-meta"><span class="micro-label">{id === 'jirah' ? 'FULLSTACK · OFFLINE-FIRST' : 'CREATIVE WEB · WEBGL'}</span><span class="work__status" data-i18n="work.completed">Completado</span></div>
           <h3 data-i18n={`work.${id}.title`}>{projects[id].title}</h3>
@@ -34,6 +39,7 @@ const upcoming = ['pos', 'helpdesk'] as const;
       </article>
     ))}
   </div>
+  <details class="work__more" data-work-more><summary class="work__all-projects"><span data-i18n="work.allProjects">Ver todos los proyectos</span><span aria-hidden="true">↗</span></summary>
   <div class="work__upcoming-head" data-reveal><span class="micro-label" data-i18n="work.upcoming">En el laboratorio</span><span data-i18n="work.upcomingNote">Proyectos en desarrollo</span></div>
   <div class="work__upcoming">
     {upcoming.map((id, i) => (
@@ -48,6 +54,7 @@ const upcoming = ['pos', 'helpdesk'] as const;
       </article>
     ))}
   </div>
+  </details>
 </section>
 
 <dialog class="work-modal" id="work-modal" aria-labelledby="modal-title" data-lenis-prevent>

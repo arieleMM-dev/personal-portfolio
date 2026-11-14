@@ -6,6 +6,7 @@ import { initScrollTracker } from './scrollTracker';
 import { initHeroScrollCue } from './heroScrollCue';
 import { initPortfolioInteractions } from './portfolioInteractions';
 import { isAmbientPaused } from '../motion';
+import { initSpatialNarrative } from './spatialNarrative';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -50,13 +51,14 @@ export function initHome() {
   const destroyScrollCue = initHeroScrollCue();
 
   let heroScene: HeroSceneController | null = null;
+  let heroScroll = 0;
   let disposed = false;
   if (heroCanvas) {
     void import('../webgl/heroScene')
       .then((module) => disposed ? null : module.initHeroScene(heroCanvas))
       .then((controller) => {
         if (disposed) controller?.destroy();
-        else heroScene = controller;
+        else { heroScene = controller; heroScene?.setScrollProgress(heroScroll); }
       })
       .catch((error: unknown) => {
         console.warn('Hero background could not load; the page remains available.', error);
@@ -195,12 +197,16 @@ export function initHome() {
 
     if (reducedMotion) introTl.progress(1);
     initContentAnimations(contentMedia);
+    ScrollTrigger.create({ trigger: '#home', start: 'top top', end: 'bottom top',
+      onUpdate: self => { heroScroll = self.progress; heroScene?.setScrollProgress(heroScroll); },
+    });
 
     initBackToTop(events.signal);
   }); // End GSAP Context
 
   const destroyTracker = initScrollTracker();
   const destroyInteractions = initPortfolioInteractions();
+  const destroyNarrative = initSpatialNarrative();
 
   return () => {
     disposed = true;
@@ -210,6 +216,7 @@ export function initHome() {
     destroyScrollCue();
     contentMedia.revert();
     destroyInteractions();
+    destroyNarrative();
     destroyTracker?.();
   };
 }
@@ -225,12 +232,12 @@ function initContentAnimations(media: gsap.MatchMedia) {
   }, context => {
     const conditions = context.conditions!;
     if (conditions.reduced) {
-      gsap.set('[data-reveal], [data-expertise-col]', { clearProps: 'opacity,transform' });
+      gsap.set('[data-reveal]', { clearProps: 'opacity,transform' });
       gsap.set('[data-timeline-progress], [data-project-parallax]', { clearProps: 'transform' });
       return;
     }
     // Scroll-linked rather than one-shot: the entrance also reverses on the way back.
-    document.querySelectorAll<HTMLElement>('[data-reveal], [data-expertise-col]').forEach(element => {
+    document.querySelectorAll<HTMLElement>('[data-reveal]').forEach(element => {
       gsap.fromTo(element, { opacity: 0, y: 24 }, {
         opacity: 1, y: 0, ease: 'none',
         scrollTrigger: { trigger: element, start: 'top 96%', end: 'top 68%', scrub: 0.6, invalidateOnRefresh: true },
@@ -239,12 +246,6 @@ function initContentAnimations(media: gsap.MatchMedia) {
     gsap.fromTo('[data-timeline-progress]', { scaleY: 0 }, {
       scaleY: 1, ease: 'none',
       scrollTrigger: { trigger: '[data-timeline]', start: 'top 75%', end: 'bottom 65%', scrub: 0.7, invalidateOnRefresh: true },
-    });
-    document.querySelectorAll<HTMLElement>('[data-project]').forEach(project => {
-      gsap.fromTo(project.querySelector('[data-project-parallax]'), { yPercent: -3 }, {
-        yPercent: 3, ease: 'none',
-        scrollTrigger: { trigger: project, start: 'top bottom', end: 'bottom top', scrub: 0.9, invalidateOnRefresh: true },
-      });
     });
   });
 }

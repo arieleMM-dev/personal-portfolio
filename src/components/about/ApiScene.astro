@@ -1,0 +1,33 @@
+---
+import SceneIcon from './SceneIcon.astro';
+---
+<div class="about-visual api-world" data-ambient-motion aria-hidden="true">
+  <svg class="api-world__wires" viewBox="0 0 600 350" preserveAspectRatio="none" fill="none">
+    <path d="M100 95C240 95 160 170 290 170S385 90 500 90M95 265C210 265 180 170 290 170S390 270 500 270"/>
+    <path class="api-world__packet api-world__packet--in" d="M100 95C240 95 160 170 290 170S385 90 500 90"/>
+    <path class="api-world__packet api-world__packet--out" d="M95 265C210 265 180 170 290 170S390 270 500 270"/>
+  </svg>
+  <div class="api-clients" data-process-step="0">
+    <div class="api-browser">
+      <div class="api-browser__bar"><i></i><i></i><i></i></div>
+      <div class="api-browser__screen"><span></span><div><b></b><b></b></div><i></i><i></i></div>
+      <div class="api-browser__stand"></div>
+    </div>
+    <span class="api-client-label" data-i18n="aboutScene.api.desktop">Web y escritorio</span>
+    <div class="api-mobile"><i></i><div><SceneIcon kind="package"/></div><span></span><span></span><b></b></div>
+    <span class="api-client-label" data-i18n="aboutScene.api.mobile">App móvil</span>
+  </div>
+  <div class="api-service" data-process-step="2">
+    <div class="api-service__platform"></div>
+    <span class="api-service__brand" style="--tech-icon:url('/assets/technologies/nodejs.svg')"></span>
+    <div class="api-service__rack">{[0,1,2].map(i => <div style={`--rack:${i}`}><span></span><span></span><i></i><i></i></div>)}</div>
+    <strong data-i18n="aboutScene.api.service">Servicio backend</strong>
+    <code>Node.js · TypeScript</code>
+  </div>
+  <div class="api-response" data-process-step="3">
+    <div class="api-response__head"><span><SceneIcon kind="check"/></span><b>201 Created</b><i></i></div>
+    <code><span>{'{'}</span><br />&nbsp;"status": <b>"saved"</b>,<br />&nbsp;"record": {'{'}<br />&nbsp;&nbsp;"id": <b>"A-01"</b><br />&nbsp;{'}'}<br /><span>{'}'}</span></code>
+    <div class="api-response__receipt"><SceneIcon kind="file"/><div><strong data-i18n="aboutScene.api.saved">Registro guardado</strong><small data-i18n="aboutScene.api.response">Una respuesta que la app entiende</small></div></div>
+  </div>
+  <span class="api-request" data-process-step="1"><span>POST</span> /records <SceneIcon kind="arrow"/></span>
+</div>

@@ -8,29 +8,4 @@
   .availability { margin-top: 1.25rem; }
   @media (max-width: 900px) { &__grid { grid-template-columns: 1fr; } }
 }
-.architecture {
-  position: relative;
-  padding-block: 1rem;
-  min-width: 0;
-  .panel-meta { gap: 0.5rem; flex-wrap: wrap; }
-  &__diagram { position: relative; height: clamp(240px, 24vw, 310px); display: grid; place-items: center; }
-  &__network { width: 100%; height: 100%; overflow: visible; color: #78d9ff; }
-  &__routes { opacity: 0.22; }
-  &__satellites { opacity: 0.65; fill: #07162a; }
-  &__model { stroke: #91e5ff; stroke-width: 1.2; fill: rgba(42, 141, 219, 0.055); opacity: 0; transform-origin: 220px 140px; transform: scale(0.88); transition: opacity 0.7s ease, transform 1s $ease-out-expo; }
-  &[data-active-stage='api'] &__model--api, &[data-active-stage='logic'] &__model--logic, &[data-active-stage='data'] &__model--data { opacity: 1; transform: scale(1); }
-  &__signal { fill: none; stroke: #b2f0ff; stroke-width: 2; stroke-dasharray: 8 430; opacity: 0; filter: drop-shadow(0 0 4px #4acbff); }
-  &.is-visible &__signal { opacity: 0.9; animation: system-signal 6s linear infinite; }
-  &__axis { position: absolute; left: 0; top: 50%; font-family: $font-mono; font-size: 0.5rem; letter-spacing: 0.12em; color: #718cae; }
-  &__axis:last-child { left: auto; right: 0; }
-  &__steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; border-bottom: 1px solid rgba(107, 159, 211, 0.22); }
-  &__step { position: relative; min-height: 52px; padding: 0.5rem; color: #9cb0c9; transition: color 0.4s; }
-  &__step::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #8ae2ff; transform: scaleX(0); transition: transform 0.6s $ease-out-expo; }
-  &__step:hover { color: #e1f6ff; }
-  &__step.is-active { color: #c6efff; }
-  &__step.is-active::after { transform: scaleX(1); }
-  &__descriptions { min-height: 120px; margin-top: 1.3rem; font-size: 1.1rem; line-height: 1.6; color: #a6bdd9; }
-  &__hint { font-size: 0.55rem; text-align: center; margin-top: 0.5rem; }
-  @media (max-width: 400px) { &__axis { display: none; } &__descriptions { min-height: 145px; } }
-}
-@keyframes system-signal { to { stroke-dashoffset: -438; } }
+.architecture { position: relative; min-width: 0; .panel-meta { gap: 0.5rem; flex-wrap: wrap; } }

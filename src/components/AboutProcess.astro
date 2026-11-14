@@ -1,0 +1,17 @@
+---
+import { translations } from '../data/translations';
+import ApiScene from './about/ApiScene.astro';
+import LogicScene from './about/LogicScene.astro';
+import DataScene from './about/DataScene.astro';
+import SceneIcon from './about/SceneIcon.astro';
+interface Props { stage: 'api' | 'logic' | 'data' }
+const { stage } = Astro.props;
+const copy = translations.es;
+---
+<div class={`process-journey process-journey--${stage}`}>
+  <div class="process-journey__heading"><div><h3 data-i18n={`explorer.${stage}.title`}>{copy[`explorer.${stage}.title`]}</h3><p data-i18n={`explorer.${stage}.intro`}>{copy[`explorer.${stage}.intro`]}</p></div><span class="process-journey__tag" data-i18n="process.demo">Ejemplo visual del proceso</span></div>
+  {stage === 'api' && <ApiScene />}
+  {stage === 'logic' && <LogicScene />}
+  {stage === 'data' && <DataScene />}
+  <p class="process-journey__note"><SceneIcon kind={stage === 'api' ? 'link' : stage === 'logic' ? 'branch' : 'key'}/><span data-i18n={`aboutScene.${stage}.note`}>{copy[`aboutScene.${stage}.note`]}</span></p>
+</div>

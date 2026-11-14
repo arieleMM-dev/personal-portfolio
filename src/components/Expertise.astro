@@ -2,23 +2,37 @@
 import { columns } from '../data/expertise';
 import { translations } from '../data/translations';
 import TechnologyList from './TechnologyList.astro';
+import KnowledgeVisual from './KnowledgeVisual.astro';
+const copy = translations.es;
 ---
 <section class="expertise portfolio-section" id="expertise" data-expertise aria-labelledby="expertise-title">
-  <div class="section-head" data-reveal>
-    <p class="section-kicker"><span data-i18n="expertise.label">Conocimientos</span></p>
-    <h2 id="expertise-title" class="section-title" data-expertise-title data-i18n="expertise.title">Las piezas detrás<br /><span>de cada solución.</span></h2>
-    <p class="section-copy" data-i18n="expertise.subtitle">Tecnologías que he usado en proyectos y en las que sigo profundizando.</p>
+  <div class="expertise__heading">
+    <div class="section-head" data-reveal>
+      <p class="section-kicker"><span data-i18n="expertise.label">Conocimientos</span></p>
+      <h2 id="expertise-title" class="section-title" data-i18n="expertise.title">Las piezas detrás<br /><span>de cada solución.</span></h2>
+      <p class="section-copy" data-i18n="expertise.subtitle">Tecnologías que he usado en proyectos y en las que sigo profundizando.</p>
+    </div>
+    <button class="knowledge-sculpture" type="button" data-particle-morph aria-label={copy['process.transform']} data-i18n-aria-label="process.transform">
+      <canvas aria-hidden="true"></canvas><span class="knowledge-sculpture__fallback" aria-hidden="true">{ }</span>
+      <span class="knowledge-sculpture__name" aria-hidden="true">{['web','mobile','infrastructure'].map((shape,i)=><span data-particle-name={i} data-i18n={`sculpture.${shape}`} hidden={i!==0}>{copy[`sculpture.${shape}`]}</span>)}</span>
+      <span class="knowledge-sculpture__hint" data-i18n="sculpture.hint">Acércate · pulsa para transformar</span>
+      <span class="knowledge-sculpture__dots" aria-hidden="true"><i class="is-active"></i><i></i><i></i></span>
+    </button>
   </div>
-  <div class="expertise__grid" data-expertise-grid>
+  <div class="skill-panels" data-skill-panels>
     {columns.map((col, i) => (
-      <article class="expertise__column" data-expertise-col>
-        <div class={`expertise__visual expertise__visual--${i}`} data-ambient-motion aria-hidden="true">
-          {Array.from({ length: 5 }, (_, n) => <span style={`--layer: ${n}`}></span>)}
+      <article class={`skill-panel skill-panel--${i}`} data-skill-panel={i} data-active={i === 0 ? 'true' : 'false'}>
+        <h3><button class="skill-panel__trigger" type="button" id={`skill-trigger-${i}`} data-skill-select={i} aria-expanded={i === 0 ? 'true' : 'false'} aria-controls={`skill-body-${i}`}><span data-i18n={col.titleKey}>{copy[col.titleKey]}</span><i aria-hidden="true">↗</i></button></h3>
+        <div class="skill-panel__body" id={`skill-body-${i}`} role="region" aria-labelledby={`skill-trigger-${i}`} hidden={i !== 0}>
+          <div class="skill-panel__copy">
+            <p data-i18n={col.descKey}>{copy[col.descKey]}</p>
+            <TechnologyList technologies={col.techs} />
+            <p class="skill-panel__principle" data-i18n={`system.principle${i}`}>{copy[`system.principle${i}`]}</p>
+          </div>
+          <KnowledgeVisual kind={(['backend','testing','architecture'] as const)[i]} />
         </div>
-        <h3 class="expertise__col-title" data-i18n={col.titleKey}>{translations.es[col.titleKey]}</h3>
-        <p class="expertise__col-desc" data-i18n={col.descKey}>{translations.es[col.descKey]}</p>
-        <TechnologyList technologies={col.techs} />
       </article>
     ))}
   </div>
+  <noscript><style>.skill-panel { flex: 1 !important; min-height: 600px !important; } .skill-panel__body { display: grid !important; } .skill-panel__trigger { writing-mode: horizontal-tb !important; } .knowledge-sculpture { display: none; }</style></noscript>
 </section>

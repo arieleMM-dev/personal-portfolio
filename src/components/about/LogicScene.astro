@@ -1,0 +1,27 @@
+---
+import { translations } from '../../data/translations';
+import SceneIcon from './SceneIcon.astro';
+const copy = translations.es;
+---
+<div class="about-visual logic-lab" data-ambient-motion data-logic-demo data-logic-result="allowed">
+  <div class="logic-lab__choices" role="group" aria-label={copy['aboutScene.logic.choose']} data-i18n-aria-label="aboutScene.logic.choose">
+    <button type="button" data-logic-stock="8" aria-pressed="true"><SceneIcon kind="package"/><span data-i18n="aboutScene.logic.available">Con existencias</span></button>
+    <button type="button" data-logic-stock="0" aria-pressed="false"><SceneIcon kind="package"/><span data-i18n="aboutScene.logic.empty">Sin existencias</span></button>
+  </div>
+  <div class="logic-lab__composition">
+    <svg class="logic-lab__branches" viewBox="0 0 600 300" preserveAspectRatio="none" fill="none" aria-hidden="true"><path d="M140 150H285M285 150Q345 150 345 70H480M285 150Q345 150 345 240H480"/><path class="logic-lab__route logic-lab__route--allowed" d="M140 150H285Q345 150 345 70H480"/><path class="logic-lab__route logic-lab__route--blocked" d="M140 150H285Q345 150 345 240H480"/></svg>
+    <div class="reservation-ticket" data-process-step="0">
+      <span class="reservation-ticket__icon"><SceneIcon kind="package"/></span>
+      <strong data-i18n="aboutScene.logic.request">Reservar un producto</strong>
+      <div><span data-i18n="aboutScene.logic.requested">Solicitadas</span><b>3</b></div>
+      <div><span data-i18n="aboutScene.logic.stock">Disponibles</span><b data-logic-stock-value>8</b></div>
+      <code>reserve(item, 3)</code>
+    </div>
+    <div class="logic-engine" data-process-step="1"><div><SceneIcon kind="branch"/></div><strong data-i18n="aboutScene.logic.rules">Reglas</strong><code>stock ≥ quantity</code></div>
+    <div class="logic-outcomes" data-process-step="2">
+      <div class="logic-outcome logic-outcome--allowed" data-logic-outcome="allowed" aria-hidden="false"><span><SceneIcon kind="check"/></span><strong data-i18n="aboutScene.logic.allowed">Reserva confirmada</strong><small data-i18n="aboutScene.logic.allowedHint">Hay unidades suficientes.</small></div>
+      <div class="logic-outcome logic-outcome--blocked" data-logic-outcome="blocked" aria-hidden="true"><span><SceneIcon kind="package"/></span><strong data-i18n="aboutScene.logic.blocked">Reserva detenida</strong><small data-i18n="aboutScene.logic.blockedHint">Evita reservar lo que no existe.</small></div>
+    </div>
+  </div>
+  <div class="logic-lab__result" data-process-step="3" role="status" aria-live="polite" aria-atomic="true"><span class="logic-result__icon--allowed"><SceneIcon kind="check"/></span><span class="logic-result__icon--blocked"><SceneIcon kind="branch"/></span><span data-logic-feedback data-i18n="aboutScene.logic.allowedFeedback">Reserva confirmada: hay unidades suficientes para atender la petición.</span></div>
+</div>

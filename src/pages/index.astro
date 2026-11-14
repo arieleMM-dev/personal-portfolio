@@ -13,10 +13,13 @@ import Contact from '../components/Contact.astro';
 <Layout title="Ariel Morillo — Backend y sistemas">
   <Header slot="header" />
   <Hero />
-  <AboutMe />
-  <Expertise />
-  <Work />
-  <Experience />
-  <WebExperiences />
-  <Contact />
+  <div class="portfolio-content">
+    <div class="portfolio-band portfolio-band--about" data-surface-tone="dark"><AboutMe /></div>
+    <div class="portfolio-band portfolio-band--expertise" data-surface-tone="dark"><Expertise /></div>
+    <div class="portfolio-band portfolio-band--work" data-surface-tone="dark"><Work /></div>
+    <div class="portfolio-marquee" data-ambient-motion aria-hidden="true"><div>{[0,1].map(() => <span><b>Node.js</b><i>TypeScript</i><b>Backend</b><i>Arquitectura</i></span>)}</div></div>
+    <div class="portfolio-band portfolio-band--experience" data-surface-tone="dark"><Experience /></div>
+    <div class="portfolio-band portfolio-band--gallery" data-surface-tone="dark"><WebExperiences /></div>
+    <div class="portfolio-band portfolio-band--contact" data-surface-tone="dark"><Contact /></div>
+  </div>
 </Layout>

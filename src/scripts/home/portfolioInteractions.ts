@@ -2,6 +2,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { translations } from '../../data/translations';
 import { isAmbientPaused } from '../motion';
+import { initArchitectureExplorer } from './architectureExplorer';
 
 // This avoids a plain address in the initial HTML, not extraction by advanced bots.
 function getContactEmail() {
@@ -14,27 +15,14 @@ export function initPortfolioInteractions() {
   const abort = new AbortController();
   const signal = abort.signal;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const architecture = document.querySelector<HTMLElement>('[data-architecture]');
-  architecture?.querySelectorAll<HTMLButtonElement>('[data-architecture-stage]').forEach(button => {
-    button.addEventListener('click', () => {
-      architecture.dataset.activeStage = button.dataset.architectureStage;
-      architecture.querySelectorAll<HTMLButtonElement>('[data-architecture-stage]').forEach(item => {
-        const active = item === button;
-        item.classList.toggle('is-active', active);
-        item.setAttribute('aria-pressed', String(active));
-      });
-      architecture.querySelectorAll<HTMLElement>('[data-architecture-panel]').forEach(panel => {
-        panel.hidden = panel.dataset.architecturePanel !== button.dataset.architectureStage;
-        if (!panel.hidden && !reducedMotion.matches) gsap.fromTo(panel, { opacity: 0, y: 5 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out', overwrite: true });
-      });
-    }, { signal });
-  });
-
-  const ambientElements = [...document.querySelectorAll<HTMLElement>('[data-architecture], [data-ambient-motion]')];
+  const destroyExplorer = initArchitectureExplorer(document.querySelector<HTMLElement>('[data-architecture]'));
+  const ambientElements = [...document.querySelectorAll<HTMLElement>('[data-ambient-motion]')];
   const visibleElements = new Set<Element>();
-  const updateAmbient = () => ambientElements.forEach(element => {
-    element.classList.toggle('is-visible', visibleElements.has(element) && !document.hidden && !reducedMotion.matches && !isAmbientPaused());
-  });
+  const updateAmbient = () => {
+    ambientElements.forEach(element => {
+      element.classList.toggle('is-visible', visibleElements.has(element) && !document.hidden && !reducedMotion.matches && !isAmbientPaused());
+    });
+  };
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) visibleElements.add(entry.target);
@@ -48,6 +36,7 @@ export function initPortfolioInteractions() {
   document.addEventListener('portfolio:motion-change', updateAmbient, { signal });
 
   const disclosureState = new Map<HTMLDetailsElement, boolean>();
+  document.querySelector<HTMLDetailsElement>('[data-work-more]')?.addEventListener('toggle', () => ScrollTrigger.refresh(), { signal });
   const updateDisclosureLabel = (details: HTMLDetailsElement, open: boolean) => {
     const label = details.querySelector<HTMLElement>('[data-disclosure-label]');
     const key = open ? 'common.collapse' : 'common.expand';
@@ -140,6 +129,6 @@ export function initPortfolioInteractions() {
     pointerMotion.revert();
     clearTimeout(feedbackTimer);
     gsap.killTweensOf(document.querySelectorAll('.disclosure__body'));
-    if (architecture) gsap.killTweensOf(architecture.querySelectorAll('[data-architecture-panel]'));
+    destroyExplorer();
   };
 }

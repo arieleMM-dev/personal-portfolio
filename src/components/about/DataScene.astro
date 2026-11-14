@@ -1,0 +1,23 @@
+---
+import SceneIcon from './SceneIcon.astro';
+---
+<div class="about-visual data-workshop" data-ambient-motion aria-hidden="true">
+  <div class="data-workshop__before" data-process-step="0">
+    <div class="source-note"><SceneIcon kind="file"/><span data-i18n="aboutScene.data.sourceNote">Registro de campo</span><i></i><i></i><i></i><b>A-01 · 12/06</b></div>
+    <div class="source-sheet"><span>CSV</span><div>{Array.from({length:20},(_,i)=><i class:list={{'is-marked':[2,8,12,17].includes(i)}}></i>)}</div></div>
+    <div class="source-message" data-i18n="aboutScene.data.question">¿A qué lote pertenece este registro?</div>
+    <div class="data-workshop__caption"><strong data-i18n="aboutScene.data.before">Información dispersa</strong><span data-i18n="aboutScene.data.beforeHint">Apuntes, archivos y mensajes.</span></div>
+  </div>
+  <div class="data-workshop__transfer" data-process-step="1"><SceneIcon kind="arrow"/><i></i><i></i><i></i></div>
+  <div class="data-workshop__after" data-process-step="2">
+    <div class="organized-data">
+      <div class="organized-data__header"><strong data-i18n="aboutScene.data.model">Registros</strong><span><i></i><span data-i18n="aboutScene.data.connected">Conectados</span></span></div>
+      <div class="organized-data__filter"><SceneIcon kind="filter"/><span data-i18n="aboutScene.data.query">Filtrar por lote</span><b>A</b></div>
+      <div class="organized-data__table"><div><span>id</span><span>lot_id</span><span>status</span></div>{['A','A','B'].map((lot,i)=><div style={`--record:${i}`}><span>{`0${i+1}`}</span><b>{lot}</b><i><SceneIcon kind="check"/></i></div>)}</div>
+      <div class="organized-data__relation" data-process-step="3"><span><SceneIcon kind="key"/> lot_id</span><SceneIcon kind="link"/><span>lots.id</span></div>
+      <div class="organized-data__query"><span>SELECT</span> * <span>FROM</span> records<br /><span>WHERE</span> lot_id = <b>'A'</b>;</div>
+    </div>
+    <div class="data-model-badge"><span style="--tech-icon:url('/assets/technologies/postgresql.svg')"></span><span style="--tech-icon:url('/assets/technologies/mongodb.svg')"></span><b>SQL / DOCUMENTS</b></div>
+    <div class="data-workshop__caption"><strong data-i18n="aboutScene.data.after">Una base organizada</strong><span data-i18n="aboutScene.data.afterHint">Relaciones claras. Consultas útiles.</span></div>
+  </div>
+</div>
